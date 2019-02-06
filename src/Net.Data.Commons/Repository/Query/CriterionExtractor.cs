@@ -9,13 +9,18 @@ namespace Net.Data.Commons.Repository.Query
     public class CriterionExtractor
     {
         private readonly Predicate predicate;
+        private readonly Regex preffixRegex = new Regex(@"\w+By");
 
         public CriterionExtractor(string source)
         {
             if (string.IsNullOrEmpty(source))
                 throw new ArgumentException("Source must not be null");
 
-            predicate = new Predicate(source);
+            var match = preffixRegex.Match(source);
+            if(match.Length > 0)
+                predicate = new Predicate(source.Substring(match.Length));
+            else
+                predicate = new Predicate(source);
         }
 
         private static string[] Split(string input, string pattern) 
