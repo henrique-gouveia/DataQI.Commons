@@ -4,30 +4,30 @@ using System.Collections.ObjectModel;
 
 namespace Net.Data.Commons.Repository.Query
 {
-    public enum Type
+    public enum CriterionType
     {
         SimpleProperty, Between, Equals, In, NotIn, OrderBy, IsNull, IsNotNull, NotBetween, LessThan,
         LessThanEqual, GreaterThan, GreaterThanEqual, StartingWith, NotStartingWith,
         EndingWith, NotEndingWith, Containing, NotContaining
     }
 
-    public class TypeInfo
+    public class CriterionTypeData
     {
-        private readonly int numberOfParts;
-        private readonly Type type;
+        private readonly int numberOfArgs;
+        private readonly CriterionType type;
 
-        public TypeInfo(Type type)
+        public CriterionTypeData(CriterionType type)
         {
             this.type = type;
         }
 
-        public int GetNumbersOfParts()
+        public int GetNumbersOfArgs()
         {
             switch (this.type)
             {
-                case Type.Between:
+                case CriterionType.Between:
                     return 2;
-                case Type.NotBetween:
+                case CriterionType.NotBetween:
                     return 2;
                 default:
                     return 1;
@@ -37,9 +37,9 @@ namespace Net.Data.Commons.Repository.Query
 
     public static class TypeExtensions
     {
-        public static TypeInfo Info(this Type type)
+        public static CriterionTypeData Info(this CriterionType type)
         {
-            return new TypeInfo(type);
+            return new CriterionTypeData(type);
         }
     }
 }
