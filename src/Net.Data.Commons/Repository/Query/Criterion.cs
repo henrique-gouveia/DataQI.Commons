@@ -1,20 +1,15 @@
-using System;
-
 namespace Net.Data.Commons.Repository.Query
 {
     public class Criterion
     {
-        private readonly string source;
-
         public Criterion(string source)
         {
-            this.source = source;
-            Data = new CriterionTypeData(source);
-            PropertyName = Data.ExtractPropertyFromCriterionType();
+            Type = CriterionTypeHelper.FromProperty(source);
+            PropertyName = CriterionTypeHelper.ExtractProperty(source, Type);
         }
 
-        public CriterionTypeData Data { get; private set; }
+        public string PropertyName { get; private set; }
 
-        public string PropertyName { get; set; }
+        public CriterionType Type { get; private set; }
     }
 }

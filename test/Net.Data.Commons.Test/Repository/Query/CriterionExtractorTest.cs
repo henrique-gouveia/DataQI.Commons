@@ -104,13 +104,13 @@ namespace Net.Data.Commons.Test.Repository.Query
             Assert.False(criterions.MoveNext());
         }
 
-        private void AssertSuportCriterionType(CriterionType criterionTypeExpected, string propertyName, params string[] sources)
+        private void AssertSuportCriterionType(CriterionType criterionTypeExpected, string propertyNameExptected, params string[] sources)
         {
             foreach (var source in sources)
             {
                 var criterion = new Criterion(source);
-                Assert.Equal(criterionTypeExpected, criterion.Data.Type);
-                Assert.Equal(propertyName, criterion.PropertyName);
+                Assert.Equal(criterionTypeExpected, criterion.Type);
+                Assert.Equal(propertyNameExptected, criterion.PropertyName);
             }
         }
     }

@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Net.Data.Commons.Repository.Query
 {
-    public class CriterionExtractor
+    public class CriterionExtractor : IEnumerable<CriterionExtractor.OrCriterion>
     {
         private readonly Predicate predicate;
         private readonly Regex preffixRegex = new Regex(@"\w+By");
@@ -29,10 +29,17 @@ namespace Net.Data.Commons.Repository.Query
             return regex.Split(input);
         }
 
-        public IEnumerator<OrCriterion> GetEnumerator()
+        #region IEnumerable<OrCriterion> implementations
+        public IEnumerator<CriterionExtractor.OrCriterion> GetEnumerator()
         {
             return predicate.GetEnumerator();
         }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+        #endregion
 
         public class OrCriterion : IEnumerable<Criterion>
         {
@@ -44,6 +51,7 @@ namespace Net.Data.Commons.Repository.Query
                     criterions.Add(new Criterion(criterion));
             }
 
+            #region IEnumerable<Criterion> implementations
             public IEnumerator<Criterion> GetEnumerator()
             {
                 return criterions.GetEnumerator();
@@ -53,9 +61,10 @@ namespace Net.Data.Commons.Repository.Query
             {
                 return GetEnumerator();
             }
+            #endregion
         }
 
-        public class Predicate : IEnumerable<OrCriterion>
+        private class Predicate : IEnumerable<OrCriterion>
         {
             private readonly List<OrCriterion> nodes = new List<OrCriterion>();
 
@@ -65,6 +74,7 @@ namespace Net.Data.Commons.Repository.Query
                     nodes.Add(new OrCriterion(criterion));
             }
 
+            #region IEnumerable<OrCriterion> implementations
             public IEnumerator<OrCriterion> GetEnumerator()
             {
                 return nodes.GetEnumerator();
@@ -74,6 +84,7 @@ namespace Net.Data.Commons.Repository.Query
             {
                 return GetEnumerator();
             }
+            #endregion
         }
     }
 }
