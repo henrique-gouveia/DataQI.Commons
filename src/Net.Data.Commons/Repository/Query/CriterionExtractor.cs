@@ -14,7 +14,7 @@ namespace Net.Data.Commons.Repository.Query
         public CriterionExtractor(string source)
         {
             if (string.IsNullOrEmpty(source))
-                throw new ArgumentException("Source must not be null");
+                throw new ArgumentException("Source must not be null or empty");
 
             var match = preffixRegex.Match(source);
             if(match.Length > 0)
@@ -41,29 +41,6 @@ namespace Net.Data.Commons.Repository.Query
         }
         #endregion
 
-        public class OrCriterion : IEnumerable<Criterion>
-        {
-            private readonly List<Criterion> criterions = new List<Criterion>();
-
-            public OrCriterion(string source)
-            {   
-                foreach (var criterion in Split(source, "And"))
-                    criterions.Add(new Criterion(criterion));
-            }
-
-            #region IEnumerable<Criterion> implementations
-            public IEnumerator<Criterion> GetEnumerator()
-            {
-                return criterions.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-            #endregion
-        }
-
         private class Predicate : IEnumerable<OrCriterion>
         {
             private readonly List<OrCriterion> nodes = new List<OrCriterion>();
@@ -86,5 +63,28 @@ namespace Net.Data.Commons.Repository.Query
             }
             #endregion
         }
+
+        public class OrCriterion : IEnumerable<Criterion>
+        {
+            private readonly List<Criterion> criterions = new List<Criterion>();
+
+            public OrCriterion(string source)
+            {   
+                foreach (var criterion in Split(source, "And"))
+                    criterions.Add(new Criterion(criterion));
+            }
+
+            #region IEnumerable<Criterion> implementations
+            public IEnumerator<Criterion> GetEnumerator()
+            {
+                return criterions.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+            #endregion
+        }        
     }
 }
