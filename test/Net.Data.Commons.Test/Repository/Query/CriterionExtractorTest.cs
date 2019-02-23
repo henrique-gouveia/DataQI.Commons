@@ -15,6 +15,7 @@ namespace Net.Data.Commons.Test.Repository.Query
         public void TestRejectsNullSource() 
         {
             Assert.Throws<ArgumentException>(() => new CriterionExtractor(null));
+            Assert.Throws<ArgumentException>(() => new CriterionExtractor(""));
         }
 
         [Fact]
@@ -90,6 +91,13 @@ namespace Net.Data.Commons.Test.Repository.Query
             }
 
             Assert.False(criterions.MoveNext());
+        }
+
+                [Fact]
+        public void TestRejectsCriterionNullSource() 
+        {
+            Assert.Throws<ArgumentException>(() => new Criterion(null));
+            Assert.Throws<ArgumentException>(() => new Criterion(""));
         }
         
         [Fact]
