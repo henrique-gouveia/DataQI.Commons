@@ -8,14 +8,66 @@ namespace Net.Data.Commons.Repository.Query
 {
     public enum CriterionType
     {
-        Between, NotBetween, 
-        Containing, NotContaining,
-        Equals, NotEquals,
-        In, NotIn, 
-        IsNull, IsNotNull, 
-        LessThan, LessThanEqual, GreatherThan, GreatherThanEqual, 
-        EndingWith, NotEndingWith, StartingWith, NotStartingWith,
+        [CriterionTypeData(2, "{0} BETWEEN {1} AND {2}")]
+        Between, 
+        [CriterionTypeData(2, "{0} NOT BETWEEN {1} AND {2}")]
+        NotBetween, 
+
+        [CriterionTypeData(1, "{0} LIKE %{1}%")]
+        Containing, 
+        [CriterionTypeData(1, "{0} NOT LIKE %{1}%")]
+        NotContaining,
+
+        [CriterionTypeData(1, "{0} LIKE %{1}")]
+        EndingWith, 
+        [CriterionTypeData(1, "{0} NOT LIKE %{1}")]
+        NotEndingWith, 
+
+        [CriterionTypeData(1, "{0} = {1}")]
+        Equals, 
+        [CriterionTypeData(1, "{0} <> {1}")]
+        NotEquals,
+
+        [CriterionTypeData(1, "{0} > {1}")]
+        GreatherThan,
+        [CriterionTypeData(1, "{0} >= {1}")]
+        GreatherThanEqual, 
+
+        [CriterionTypeData(1, "{0} IN {1}")]
+        In, 
+        [CriterionTypeData(1, "{0} NOT IN {1}")]
+        NotIn, 
+
+        [CriterionTypeData(0, "{0} IS NULL")]
+        IsNull, 
+        [CriterionTypeData(0, "{0} IS NOT NULL")]
+        IsNotNull, 
+
+        [CriterionTypeData(1, "{0} < {1}")]
+        LessThan, 
+        [CriterionTypeData(1, "{0} <= {1}")]
+        LessThanEqual, 
+
+        [CriterionTypeData(1, "{0} LIKE {1}%")]
+        StartingWith, 
+        [CriterionTypeData(1, "{0} NOT LIKE {1}%")]
+        NotStartingWith,
+        [CriterionTypeData(1, "{0} = {1}")]
         SimpleProperty
+    }
+
+    [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    public sealed class CriterionTypeDataAttribute : Attribute
+    {
+        public CriterionTypeDataAttribute(int numberOfArgs, string commandTemplate)
+        {
+            NumberOfArgs = numberOfArgs;
+            CommandTemplate = commandTemplate;
+        }
+
+        public int NumberOfArgs { get; private set; }
+
+        public string CommandTemplate { get; private set; }
     }
 
     public static class CriterionTypeHelper
@@ -46,6 +98,33 @@ namespace Net.Data.Commons.Repository.Query
                 return source;
             else
                 return source.Substring(0, source.IndexOf(type.ToString()));
+        }
+
+        public static CriterionTypeDataAttribute ExtractCriterionTypeData(CriterionType type) 
+        {
+            var data = type
+                .GetType()
+                .GetField(type.ToString())
+                .GetCustomAttributes(false)
+                .OfType<CriterionTypeDataAttribute>()
+                .FirstOrDefault();
+
+            return data;
+        }
+    }
+
+    public static class CriterionTypeExtensions 
+    {
+        public static int NumberOfArgs(this CriterionType type)
+        {
+            var data = CriterionTypeHelper.ExtractCriterionTypeData(type);
+            return data.NumberOfArgs;
+        }
+
+        public static string CommandTemplate(this CriterionType type)
+        {
+            var data = CriterionTypeHelper.ExtractCriterionTypeData(type);
+            return data.CommandTemplate;
         }
     }
 }

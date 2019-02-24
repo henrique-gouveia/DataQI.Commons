@@ -103,122 +103,220 @@ namespace Net.Data.Commons.Test.Repository.Query
         [Fact]
         public void TestSupportSimplePropertyTypeCorrectly()
         {
-            AssertSuportCriterionType("firstName", "firstName", CriterionType.SimpleProperty);
+            AssertSuportCriterionType(
+                source: "firstName", 
+                propertyNameExptected: "firstName", 
+                criterionTypeExpected: CriterionType.SimpleProperty,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} = {1}");
         }
 
         [Fact]
         public void TestSupportBeteweenTypeCorrectly()
         {
-            AssertSuportCriterionType("DateOfBirthBetween", "DateOfBirth", CriterionType.Between);
+            AssertSuportCriterionType(
+                source: "DateOfBirthBetween", 
+                propertyNameExptected: "DateOfBirth", 
+                criterionTypeExpected: CriterionType.Between,
+                numberOfArgsExpected: 2,
+                commandTemplateExpected: "{0} BETWEEN {1} AND {2}");
         }
 
         [Fact]
         public void TestSupportNotBeteweenTypeCorrectly()
         {
-            AssertSuportCriterionType("DateOfBirthNotBetween", "DateOfBirth", CriterionType.NotBetween);
+            AssertSuportCriterionType(
+                source: "DateOfBirthNotBetween", 
+                propertyNameExptected: "DateOfBirth", 
+                criterionTypeExpected: CriterionType.NotBetween,
+                numberOfArgsExpected: 2,
+                commandTemplateExpected: "{0} NOT BETWEEN {1} AND {2}");
         }
 
         [Fact]
         public void TestSupportContainingTypeCorrectly()
         {
-            AssertSuportCriterionType("LastNameContaining", "LastName", CriterionType.Containing);
+            AssertSuportCriterionType(
+                source: "LastNameContaining", 
+                propertyNameExptected: "LastName", 
+                criterionTypeExpected: CriterionType.Containing,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} LIKE %{1}%");
         }
 
         [Fact]
         public void TestSupportNotContainingTypeCorrectly()
         {
-            AssertSuportCriterionType("LastNameNotContaining", "LastName", CriterionType.NotContaining);
-        }
-
-        [Fact]
-        public void TestSupportEqualsTypeCorrectly()
-        {
-            AssertSuportCriterionType("firstNameEquals", "firstName", CriterionType.Equals);
-        }
-
-        [Fact]
-        public void TestSupportNotEqualsTypeCorrectly()
-        {
-            AssertSuportCriterionType("AgeNotEquals", "Age", CriterionType.NotEquals);
-        }
-
-        [Fact]
-        public void TestSupportInTypeCorrectly()
-        {
-            AssertSuportCriterionType("AgeIn", "Age", CriterionType.In);
-        }
-
-        [Fact]
-        public void TestSupportNotInTypeCorrectly()
-        {
-            AssertSuportCriterionType("AgeNotIn", "Age", CriterionType.NotIn);
-        }
-
-        [Fact]
-        public void TestSupportIsNullTypeCorrectly()
-        {
-            AssertSuportCriterionType("PhoneIsNull", "Phone", CriterionType.IsNull);
-        }
-
-        [Fact]
-        public void TestSupportIsNotNullTypeCorrectly()
-        {
-            AssertSuportCriterionType("PhoneIsNotNull", "Phone", CriterionType.IsNotNull);
-        }
-
-        [Fact]
-        public void TestSupportLessThanTypeCorrectly()
-        {
-            AssertSuportCriterionType("DateOfBirthLessThan", "DateOfBirth", CriterionType.LessThan);
-        }
-
-        [Fact]
-        public void TestSupportLessThanEqualTypeCorrectly()
-        {
-            AssertSuportCriterionType("DateOfBirthLessThanEqual", "DateOfBirth", CriterionType.LessThanEqual);
-        }
-
-        [Fact]
-        public void TestSupportGreatherThanTypeCorrectly()
-        {
-            AssertSuportCriterionType("DateOfBirthGreatherThan", "DateOfBirth", CriterionType.GreatherThan);
-        }
-
-        [Fact]
-        public void TestSupportGreatherThanEqualTypeCorrectly()
-        {
-            AssertSuportCriterionType("DateOfBirthGreatherThanEqual", "DateOfBirth", CriterionType.GreatherThanEqual);
+            AssertSuportCriterionType(
+                source: "LastNameNotContaining", 
+                propertyNameExptected: "LastName", 
+                criterionTypeExpected: CriterionType.NotContaining,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} NOT LIKE %{1}%");
         }
 
         [Fact]
         public void TestSupportEndingWithTypeCorrectly()
         {
-            AssertSuportCriterionType("LastNameEndingWith", "LastName", CriterionType.EndingWith);
+            AssertSuportCriterionType(
+                source: "LastNameEndingWith", 
+                propertyNameExptected: "LastName", 
+                criterionTypeExpected: CriterionType.EndingWith,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} LIKE %{1}");
         }
 
         [Fact]
         public void TestSupportNotEndingWithTypeCorrectly()
         {
-            AssertSuportCriterionType("LastNameNotEndingWith", "LastName", CriterionType.NotEndingWith);
+            AssertSuportCriterionType(
+                source: "LastNameNotEndingWith", 
+                propertyNameExptected: "LastName", 
+                criterionTypeExpected: CriterionType.NotEndingWith,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} NOT LIKE %{1}");
+        }
+
+        [Fact]
+        public void TestSupportEqualsTypeCorrectly()
+        {
+            AssertSuportCriterionType(
+                source: "firstNameEquals", 
+                propertyNameExptected: "firstName", 
+                criterionTypeExpected: CriterionType.Equals,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} = {1}");
+        }
+        
+        [Fact]
+        public void TestSupportNotEqualsTypeCorrectly()
+        {
+            AssertSuportCriterionType(
+                source: "AgeNotEquals", 
+                propertyNameExptected: "Age", 
+                criterionTypeExpected: CriterionType.NotEquals,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} <> {1}");
+        }
+
+        [Fact]
+        public void TestSupportGreatherThanTypeCorrectly()
+        {
+            AssertSuportCriterionType(
+                source: "DateOfBirthGreatherThan", 
+                propertyNameExptected: "DateOfBirth", 
+                criterionTypeExpected: CriterionType.GreatherThan,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} > {1}");
+        }
+
+        [Fact]
+        public void TestSupportGreatherThanEqualTypeCorrectly()
+        {
+            AssertSuportCriterionType(
+                source: "DateOfBirthGreatherThanEqual", 
+                propertyNameExptected: "DateOfBirth", 
+                criterionTypeExpected: CriterionType.GreatherThanEqual,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} >= {1}");
+        }
+
+        [Fact]
+        public void TestSupportInTypeCorrectly()
+        {
+            AssertSuportCriterionType(
+                source: "AgeIn", 
+                propertyNameExptected: "Age", 
+                criterionTypeExpected: CriterionType.In,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} IN {1}");
+        }
+
+        [Fact]
+        public void TestSupportNotInTypeCorrectly()
+        {
+            AssertSuportCriterionType(
+                source: "AgeNotIn", 
+                propertyNameExptected: "Age", 
+                criterionTypeExpected: CriterionType.NotIn,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} NOT IN {1}");
+        }
+
+        [Fact]
+        public void TestSupportIsNullTypeCorrectly()
+        {
+            AssertSuportCriterionType(
+                source: "PhoneIsNull", 
+                propertyNameExptected: "Phone", 
+                criterionTypeExpected: CriterionType.IsNull,
+                numberOfArgsExpected: 0,
+                commandTemplateExpected: "{0} IS NULL");
+        }
+
+        [Fact]
+        public void TestSupportIsNotNullTypeCorrectly()
+        {
+            AssertSuportCriterionType(
+                source: "PhoneIsNotNull", 
+                propertyNameExptected: "Phone", 
+                criterionTypeExpected: CriterionType.IsNotNull,
+                numberOfArgsExpected: 0,
+                commandTemplateExpected: "{0} IS NOT NULL");
+        }
+
+        [Fact]
+        public void TestSupportLessThanTypeCorrectly()
+        {
+            AssertSuportCriterionType(
+                source: "DateOfBirthLessThan", 
+                propertyNameExptected: "DateOfBirth", 
+                criterionTypeExpected: CriterionType.LessThan,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} < {1}");
+        }
+
+        [Fact]
+        public void TestSupportLessThanEqualTypeCorrectly()
+        {
+            AssertSuportCriterionType(
+                source: "DateOfBirthLessThanEqual", 
+                propertyNameExptected: "DateOfBirth", 
+                criterionTypeExpected: CriterionType.LessThanEqual,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} <= {1}");
         }
 
         [Fact]
         public void TestSupportStartingWithTypeCorrectly()
         {
-            AssertSuportCriterionType("LastNameStartingWith", "LastName", CriterionType.StartingWith);
+            AssertSuportCriterionType(
+                source: "LastNameStartingWith", 
+                propertyNameExptected: "LastName", 
+                criterionTypeExpected: CriterionType.StartingWith,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} LIKE {1}%");
         }
 
         [Fact]
         public void TestSupportNotStartingWithTypeCorrectly()
         {
-            AssertSuportCriterionType("LastNameNotStartingWith", "LastName", CriterionType.NotStartingWith);
+            AssertSuportCriterionType(
+                source: "LastNameNotStartingWith", 
+                propertyNameExptected: "LastName", 
+                criterionTypeExpected: CriterionType.NotStartingWith,
+                numberOfArgsExpected: 1,
+                commandTemplateExpected: "{0} NOT LIKE {1}%");
         }
 
-        private void AssertSuportCriterionType(string source, string propertyNameExptected, CriterionType criterionTypeExpected)
+        private void AssertSuportCriterionType(string source, string propertyNameExptected, CriterionType criterionTypeExpected, 
+            int numberOfArgsExpected, string commandTemplateExpected)
         {
             var criterion = new Criterion(source);
-            Assert.Equal(criterionTypeExpected, criterion.Type);
             Assert.Equal(propertyNameExptected, criterion.PropertyName);
+            Assert.Equal(criterionTypeExpected, criterion.Type);
+            Assert.Equal(numberOfArgsExpected, criterion.Type.NumberOfArgs());
+            Assert.Equal(commandTemplateExpected, criterion.Type.CommandTemplate());
         }
     }
 }
