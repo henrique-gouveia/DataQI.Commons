@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using Net.Data.Commons.Extensions.Reflection;
+
 namespace Net.Data.Commons.Repository.Query
 {
     public enum CriterionType
@@ -102,14 +104,10 @@ namespace Net.Data.Commons.Repository.Query
 
         public static CriterionTypeDataAttribute ExtractCriterionTypeData(CriterionType type) 
         {
-            var data = type
-                .GetType()
-                .GetField(type.ToString())
-                .GetCustomAttributes(false)
-                .OfType<CriterionTypeDataAttribute>()
-                .FirstOrDefault();
+            if (type.TryGetAttribute<CriterionTypeDataAttribute>(out var data, inherit: false))
+                return data;
 
-            return data;
+            throw new ArgumentException("Type not contains CriterionTypeData annotation");
         }
     }
 
