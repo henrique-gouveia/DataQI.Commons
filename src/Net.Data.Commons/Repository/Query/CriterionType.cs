@@ -104,7 +104,7 @@ namespace Net.Data.Commons.Repository.Query
 
         public static CriterionTypeDataAttribute ExtractCriterionTypeData(CriterionType type) 
         {
-            if (type.TryGetAttribute<CriterionTypeDataAttribute>(out var data, inherit: false))
+            if (type.TryGetAttribute<CriterionTypeDataAttribute>(out var data))
                 return data;
 
             throw new ArgumentException("Type not contains CriterionTypeData annotation");

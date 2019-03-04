@@ -78,18 +78,18 @@ namespace Net.Data.Commons.Extensions.Reflection
             return attribute != null;
         }
 
-        public static bool HasAttribute<T>(this Enum element, bool inherit) where T : Attribute
+        public static bool HasAttribute<T>(this Enum element) where T : Attribute
         {
             T attribute;
-            return TryGetAttribute(element, out attribute, inherit);
+            return TryGetAttribute(element, out attribute);
         }
 
-        public static bool TryGetAttribute<T>(this Enum element, out T attribute, bool inherit) where T : Attribute
+        public static bool TryGetAttribute<T>(this Enum element, out T attribute) where T : Attribute
         {
             attribute = element
                 .GetType()
                 .GetField(element.ToString())
-                .GetCustomAttributes(inherit)?
+                .GetCustomAttributes(false)?
                 .OfType<T>()
                 .FirstOrDefault();
 
