@@ -93,7 +93,7 @@ namespace Net.Data.Commons.Test.Repository.Query
             Assert.False(criterions.MoveNext());
         }
 
-                [Fact]
+        [Fact]
         public void TestRejectsCriterionNullSource() 
         {
             Assert.Throws<ArgumentException>(() => new Criterion(null));
