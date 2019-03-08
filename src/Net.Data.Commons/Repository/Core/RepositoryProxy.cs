@@ -1,36 +1,38 @@
-using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Net.Data.Commons.Repository.Support
+namespace Net.Data.Commons.Repository.Core
 {
-    public abstract class CrudRepositoryProxy<TEntity, TId> : DispatchProxy where TEntity : class, new()
+    public class RepositoryProxy : DispatchProxy
     {
+        protected static Func<Object> staticDefaultRepositoryFactory;
+
         protected readonly IDictionary<string, MethodInfo> defaultMethods;
 
-        protected readonly ICrudRepository<TEntity, TId> repository;
+        protected readonly Object defaultRepository;
 
-        public CrudRepositoryProxy()
+        public RepositoryProxy()
         {
             defaultMethods = new Dictionary<string, MethodInfo>();
-            repository = CreateRepository();
+            defaultRepository = staticDefaultRepositoryFactory();
 
-            if (repository == null)
+            if (defaultRepository == null)
                 throw new ArgumentException("Repository must not be null");
 
             RegisterDefaultMethods();
         }
 
-        protected abstract ICrudRepository<TEntity, TId>  CreateRepository();
+        public static TRepository Create<TRepository>(Func<Object> defaultRepositoryFactory)
+        {
+            staticDefaultRepositoryFactory = defaultRepositoryFactory;
+            return Create<TRepository, RepositoryProxy>();
+        }
 
         protected override object Invoke(MethodInfo targetMethod, object[] args)
         {
-            // if (!defaultMethods.Any())
-            //     throw new InvalidBuildingMethodException("Any RepositoryProxy must be created by a CrudRepositoryProxyFactory");
-
             if (defaultMethods.TryGetValue(targetMethod.Name, out var method))
-                return method.Invoke(repository, args);
+                return method.Invoke(defaultRepository, args);
 
             return null;
         }
@@ -42,9 +44,9 @@ namespace Net.Data.Commons.Repository.Support
 
         protected virtual void RegisterDefaultMethod(string methodName)
         {
-            var method = repository.GetType().GetMethod(methodName);
+            var method = defaultRepository.GetType().GetMethod(methodName);
             if (method != null)
                 defaultMethods.Add(methodName, method);
         }
-   }
+    }
 }
