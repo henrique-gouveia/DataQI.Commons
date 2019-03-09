@@ -43,6 +43,8 @@ namespace Net.Data.Commons.Repository.Core
             RegisterDefaultMethod("DeleteAsync");
             RegisterDefaultMethod("Exists");
             RegisterDefaultMethod("ExistsAsync");
+            RegisterDefaultMethod("Find");
+            RegisterDefaultMethod("FindAsync");
             RegisterDefaultMethod("FindAll");
             RegisterDefaultMethod("FindAllAsync");
             RegisterDefaultMethod("FindOne");

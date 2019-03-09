@@ -139,6 +139,32 @@ namespace Net.Data.Commons.Test.Repository.Core
             Assert.True(exists);
         }
 
+        [Fact]
+        public void TestInvokeFind()
+        {
+            var entitiesExpected = CreateTestFakeEntities();
+            fakeRepositoryMock
+                .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
+                .Returns(entitiesExpected);
+
+            var entities = fakeRepository.Find($"Name = @name", new object());
+
+            AssertExpectedObject(entitiesExpected, entities);
+        }
+
+        [Fact]
+        public async void TestInvokeFindAsync()
+        {
+            var entitiesExpected = CreateTestFakeEntities();
+            fakeRepositoryMock
+                .Setup(r => r.FindAsync(It.IsAny<FormattableString>(), It.IsAny<object>()))
+                .Returns(Task.FromResult<IEnumerable<FakeEntity>>(entitiesExpected));
+
+            var entities = await fakeRepository.FindAsync($"Name = @name", new object());
+
+            AssertExpectedObject(entitiesExpected, entities);
+        }
+
         [Fact] 
         public void TestInvokeFindAll() 
         {
