@@ -6,7 +6,7 @@ namespace Net.Data.Commons.Repository.Core
 {
     public class RepositoryProxy : DispatchProxy
     {
-        protected static Func<Object> staticDefaultRepositoryFactory;
+        protected static Func<Object> DefaultRepositoryFactory;
 
         protected readonly IDictionary<string, MethodInfo> defaultMethods;
 
@@ -15,7 +15,7 @@ namespace Net.Data.Commons.Repository.Core
         public RepositoryProxy()
         {
             defaultMethods = new Dictionary<string, MethodInfo>();
-            defaultRepository = staticDefaultRepositoryFactory();
+            defaultRepository = DefaultRepositoryFactory();
 
             if (defaultRepository == null)
                 throw new ArgumentException("Repository must not be null");
@@ -25,7 +25,7 @@ namespace Net.Data.Commons.Repository.Core
 
         public static TRepository Create<TRepository>(Func<Object> defaultRepositoryFactory)
         {
-            staticDefaultRepositoryFactory = defaultRepositoryFactory;
+            DefaultRepositoryFactory = defaultRepositoryFactory;
             return Create<TRepository, RepositoryProxy>();
         }
 
@@ -39,7 +39,18 @@ namespace Net.Data.Commons.Repository.Core
 
         protected virtual void RegisterDefaultMethods()
         {
+            RegisterDefaultMethod("Delete");
+            RegisterDefaultMethod("DeleteAsync");
+            RegisterDefaultMethod("Exists");
+            RegisterDefaultMethod("ExistsAsync");
+            RegisterDefaultMethod("FindAll");
+            RegisterDefaultMethod("FindAllAsync");
+            RegisterDefaultMethod("FindOne");
+            RegisterDefaultMethod("FindOneAsync");
             RegisterDefaultMethod("Insert");
+            RegisterDefaultMethod("InsertAsync");
+            RegisterDefaultMethod("Save");
+            RegisterDefaultMethod("SaveAsync");
         }
 
         protected virtual void RegisterDefaultMethod(string methodName)

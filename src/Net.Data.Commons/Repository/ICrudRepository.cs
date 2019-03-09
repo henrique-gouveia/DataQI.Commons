@@ -25,8 +25,8 @@ namespace Net.Data.Commons.Repository
 
         Task SaveAsync(TEntity entity);
 
-        void Delete(TEntity entity);
+        void Delete(TId entity);
 
-        Task DeleteAsync(TEntity entity);
+        Task DeleteAsync(TId entity);
     }
 }
