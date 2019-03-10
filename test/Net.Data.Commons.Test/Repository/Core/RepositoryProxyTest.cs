@@ -14,13 +14,13 @@ namespace Net.Data.Commons.Test.Repository.Core
     public class RepositoryProxyTest
     {
         private static readonly Faker faker = new Faker();
-        private readonly Mock<ICrudRepository<FakeEntity, int>> fakeRepositoryMock;
-        private readonly ICrudRepository<FakeEntity, int> fakeRepository;
+        private readonly Mock<IFakeRepository> fakeRepositoryMock;
+        private readonly IFakeRepository fakeRepository;
 
         public RepositoryProxyTest()
         {
-            fakeRepositoryMock = new Mock<ICrudRepository<FakeEntity, int>>();
-            fakeRepository = RepositoryProxy.Create<ICrudRepository<FakeEntity, int>>(() => 
+            fakeRepositoryMock = new Mock<IFakeRepository>();
+            fakeRepository = RepositoryProxy.Create<IFakeRepository>(() => 
                 fakeRepositoryMock.Object);
         }
 
@@ -235,6 +235,20 @@ namespace Net.Data.Commons.Test.Repository.Core
             fakeRepositoryMock.Verify(r => r.DeleteAsync(entityExpected.Id), Times.Once());
         }
 
+        [Fact]
+        public void TestInvokeFindByName()
+        {
+            var entityExpected = CreateTestFakeEntity();
+            var entitiesExpected = new List<FakeEntity>() { entityExpected };
+            fakeRepositoryMock
+                .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
+                .Returns(entitiesExpected);
+
+            var entities = fakeRepository.FindByName(entityExpected.Name);
+
+            AssertExpectedObject(entitiesExpected, entities);
+        }
+
         private void AssertExpectedObject(object expected, object actual)
         {
             expected.ToExpectedObject().ShouldEqual(actual);
@@ -258,6 +272,11 @@ namespace Net.Data.Commons.Test.Repository.Core
             var name = faker.Person.FullName;
 
             return new FakeEntity(id, name);
+        }
+
+        public interface IFakeRepository : ICrudRepository<FakeEntity, int>
+        {
+            IEnumerable<FakeEntity> FindByName(string name);
         }
 
         public class FakeEntity

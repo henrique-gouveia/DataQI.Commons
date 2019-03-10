@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Reflection;
+
+using Net.Data.Commons.Repository.Query;
 
 namespace Net.Data.Commons.Repository.Core
 {
@@ -34,6 +37,14 @@ namespace Net.Data.Commons.Repository.Core
             if (defaultMethods.TryGetValue(targetMethod.Name, out var method))
                 return method.Invoke(defaultRepository, args);
 
+            if (defaultMethods.TryGetValue("Find", out method))
+            {
+                FormattableString whereClause = CreateWhereClause(targetMethod.Name, args);
+                dynamic parameters = createParameters(args);
+
+                return method.Invoke(defaultRepository, new object[] { whereClause, parameters });
+            }
+            
             return null;
         }
 
@@ -60,6 +71,37 @@ namespace Net.Data.Commons.Repository.Core
             var method = defaultRepository.GetType().GetMethod(methodName);
             if (method != null)
                 defaultMethods.Add(methodName, method);
+        }
+
+        protected FormattableString CreateWhereClause(string methodName, object[] args)
+        {
+            FormattableString whereClause = $"Name = @name";
+            
+            // var extractor = new CriterionExtractor(methodName);
+            // var orCriterions = extractor.GetEnumerator();
+            
+            // while(orCriterions.MoveNext())
+            // {
+            //     var criterions = orCriterions.Current.GetEnumerator();
+            //     while(criterions.MoveNext())
+            //     {
+                    
+            //     }
+            // }
+
+            return whereClause;
+        }
+
+        protected dynamic createParameters(object[] args)
+        {
+            dynamic parameters = new ExpandoObject();
+            foreach (var arg in args)
+            {
+                var parametersDictionary = (IDictionary<string, object>) parameters;
+                parametersDictionary.Add(arg.GetType().Name, arg);
+            }
+
+            return parameters;
         }
     }
 }
