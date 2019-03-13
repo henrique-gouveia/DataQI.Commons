@@ -1,4 +1,5 @@
 using System;
+using Net.Data.Commons.Util;
 
 namespace Net.Data.Commons.Repository.Query
 {
@@ -6,14 +7,18 @@ namespace Net.Data.Commons.Repository.Query
     {
         public Criterion(string source)
         {
-            if (string.IsNullOrEmpty(source))
-                throw new ArgumentException("Criterion source must not be null or empty");
-
+            Assert.IsNullOrEmpty(source, "Criterion source must not be null or empty");
             Type = CriterionTypeHelper.FromProperty(source);
             PropertyName = CriterionTypeHelper.ExtractProperty(source, Type);
         }
 
-        public string PropertyName { get; private set; }
+        public Criterion(string propertyName, CriterionType type) 
+        {
+            this.PropertyName = propertyName;
+                this.Type = type;
+               
+        }
+                public string PropertyName { get; private set; }
 
         public CriterionType Type { get; private set; }
     }
