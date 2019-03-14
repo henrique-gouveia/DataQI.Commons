@@ -1,10 +1,10 @@
 using System;
+using System.Collections.Generic;
 using Bogus;
 using Moq;
 using Net.Data.Commons.Repository;
 using Net.Data.Commons.Repository.Core;
 using Xunit;
-using static Net.Data.Commons.Test.Repository.Core.RepositoryProxyTest;
 
 namespace Net.Data.Commons.Test.Repository.Core
 {
@@ -27,8 +27,8 @@ namespace Net.Data.Commons.Test.Repository.Core
         public void TestExtractRepositoryMetadataSuccessfully()
         {
             var repositoryMetadata = new RepositoryMetadata(typeof(IFakeRepository));
-            var domainType = repositoryMetadata.GetDomainType();
-            var typeId = repositoryMetadata.GetTypeId();
+            var domainType = repositoryMetadata.EntityType;
+            var typeId = repositoryMetadata.TypeId;
             Assert.Equal(typeof(FakeEntity), domainType);
             Assert.Equal(typeof(int), typeId);
         }
@@ -37,8 +37,18 @@ namespace Net.Data.Commons.Test.Repository.Core
         public void TestExtractRepositoryMetadataDefaultSuccessfully()
         {
             var repositoryMetadata = new RepositoryMetadata(typeof(ICrudRepository<FakeEntity, int>));
-            var domainType = repositoryMetadata.GetDomainType();
-            var typeId = repositoryMetadata.GetTypeId();
+            var domainType = repositoryMetadata.EntityType;
+            var typeId = repositoryMetadata.TypeId;
+            Assert.Equal(typeof(FakeEntity), domainType);
+            Assert.Equal(typeof(int), typeId);
+        }
+
+        [Fact]
+        public void TestExtractRepositoryMetadataCustomSuccessfully()
+        {
+            var repositoryMetadata = new RepositoryMetadata(typeof(ICustomFakeRepository<FakeEntity, int>));
+            var domainType = repositoryMetadata.EntityType;
+            var typeId = repositoryMetadata.TypeId;
             Assert.Equal(typeof(FakeEntity), domainType);
             Assert.Equal(typeof(int), typeId);
         }
@@ -52,6 +62,11 @@ namespace Net.Data.Commons.Test.Repository.Core
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
             Assert.Equal("The parameter should be interface.", exceptionMessage);          
+        }
+
+        public interface ICustomFakeRepository<TEntity, TId> where TEntity : class, new()
+        {
+            IEnumerable<FakeEntity> FindByName(string name);
         }
     }
 }
