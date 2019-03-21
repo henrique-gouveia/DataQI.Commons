@@ -236,6 +236,20 @@ namespace Net.Data.Commons.Test.Repository.Core
         }
 
         [Fact]
+        public void TestInvokeFindByNameIsNull()
+        {
+            var entityExpected = CreateTestFakeEntity();
+            var entitiesExpected = new List<FakeEntity>() { entityExpected };
+            fakeRepositoryMock
+                .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
+                .Returns(entitiesExpected);
+
+            var entities = fakeRepository.FindByNameIsNull();
+
+            AssertExpectedObject(entitiesExpected, entities);
+        }
+
+        [Fact]
         public void TestInvokeFindByName()
         {
             var entityExpected = CreateTestFakeEntity();
@@ -246,6 +260,19 @@ namespace Net.Data.Commons.Test.Repository.Core
 
             var entities = fakeRepository.FindByName(entityExpected.Name);
 
+            AssertExpectedObject(entitiesExpected, entities);
+        }
+
+        [Fact]
+        public void TestInvokeFindByDateOfBirthBetween()
+        {
+            var entityExpected = CreateTestFakeEntity();
+            var entitiesExpected = new List<FakeEntity>() { entityExpected };
+            fakeRepositoryMock
+                .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
+                .Returns(entitiesExpected);
+
+            var entities = fakeRepository.FindByDateOfBirthBetween(new DateTime(2000, 1, 1), new DateTime(2019, 1, 1));
             AssertExpectedObject(entitiesExpected, entities);
         }
 
@@ -276,7 +303,11 @@ namespace Net.Data.Commons.Test.Repository.Core
 
         public interface IFakeRepository : ICrudRepository<FakeEntity, int>
         {
+            IEnumerable<FakeEntity> FindByNameIsNull();
+
             IEnumerable<FakeEntity> FindByName(string name);
+            
+            IEnumerable<FakeEntity> FindByDateOfBirthBetween(DateTime dateOfBirthStart, DateTime dateOfBirthEnd);
         }
 
         public class FakeEntity

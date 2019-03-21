@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -39,7 +41,7 @@ namespace Net.Data.Commons.Repository.Core
 
             if (defaultMethods.TryGetValue("Find", out method))
             {
-                FormattableString whereClause = CreateWhereClause(targetMethod.Name, args);
+                FormattableString whereClause = CreateWhereClause(targetMethod);
                 dynamic parameters = createParameters(targetMethod, args);
 
                 return method.Invoke(defaultRepository, new object[] { whereClause, parameters });
@@ -73,31 +75,47 @@ namespace Net.Data.Commons.Repository.Core
                 defaultMethods.Add(methodName, method);
         }
 
-        protected FormattableString CreateWhereClause(string methodName, object[] args)
+        protected FormattableString CreateWhereClause(MethodInfo targetMethod)
         {
-            FormattableString whereClause = $"Name = @name";
-            
-            // var extractor = new CriterionExtractor(methodName);
-            // var orCriterions = extractor.GetEnumerator();
-            
-            // while(orCriterions.MoveNext())
-            // {
-            //     var criterions = orCriterions.Current.GetEnumerator();
-            //     while(criterions.MoveNext())
-            //     {
-                    
-            //     }
-            // }
+            var methodParameters = targetMethod.GetParameters();
+            int argIndex = 0;
 
-            return whereClause;
+            var whereClauseBuilder = new StringBuilder();
+            
+            var extractor = new CriterionExtractor(targetMethod.Name);
+            var orCriterions = extractor.GetEnumerator();
+            
+            while(orCriterions.MoveNext())
+            {
+                if (whereClauseBuilder.Length > 0)
+                    whereClauseBuilder.Append(" OR ");
+
+                var criterions = orCriterions.Current.GetEnumerator();
+                while(criterions.MoveNext())
+                {
+                    var criterion = criterions.Current;
+
+                    var parameters = new List<string>() { criterion.PropertyName };
+                    for (var i = 0; i < criterion.Type.NumberOfArgs(); i++)
+                        parameters.Add($"@{methodParameters[argIndex++].Name}");
+                    
+                    var whereClause = string.Format(
+                        criterion.Type.CommandTemplate(), 
+                        parameters.Cast<object>().ToArray());
+
+                    whereClauseBuilder.Append(whereClause);
+                }
+            }
+
+            return $"{whereClauseBuilder.ToString()}";
         }
 
-        protected dynamic createParameters(MethodInfo methodInfo, object[] args)
+        protected dynamic createParameters(MethodInfo targetMethod, object[] args)
         {
             dynamic parameters = new ExpandoObject();
             var parametersDictionary = (IDictionary<string, object>) parameters;
 
-            var methodParameters = methodInfo.GetParameters();
+            var methodParameters = targetMethod.GetParameters();
             for (var i = 0; i < methodParameters.Length; i++) 
                 parametersDictionary.Add(methodParameters[i].Name, args[i]);
 

@@ -64,9 +64,35 @@ namespace Net.Data.Commons.Test.Repository.Core
             Assert.Equal("The parameter should be interface.", exceptionMessage);          
         }
 
+        public interface IFakeRepository : ICrudRepository<FakeEntity, int>
+        {
+            IEnumerable<FakeEntity> FindByName(string name);
+        }
+
         public interface ICustomFakeRepository<TEntity, TId> where TEntity : class, new()
         {
             IEnumerable<FakeEntity> FindByName(string name);
+        }
+
+        public class FakeEntity
+        {
+            public FakeEntity()
+            {
+            }
+
+            public FakeEntity(int id) : this(id, null)
+            {
+            }
+
+            public FakeEntity(int id, string name)
+            {
+                Id = id;
+                Name = name;
+            }
+
+            public int Id { get; set; }
+
+            public string Name { get; set; }
         }
     }
 }
