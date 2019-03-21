@@ -40,7 +40,7 @@ namespace Net.Data.Commons.Repository.Core
             if (defaultMethods.TryGetValue("Find", out method))
             {
                 FormattableString whereClause = CreateWhereClause(targetMethod.Name, args);
-                dynamic parameters = createParameters(args);
+                dynamic parameters = createParameters(targetMethod, args);
 
                 return method.Invoke(defaultRepository, new object[] { whereClause, parameters });
             }
@@ -92,14 +92,14 @@ namespace Net.Data.Commons.Repository.Core
             return whereClause;
         }
 
-        protected dynamic createParameters(object[] args)
+        protected dynamic createParameters(MethodInfo methodInfo, object[] args)
         {
             dynamic parameters = new ExpandoObject();
-            foreach (var arg in args)
-            {
-                var parametersDictionary = (IDictionary<string, object>) parameters;
-                parametersDictionary.Add(arg.GetType().Name, arg);
-            }
+            var parametersDictionary = (IDictionary<string, object>) parameters;
+
+            var methodParameters = methodInfo.GetParameters();
+            for (var i = 0; i < methodParameters.Length; i++) 
+                parametersDictionary.Add(methodParameters[i].Name, args[i]);
 
             return parameters;
         }
