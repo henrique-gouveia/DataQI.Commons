@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -39,8 +41,8 @@ namespace Net.Data.Commons.Repository.Core
 
             if (defaultMethods.TryGetValue("Find", out method))
             {
-                FormattableString whereClause = CreateWhereClause(targetMethod.Name, args);
-                dynamic parameters = createParameters(args);
+                FormattableString whereClause = CreateWhereClause(targetMethod);
+                dynamic parameters = createParameters(targetMethod, args);
 
                 return method.Invoke(defaultRepository, new object[] { whereClause, parameters });
             }
@@ -73,33 +75,58 @@ namespace Net.Data.Commons.Repository.Core
                 defaultMethods.Add(methodName, method);
         }
 
-        protected FormattableString CreateWhereClause(string methodName, object[] args)
+        protected FormattableString CreateWhereClause(MethodInfo targetMethod)
         {
-            FormattableString whereClause = $"Name = @name";
-            
-            // var extractor = new CriterionExtractor(methodName);
-            // var orCriterions = extractor.GetEnumerator();
-            
-            // while(orCriterions.MoveNext())
-            // {
-            //     var criterions = orCriterions.Current.GetEnumerator();
-            //     while(criterions.MoveNext())
-            //     {
-                    
-            //     }
-            // }
+            var methodParameters = targetMethod.GetParameters();
+            int argIndex = 0;
 
-            return whereClause;
+            var whereClauseDisjunctionBuilder = new StringBuilder();
+            
+            var extractor = new CriterionExtractor(targetMethod.Name);
+            var orCriterions = extractor.GetEnumerator();
+            
+            while(orCriterions.MoveNext())
+            {
+                if (whereClauseDisjunctionBuilder.Length > 0)
+                    whereClauseDisjunctionBuilder.Append(" OR ");
+                
+                whereClauseDisjunctionBuilder.Append("(");
+                var whereClauseJunctionBuilder = new StringBuilder();
+
+                var criterions = orCriterions.Current.GetEnumerator();
+                while(criterions.MoveNext())
+                {
+                    if (whereClauseJunctionBuilder.Length > 0)
+                        whereClauseJunctionBuilder.Append(" AND ");
+                        
+                    var criterion = criterions.Current;
+
+                    var parameters = new List<string>() { criterion.PropertyName };
+                    for (var i = 0; i < criterion.Type.NumberOfArgs(); i++)
+                        parameters.Add($"@{methodParameters[argIndex++].Name}");
+                    
+                    var whereClause = string.Format(
+                        criterion.Type.CommandTemplate(), 
+                        parameters.ToArray());
+
+                    whereClauseJunctionBuilder.Append(whereClause);
+                }
+
+                whereClauseDisjunctionBuilder.Append(whereClauseJunctionBuilder.ToString());
+                whereClauseDisjunctionBuilder.Append(")");
+            }
+
+            return $"{whereClauseDisjunctionBuilder.ToString()}";
         }
 
-        protected dynamic createParameters(object[] args)
+        protected dynamic createParameters(MethodInfo targetMethod, object[] args)
         {
             dynamic parameters = new ExpandoObject();
-            foreach (var arg in args)
-            {
-                var parametersDictionary = (IDictionary<string, object>) parameters;
-                parametersDictionary.Add(arg.GetType().Name, arg);
-            }
+            var parametersDictionary = (IDictionary<string, object>) parameters;
+
+            var methodParameters = targetMethod.GetParameters();
+            for (var i = 0; i < methodParameters.Length; i++) 
+                parametersDictionary.Add(methodParameters[i].Name, args[i]);
 
             return parameters;
         }
