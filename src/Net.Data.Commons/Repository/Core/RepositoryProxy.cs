@@ -80,19 +80,25 @@ namespace Net.Data.Commons.Repository.Core
             var methodParameters = targetMethod.GetParameters();
             int argIndex = 0;
 
-            var whereClauseBuilder = new StringBuilder();
+            var whereClauseDisjunctionBuilder = new StringBuilder();
             
             var extractor = new CriterionExtractor(targetMethod.Name);
             var orCriterions = extractor.GetEnumerator();
             
             while(orCriterions.MoveNext())
             {
-                if (whereClauseBuilder.Length > 0)
-                    whereClauseBuilder.Append(" OR ");
+                if (whereClauseDisjunctionBuilder.Length > 0)
+                    whereClauseDisjunctionBuilder.Append(" OR ");
+                
+                whereClauseDisjunctionBuilder.Append("(");
+                var whereClauseJunctionBuilder = new StringBuilder();
 
                 var criterions = orCriterions.Current.GetEnumerator();
                 while(criterions.MoveNext())
                 {
+                    if (whereClauseJunctionBuilder.Length > 0)
+                        whereClauseJunctionBuilder.Append(" AND ");
+                        
                     var criterion = criterions.Current;
 
                     var parameters = new List<string>() { criterion.PropertyName };
@@ -101,13 +107,16 @@ namespace Net.Data.Commons.Repository.Core
                     
                     var whereClause = string.Format(
                         criterion.Type.CommandTemplate(), 
-                        parameters.Cast<object>().ToArray());
+                        parameters.ToArray());
 
-                    whereClauseBuilder.Append(whereClause);
+                    whereClauseJunctionBuilder.Append(whereClause);
                 }
+
+                whereClauseDisjunctionBuilder.Append(whereClauseJunctionBuilder.ToString());
+                whereClauseDisjunctionBuilder.Append(")");
             }
 
-            return $"{whereClauseBuilder.ToString()}";
+            return $"{whereClauseDisjunctionBuilder.ToString()}";
         }
 
         protected dynamic createParameters(MethodInfo targetMethod, object[] args)

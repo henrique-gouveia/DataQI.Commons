@@ -264,6 +264,20 @@ namespace Net.Data.Commons.Test.Repository.Core
         }
 
         [Fact]
+        public void TestInvokeFindByNameOrLastName()
+        {
+            var entityExpected = CreateTestFakeEntity();
+            var entitiesExpected = new List<FakeEntity>() { entityExpected };
+            fakeRepositoryMock
+                .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
+                .Returns(entitiesExpected);
+
+            var entities = fakeRepository.FindByNameOrLastName(entityExpected.Name, entityExpected.LastName);
+
+            AssertExpectedObject(entitiesExpected, entities);
+        }
+
+        [Fact]
         public void TestInvokeFindByDateOfBirthBetween()
         {
             var entityExpected = CreateTestFakeEntity();
@@ -297,8 +311,9 @@ namespace Net.Data.Commons.Test.Repository.Core
         {
             var id = faker.Random.Int(0, 100);
             var name = faker.Person.FullName;
+            var lastName = faker.Person.LastName;
 
-            return new FakeEntity(id, name);
+            return new FakeEntity(id, name, lastName);
         }
 
         public interface IFakeRepository : ICrudRepository<FakeEntity, int>
@@ -308,6 +323,8 @@ namespace Net.Data.Commons.Test.Repository.Core
             IEnumerable<FakeEntity> FindByName(string name);
             
             IEnumerable<FakeEntity> FindByDateOfBirthBetween(DateTime dateOfBirthStart, DateTime dateOfBirthEnd);
+            
+            IEnumerable<FakeEntity> FindByNameOrLastName(string name, string lastName);
         }
 
         public class FakeEntity
@@ -320,15 +337,22 @@ namespace Net.Data.Commons.Test.Repository.Core
             {
             }
 
-            public FakeEntity(int id, string name)
+            public FakeEntity(int id, string name) : this(id, name, null)
+            {
+            }
+
+            public FakeEntity(int id, string name, string lastName)
             {
                 Id = id;
                 Name = name;
+                LastName = lastName;
             }
 
             public int Id { get; set; }
 
             public string Name { get; set; }
+            
+            public string LastName { get; set; }
         }
     }
 }
