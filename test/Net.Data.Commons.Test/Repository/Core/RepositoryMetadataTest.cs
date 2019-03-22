@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Bogus;
+using ExpectedObjects;
 using Moq;
 using Net.Data.Commons.Repository;
 using Net.Data.Commons.Repository.Core;
+using Net.Data.Commons.Test.Repository.Sample;
 using Xunit;
 
 namespace Net.Data.Commons.Test.Repository.Core
@@ -14,8 +16,6 @@ namespace Net.Data.Commons.Test.Repository.Core
         private readonly Mock<IFakeRepository> fakeRepositoryMock;
         private readonly IFakeRepository fakeRepository;
 
-        //private readonly IRepositoryMetadata repositoryMetadata;
-
         public RepositoryMetadataTest()
         {
             fakeRepositoryMock = new Mock<IFakeRepository>();
@@ -24,33 +24,33 @@ namespace Net.Data.Commons.Test.Repository.Core
         }
 
         [Fact]
-        public void TestExtractRepositoryMetadataSuccessfully()
+        public void TestExtractRepositoryMetadataCorrectly()
         {
             var repositoryMetadata = new RepositoryMetadata(typeof(IFakeRepository));
             var domainType = repositoryMetadata.EntityType;
             var typeId = repositoryMetadata.TypeId;
-            Assert.Equal(typeof(FakeEntity), domainType);
-            Assert.Equal(typeof(int), typeId);
+            AssertExpectedObject(typeof(FakeEntity), domainType);
+            AssertExpectedObject(typeof(int), typeId);
         }
 
         [Fact]
-        public void TestExtractRepositoryMetadataDefaultSuccessfully()
+        public void TestExtractRepositoryMetadataDefaultCorrectly()
         {
             var repositoryMetadata = new RepositoryMetadata(typeof(ICrudRepository<FakeEntity, int>));
             var domainType = repositoryMetadata.EntityType;
             var typeId = repositoryMetadata.TypeId;
-            Assert.Equal(typeof(FakeEntity), domainType);
-            Assert.Equal(typeof(int), typeId);
+            AssertExpectedObject(typeof(FakeEntity), domainType);
+            AssertExpectedObject(typeof(int), typeId);
         }
 
         [Fact]
-        public void TestExtractRepositoryMetadataCustomSuccessfully()
+        public void TestExtractRepositoryMetadataCustomCorrectly()
         {
             var repositoryMetadata = new RepositoryMetadata(typeof(ICustomFakeRepository<FakeEntity, int>));
             var domainType = repositoryMetadata.EntityType;
             var typeId = repositoryMetadata.TypeId;
-            Assert.Equal(typeof(FakeEntity), domainType);
-            Assert.Equal(typeof(int), typeId);
+            AssertExpectedObject(typeof(FakeEntity), domainType);
+            AssertExpectedObject(typeof(int), typeId);
         }
 
         [Fact]
@@ -62,6 +62,11 @@ namespace Net.Data.Commons.Test.Repository.Core
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
             Assert.Equal("The parameter should be interface.", exceptionMessage);          
+        }
+
+        private void AssertExpectedObject(object expected, object actual)
+        {
+            expected.ToExpectedObject().ShouldEqual(actual);
         }
 
         public interface ICustomFakeRepository<TEntity, TId> where TEntity : class, new()

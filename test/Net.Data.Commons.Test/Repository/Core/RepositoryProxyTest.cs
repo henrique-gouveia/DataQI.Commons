@@ -7,6 +7,7 @@ using ExpectedObjects;
 using Moq;
 using Net.Data.Commons.Repository;
 using Net.Data.Commons.Repository.Core;
+using Net.Data.Commons.Test.Repository.Sample;
 using Xunit;
 
 namespace Net.Data.Commons.Test.Repository.Core
@@ -272,32 +273,6 @@ namespace Net.Data.Commons.Test.Repository.Core
             var name = faker.Person.FullName;
 
             return new FakeEntity(id, name);
-        }
-
-        public interface IFakeRepository : ICrudRepository<FakeEntity, int>
-        {
-            IEnumerable<FakeEntity> FindByName(string name);
-        }
-
-        public class FakeEntity
-        {
-            public FakeEntity()
-            {
-            }
-
-            public FakeEntity(int id) : this(id, null)
-            {
-            }
-
-            public FakeEntity(int id, string name)
-            {
-                Id = id;
-                Name = name;
-            }
-
-            public int Id { get; set; }
-
-            public string Name { get; set; }
         }
     }
 }
