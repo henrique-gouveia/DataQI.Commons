@@ -1,8 +1,8 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
+
+using Net.Data.Commons.Criteria.Support;
 using Net.Data.Commons.Util;
 
 namespace Net.Data.Commons.Repository.Query
@@ -14,7 +14,8 @@ namespace Net.Data.Commons.Repository.Query
 
         public CriterionExtractor(string source)
         {
-            Assert.IsNullOrEmpty(source, "Source must not be null or empty");
+            Assert.IsNotNullOrEmpty(source, "Source must not be null or empty");
+            
             var match = preffixRegex.Match(source);
             if(match.Length > 0)
                 predicate = new Predicate(source.Substring(match.Length));

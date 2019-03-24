@@ -4,10 +4,22 @@ namespace Net.Data.Commons.Util
 {
     public static class Assert
     {
-        public static void NotNull(object obj, string message)
+
+        public static void IsNotNullOrEmpty(string text, string message)
         {
-            if (obj == null)
-                throw new ArgumentNullException(message);
+            if (string.IsNullOrEmpty(text))
+                throw new ArgumentException(message);
+        }
+
+        public static void IsType<T>(object obj, string message)
+        {
+            IsType(typeof(T), obj, message);
+        }
+
+        public static void IsType(Type type, object obj, string message)
+        {
+            if (!(obj.GetType() == type))
+                throw new ArgumentException(message);
         }
 
         public static void IsTrue(bool expression, string message)
@@ -16,9 +28,9 @@ namespace Net.Data.Commons.Util
                 throw new ArgumentException(message);
         }
 
-        public static void IsNullOrEmpty(string text, string message)
+        public static void NotNull(object obj, string message)
         {
-            if (string.IsNullOrEmpty(text))
+            if (obj == null)
                 throw new ArgumentException(message);
         }
     }

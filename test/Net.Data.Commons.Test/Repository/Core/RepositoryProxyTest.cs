@@ -236,19 +236,19 @@ namespace Net.Data.Commons.Test.Repository.Core
             fakeRepositoryMock.Verify(r => r.DeleteAsync(entityExpected.Id), Times.Once());
         }
 
-        [Fact]
-        public void TestInvokeFindByNameIsNull()
-        {
-            var entityExpected = CreateTestFakeEntity();
-            var entitiesExpected = new List<FakeEntity>() { entityExpected };
-            fakeRepositoryMock
-                .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
-                .Returns(entitiesExpected);
+        // [Fact]
+        // public void TestInvokeFindByNameIsNull()
+        // {
+        //     var entityExpected = CreateTestFakeEntity();
+        //     var entitiesExpected = new List<FakeEntity>() { entityExpected };
+        //     fakeRepositoryMock
+        //         .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
+        //         .Returns(entitiesExpected);
 
-            var entities = fakeRepository.FindByNameIsNull();
+        //     var entities = fakeRepository.FindByNameIsNull();
 
-            AssertExpectedObject(entitiesExpected, entities);
-        }
+        //     AssertExpectedObject(entitiesExpected, entities);
+        // }
 
         [Fact]
         public void TestInvokeFindByName()
@@ -264,32 +264,32 @@ namespace Net.Data.Commons.Test.Repository.Core
             AssertExpectedObject(entitiesExpected, entities);
         }
 
-        [Fact]
-        public void TestInvokeFindByNameOrLastName()
-        {
-            var entityExpected = CreateTestFakeEntity();
-            var entitiesExpected = new List<FakeEntity>() { entityExpected };
-            fakeRepositoryMock
-                .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
-                .Returns(entitiesExpected);
+        // [Fact]
+        // public void TestInvokeFindByNameOrLastName()
+        // {
+        //     var entityExpected = CreateTestFakeEntity();
+        //     var entitiesExpected = new List<FakeEntity>() { entityExpected };
+        //     fakeRepositoryMock
+        //         .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
+        //         .Returns(entitiesExpected);
 
-            var entities = fakeRepository.FindByNameOrLastName(entityExpected.Name, entityExpected.LastName);
+        //     var entities = fakeRepository.FindByNameOrLastName(entityExpected.Name, entityExpected.LastName);
 
-            AssertExpectedObject(entitiesExpected, entities);
-        }
+        //     AssertExpectedObject(entitiesExpected, entities);
+        // }
 
-        [Fact]
-        public void TestInvokeFindByDateOfBirthBetween()
-        {
-            var entityExpected = CreateTestFakeEntity();
-            var entitiesExpected = new List<FakeEntity>() { entityExpected };
-            fakeRepositoryMock
-                .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
-                .Returns(entitiesExpected);
+        // [Fact]
+        // public void TestInvokeFindByDateOfBirthBetween()
+        // {
+        //     var entityExpected = CreateTestFakeEntity();
+        //     var entitiesExpected = new List<FakeEntity>() { entityExpected };
+        //     fakeRepositoryMock
+        //         .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
+        //         .Returns(entitiesExpected);
 
-            var entities = fakeRepository.FindByDateOfBirthBetween(new DateTime(2000, 1, 1), new DateTime(2019, 1, 1));
-            AssertExpectedObject(entitiesExpected, entities);
-        }
+        //     var entities = fakeRepository.FindByDateOfBirthBetween(new DateTime(2000, 1, 1), new DateTime(2019, 1, 1));
+        //     AssertExpectedObject(entitiesExpected, entities);
+        // }
 
         private void AssertExpectedObject(object expected, object actual)
         {
@@ -312,9 +312,8 @@ namespace Net.Data.Commons.Test.Repository.Core
         {
             var id = faker.Random.Int(0, 100);
             var name = faker.Person.FullName;
-            var lastName = faker.Person.LastName;
 
-            return new FakeEntity(id, name, lastName);
+            return new FakeEntity(id, name);
         }
     }
 }

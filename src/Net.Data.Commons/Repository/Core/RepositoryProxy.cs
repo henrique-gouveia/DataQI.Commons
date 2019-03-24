@@ -77,46 +77,47 @@ namespace Net.Data.Commons.Repository.Core
 
         protected FormattableString CreateWhereClause(MethodInfo targetMethod)
         {
-            var methodParameters = targetMethod.GetParameters();
-            int argIndex = 0;
+            return $"Name = @name";
+            // var methodParameters = targetMethod.GetParameters();
+            // int argIndex = 0;
 
-            var whereClauseDisjunctionBuilder = new StringBuilder();
+            // var whereClauseDisjunctionBuilder = new StringBuilder();
             
-            var extractor = new CriterionExtractor(targetMethod.Name);
-            var orCriterions = extractor.GetEnumerator();
+            // var extractor = new CriterionExtractor(targetMethod.Name);
+            // var orCriterions = extractor.GetEnumerator();
             
-            while(orCriterions.MoveNext())
-            {
-                if (whereClauseDisjunctionBuilder.Length > 0)
-                    whereClauseDisjunctionBuilder.Append(" OR ");
+            // while(orCriterions.MoveNext())
+            // {
+            //     if (whereClauseDisjunctionBuilder.Length > 0)
+            //         whereClauseDisjunctionBuilder.Append(" OR ");
                 
-                whereClauseDisjunctionBuilder.Append("(");
-                var whereClauseJunctionBuilder = new StringBuilder();
+            //     whereClauseDisjunctionBuilder.Append("(");
+            //     var whereClauseJunctionBuilder = new StringBuilder();
 
-                var criterions = orCriterions.Current.GetEnumerator();
-                while(criterions.MoveNext())
-                {
-                    if (whereClauseJunctionBuilder.Length > 0)
-                        whereClauseJunctionBuilder.Append(" AND ");
+            //     var criterions = orCriterions.Current.GetEnumerator();
+            //     while(criterions.MoveNext())
+            //     {
+            //         if (whereClauseJunctionBuilder.Length > 0)
+            //             whereClauseJunctionBuilder.Append(" AND ");
                         
-                    var criterion = criterions.Current;
+            //         var criterion = criterions.Current;
 
-                    var parameters = new List<string>() { criterion.PropertyName };
-                    for (var i = 0; i < criterion.Type.NumberOfArgs(); i++)
-                        parameters.Add($"@{methodParameters[argIndex++].Name}");
+            //         var parameters = new List<string>() { criterion.PropertyName };
+            //         for (var i = 0; i < criterion.Type.NumberOfArgs(); i++)
+            //             parameters.Add($"@{methodParameters[argIndex++].Name}");
                     
-                    var whereClause = string.Format(
-                        criterion.Type.CommandTemplate(), 
-                        parameters.ToArray());
+            //         var whereClause = string.Format(
+            //             criterion.Type.CommandTemplate(), 
+            //             parameters.ToArray());
 
-                    whereClauseJunctionBuilder.Append(whereClause);
-                }
+            //         whereClauseJunctionBuilder.Append(whereClause);
+            //     }
 
-                whereClauseDisjunctionBuilder.Append(whereClauseJunctionBuilder.ToString());
-                whereClauseDisjunctionBuilder.Append(")");
-            }
+            //     whereClauseDisjunctionBuilder.Append(whereClauseJunctionBuilder.ToString());
+            //     whereClauseDisjunctionBuilder.Append(")");
+            // }
 
-            return $"{whereClauseDisjunctionBuilder.ToString()}";
+            // return $"{whereClauseDisjunctionBuilder.ToString()}";
         }
 
         protected dynamic createParameters(MethodInfo targetMethod, object[] args)

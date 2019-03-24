@@ -3,6 +3,7 @@
 /packages
 bin
 obj
+lib
 *.user
 *.nupkg
 *.suo

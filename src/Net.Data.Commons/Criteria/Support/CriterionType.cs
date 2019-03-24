@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 using Net.Data.Commons.Extensions.Reflection;
 
-namespace Net.Data.Commons.Repository.Query
+namespace Net.Data.Commons.Criteria.Support
 {
     public enum CriterionType
     {
@@ -54,6 +54,7 @@ namespace Net.Data.Commons.Repository.Query
         StartingWith, 
         [CriterionTypeData(1, "{0} NOT LIKE {1}%")]
         NotStartingWith,
+        
         [CriterionTypeData(1, "{0} = {1}")]
         SimpleProperty
     }

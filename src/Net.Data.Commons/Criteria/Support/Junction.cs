@@ -1,0 +1,41 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+using Net.Data.Commons.Repository.Query;
+
+namespace Net.Data.Commons.Criteria.Support
+{
+    public abstract class Junction : IJunction
+    {
+        private readonly List<ICriterion> criterions = new List<ICriterion>();
+
+        public IJunction Add(ICriterion criterion)
+        {
+            criterions.Add(criterion);
+            return this;
+        }
+
+        public string ToSqlString()
+        {
+            var sqlWhereBuilder = new StringBuilder();
+            var enumerator = criterions.GetEnumerator();
+
+            while (enumerator.MoveNext()) {
+                var criterion = enumerator.Current;
+
+                if (sqlWhereBuilder.Length > 0)
+                    sqlWhereBuilder.Append(GetWhereOperator());
+                
+                if (criterion is IJunction)
+                    sqlWhereBuilder.AppendFormat($"({criterion.ToSqlString()})");
+                else
+                    sqlWhereBuilder.Append(criterion.ToSqlString());
+            }
+
+            return sqlWhereBuilder.ToString();
+        }
+        public abstract string GetWhereOperator();
+    }
+}

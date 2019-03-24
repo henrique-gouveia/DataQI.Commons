@@ -6,6 +6,7 @@ using Xunit;
 using ExpectedObjects;
 
 using Net.Data.Commons.Repository.Query;
+using Net.Data.Commons.Criteria.Support;
 
 namespace Net.Data.Commons.Test.Repository.Query
 {
