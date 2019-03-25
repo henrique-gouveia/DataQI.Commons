@@ -255,7 +255,7 @@ namespace Net.Data.Commons.Test.Criteria
         }
 
         [Fact]
-        public void TestCriteriaBuildSqlAddSimplePropertyAndConjunctionCorrectly()
+        public void TestCriteriaBuildSqlAddSimplePropertyAndSimpleConjunctionCorrectly()
         {
             var criteria = new Criteria<FakeEntity>()
                 .Add(Restrictions.Equal("FirstName", "@firstName"))
@@ -267,13 +267,13 @@ namespace Net.Data.Commons.Test.Criteria
             var sqlWhereExpected = 
                 "FirstName = @firstName" 
               + " AND "
-              + "(DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd AND Phone IS NOT NULL)";                    
+              + "DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd AND Phone IS NOT NULL";                    
 
             Assert.Equal(sqlWhereExpected, criteria.ToSqlString());
         }
 
         [Fact]
-        public void TestCriteriaBuildSqlAddSimplePropertyAndDisjunctionCorrectly()
+        public void TestCriteriaBuildSqlAddSimplePropertyAndSimpleDisjunctionCorrectly()
         {
             var criteria = new Criteria<FakeEntity>()
                 .Add(Restrictions.Equal("FirstName", "@firstName"))
@@ -285,7 +285,7 @@ namespace Net.Data.Commons.Test.Criteria
             var sqlWhereExpected = 
                 "FirstName = @firstName" 
               + " AND "
-              + "(DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd OR Phone IS NOT NULL)";                    
+              + "DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd OR Phone IS NOT NULL";
 
             Assert.Equal(sqlWhereExpected, criteria.ToSqlString());
         }

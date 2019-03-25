@@ -28,10 +28,7 @@ namespace Net.Data.Commons.Criteria.Support
                     sqlWhereBuilder.Append(" AND ");
                 
                 var criterion = enumerator.Current;
-                if (criterion is IJunction)
-                    sqlWhereBuilder.AppendFormat($"({criterion.ToSqlString()})");
-                else
-                    sqlWhereBuilder.Append(criterion.ToSqlString());
+                sqlWhereBuilder.Append(criterion.ToSqlString());
             }
 
             return sqlWhereBuilder.ToString();

@@ -99,7 +99,7 @@ namespace Net.Data.Commons.Criteria.Support
 
         public static ICriterion CreateCriterion(string propertyName, CriterionType type, params string[] parametersNames)
         {
-            return new Criterion(propertyName, type, CreateParametersNames(parametersNames));
+            return new Criterion(propertyName, type, parametersNames);
         }
 
         private static string[] CreateParametersNames(params string[] parametersNames)
