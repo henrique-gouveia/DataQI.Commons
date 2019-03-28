@@ -29,13 +29,21 @@ namespace Net.Data.Commons.Repository.Query
         public ICriteria<TEntity> Create<TEntity>() 
             where TEntity : class, new()
         {
-            var criteria = new Criteria<TEntity>();
+            return (ICriteria<TEntity>) Create(typeof(TEntity));
+        }
+
+        public object Create(Type type)
+        {
+            var criteriaInstance = typeof(Criteria<>).MakeGenericType(type);
+            var criteria = Activator.CreateInstance(criteriaInstance);
+            var methodAdd = criteriaInstance.GetMethod("Add");
+            
             while (orCriterions.MoveNext())
             {
                 var orCriterion = orCriterions.Current;
-                criteria.Add(CreateDisjunction(orCriterion));
+                methodAdd.Invoke(criteria, new object[] { CreateDisjunction(orCriterion) });
             }
-
+            
             return criteria;
         }
 

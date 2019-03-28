@@ -11,6 +11,8 @@ namespace Net.Data.Commons.Criteria.Support
     {
         private List<ICriterion> criterions = new List<ICriterion>();
 
+        public object[] Parameters { get; set; }
+
         public ICriteria<TEntity> Add(ICriterion criterion)
         {
             criterions.Add(criterion);
