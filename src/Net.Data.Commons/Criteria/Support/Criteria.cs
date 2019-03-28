@@ -30,7 +30,9 @@ namespace Net.Data.Commons.Criteria.Support
                     sqlWhereBuilder.Append(" AND ");
                 
                 var criterion = enumerator.Current;
-                sqlWhereBuilder.Append(criterion.ToSqlString());
+                var sqlFormat = criterion is IJunction ? "({0})" : "{0}";
+
+                sqlWhereBuilder.AppendFormat(sqlFormat, criterion.ToSqlString());
             }
 
             return sqlWhereBuilder.ToString();

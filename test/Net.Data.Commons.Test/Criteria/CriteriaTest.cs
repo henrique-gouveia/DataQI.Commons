@@ -267,7 +267,28 @@ namespace Net.Data.Commons.Test.Criteria
             var sqlWhereExpected = 
                 "FirstName = @firstName" 
               + " AND "
-              + "DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd AND Phone IS NOT NULL";                    
+              + "(DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd AND Phone IS NOT NULL)";
+
+            Assert.Equal(sqlWhereExpected, criteria.ToSqlString());
+        }
+
+        [Fact]
+        public void TestCriteriaBuildSqlAddPropertiesAndConjunctionCorrectly()
+        {
+            var criteria = new Criteria<FakeEntity>()
+                .Add(Restrictions.Equal("FirstName", "@firstName"))
+                .Add(Restrictions.Equal("LastName", "@lastName"))
+                .Add(Restrictions
+                    .Conjuction()
+                    .Add(Restrictions.Between("DateOfBirth", "@dateOfBirthStart", "@dateOfBirthEnd"))
+                    .Add(Restrictions.IsNotNull("Phone")));
+
+            var sqlWhereExpected = 
+                "FirstName = @firstName" 
+              + " AND "
+              + "LastName = @lastName"
+              + " AND "
+              + "(DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd AND Phone IS NOT NULL)";
 
             Assert.Equal(sqlWhereExpected, criteria.ToSqlString());
         }
@@ -285,7 +306,28 @@ namespace Net.Data.Commons.Test.Criteria
             var sqlWhereExpected = 
                 "FirstName = @firstName" 
               + " AND "
-              + "DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd OR Phone IS NOT NULL";
+              + "(DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd OR Phone IS NOT NULL)";
+
+            Assert.Equal(sqlWhereExpected, criteria.ToSqlString());
+        }
+
+        [Fact]
+        public void TestCriteriaBuildSqlAddPropertiesAndDisjunctionCorrectly()
+        {
+            var criteria = new Criteria<FakeEntity>()
+                .Add(Restrictions.Equal("FirstName", "@firstName"))
+                .Add(Restrictions.Equal("LastName", "@lastName"))
+                .Add(Restrictions
+                    .Disjuction()
+                    .Add(Restrictions.Between("DateOfBirth", "@dateOfBirthStart", "@dateOfBirthEnd"))
+                    .Add(Restrictions.IsNotNull("Phone")));
+
+            var sqlWhereExpected = 
+                "FirstName = @firstName" 
+              + " AND "
+              + "LastName = @lastName"
+              + " AND "
+              + "(DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd OR Phone IS NOT NULL)";
 
             Assert.Equal(sqlWhereExpected, criteria.ToSqlString());
         }

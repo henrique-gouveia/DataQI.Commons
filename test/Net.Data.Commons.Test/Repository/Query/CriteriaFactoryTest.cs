@@ -1,3 +1,4 @@
+using System.Reflection;
 using System;
 using Moq;
 using Net.Data.Commons.Repository.Query;
@@ -14,7 +15,7 @@ namespace Net.Data.Commons.Test.Repository.Query
         public void TestRejectsNullCriterions()
         {
             var exception = Assert.Throws<ArgumentException>(() => 
-                new CriteriaFactory(null, null));
+                new CriteriaFactory<FakeEntity>(null, null));
             var exceptionMessage = exception.GetBaseException().Message;
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
@@ -27,7 +28,7 @@ namespace Net.Data.Commons.Test.Repository.Query
             var extractor = new CriterionExtractor("FirstName");
             
             var exception = Assert.Throws<ArgumentException>(() => 
-                new CriteriaFactory(extractor.GetEnumerator(), null));
+                new CriteriaFactory<FakeEntity>(extractor.GetEnumerator(), null));
             var exceptionMessage = exception.GetBaseException().Message;
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
@@ -37,14 +38,21 @@ namespace Net.Data.Commons.Test.Repository.Query
         [Fact]
         public void TestCreateCriteriaSimplePropertyCorrectly()
         {
-            var fakeRepository = new Mock<IFakeRepository>().Object;
-            var method = fakeRepository.GetType().GetMethod("FindByName");
+            var method = GetFakeRepositoryMehod("FindByName");
             var extractor = new CriterionExtractor(method.Name);
 
-            var criteria = new CriteriaFactory(extractor.GetEnumerator(), method.GetParameters()).Create<FakeEntity>();
+            var criteria = new CriteriaFactory<FakeEntity>(extractor.GetEnumerator(), method.GetParameters()).Create();
 
             Assert.NotNull(criteria);
-            Assert.Equal("(Name = @name)", criteria.ToSqlString());
+            Assert.Equal("((Name = @name))", criteria.ToSqlString());
+        }
+
+        private MethodInfo GetFakeRepositoryMehod(string name) 
+        {
+            var fakeRepository = new Mock<IFakeRepository>().Object;
+            var method = fakeRepository.GetType().GetMethod(name);
+
+            return method;
         }
    }
 }

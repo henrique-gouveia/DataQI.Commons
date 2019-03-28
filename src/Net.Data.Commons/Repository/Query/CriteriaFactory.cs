@@ -10,7 +10,7 @@ using static Net.Data.Commons.Repository.Query.CriterionExtractor;
 
 namespace Net.Data.Commons.Repository.Query
 {
-    public class CriteriaFactory
+    public class CriteriaFactory<TEntity> where TEntity : class, new()
     {
         private readonly IEnumerator<OrCriterion> orCriterions;
 
@@ -26,22 +26,14 @@ namespace Net.Data.Commons.Repository.Query
         }
 
 
-        public ICriteria<TEntity> Create<TEntity>() 
-            where TEntity : class, new()
+        public ICriteria<TEntity> Create()
         {
-            return (ICriteria<TEntity>) Create(typeof(TEntity));
-        }
-
-        public object Create(Type type)
-        {
-            var criteriaInstance = typeof(Criteria<>).MakeGenericType(type);
-            var criteria = Activator.CreateInstance(criteriaInstance);
-            var methodAdd = criteriaInstance.GetMethod("Add");
+            var criteria = new Criteria<TEntity>();
             
             while (orCriterions.MoveNext())
             {
                 var orCriterion = orCriterions.Current;
-                methodAdd.Invoke(criteria, new object[] { CreateDisjunction(orCriterion) });
+                criteria.Add(CreateDisjunction(orCriterion));
             }
             
             return criteria;
