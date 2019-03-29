@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Dynamic;
 using System.Reflection;
 
@@ -11,7 +12,6 @@ using Net.Data.Commons.Repository.Query;
 using Net.Data.Commons.Test.Repository.Sample;
 
 using static Net.Data.Commons.Repository.Query.CriterionExtractor;
-using System.Collections.Generic;
 
 namespace Net.Data.Commons.Test.Repository.Query
 {
@@ -31,7 +31,7 @@ namespace Net.Data.Commons.Test.Repository.Query
         [Fact]
         public void TestRejectsNullMethodParameters()
         {
-            var findByNameMethod = GetFakeRepositoryQueryMehod("FindByName");
+            var findByNameMethod = FakeRepositoryQueryMehod("FindByName");
             
             var exception = Assert.Throws<ArgumentException>(() => 
                 new CriteriaFactory(findByNameMethod, null));
@@ -44,7 +44,7 @@ namespace Net.Data.Commons.Test.Repository.Query
         [Fact]
         public void TestCreateCriteriaSimplePropertyCorrectly()
         {
-            var findByNameMethod = GetFakeRepositoryQueryMehod("FindByName");
+            var findByNameMethod = FakeRepositoryQueryMehod("FindByName");
             var findByNameParameters = Parameters(KeyValuePair.Create("name", "fake name"));
             var findByNameArgs = new object[] { findByNameParameters.name };
 
@@ -53,7 +53,7 @@ namespace Net.Data.Commons.Test.Repository.Query
             AssertCriteria(criteria, "(Name = @name)", findByNameParameters);
         }
 
-        private MethodInfo GetFakeRepositoryQueryMehod(string name) 
+        private MethodInfo FakeRepositoryQueryMehod(string name) 
         {
             var fakeRepository = new Mock<IFakeRepository>().Object;
             var method = fakeRepository.GetType().GetMethod(name);
