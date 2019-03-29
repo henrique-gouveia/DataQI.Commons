@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using Net.Data.Commons.Repository.Query;
 
-namespace Net.Data.Commons.Criteria.Support
+namespace Net.Data.Commons.Criterions.Support
 {
     public static class Restrictions
     {

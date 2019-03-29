@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-using Net.Data.Commons.Criteria;
-using Net.Data.Commons.Criteria.Support;
+using Net.Data.Commons.Criterions;
+using Net.Data.Commons.Criterions.Support;
 using Net.Data.Commons.Util;
 
 using static Net.Data.Commons.Repository.Query.CriterionExtractor;
 
 namespace Net.Data.Commons.Repository.Query
 {
-    public class CriteriaFactory<TEntity> where TEntity : class, new()
+    public class CriteriaFactory
     {
         private readonly IEnumerator<OrCriterion> orCriterions;
 
@@ -26,9 +26,9 @@ namespace Net.Data.Commons.Repository.Query
         }
 
 
-        public ICriteria<TEntity> Create()
+        public ICriteria Create()
         {
-            var criteria = new Criteria<TEntity>();
+            var criteria = new Criteria();
             
             while (orCriterions.MoveNext())
             {

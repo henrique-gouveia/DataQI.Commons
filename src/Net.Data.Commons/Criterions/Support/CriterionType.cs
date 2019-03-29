@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 using Net.Data.Commons.Extensions.Reflection;
 
-namespace Net.Data.Commons.Criteria.Support
+namespace Net.Data.Commons.Criterions.Support
 {
     public enum CriterionType
     {

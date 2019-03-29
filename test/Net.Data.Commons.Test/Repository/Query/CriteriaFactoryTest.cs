@@ -1,9 +1,10 @@
 using System.Reflection;
 using System;
 using Moq;
+using Xunit;
+
 using Net.Data.Commons.Repository.Query;
 using Net.Data.Commons.Test.Repository.Sample;
-using Xunit;
 
 using static Net.Data.Commons.Repository.Query.CriterionExtractor;
 
@@ -15,7 +16,7 @@ namespace Net.Data.Commons.Test.Repository.Query
         public void TestRejectsNullCriterions()
         {
             var exception = Assert.Throws<ArgumentException>(() => 
-                new CriteriaFactory<FakeEntity>(null, null));
+                new CriteriaFactory(null, null));
             var exceptionMessage = exception.GetBaseException().Message;
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
@@ -28,7 +29,7 @@ namespace Net.Data.Commons.Test.Repository.Query
             var extractor = new CriterionExtractor("FirstName");
             
             var exception = Assert.Throws<ArgumentException>(() => 
-                new CriteriaFactory<FakeEntity>(extractor.GetEnumerator(), null));
+                new CriteriaFactory(extractor.GetEnumerator(), null));
             var exceptionMessage = exception.GetBaseException().Message;
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
@@ -41,7 +42,7 @@ namespace Net.Data.Commons.Test.Repository.Query
             var method = GetFakeRepositoryMehod("FindByName");
             var extractor = new CriterionExtractor(method.Name);
 
-            var criteria = new CriteriaFactory<FakeEntity>(extractor.GetEnumerator(), method.GetParameters()).Create();
+            var criteria = new CriteriaFactory(extractor.GetEnumerator(), method.GetParameters()).Create();
 
             Assert.NotNull(criteria);
             Assert.Equal("((Name = @name))", criteria.ToSqlString());

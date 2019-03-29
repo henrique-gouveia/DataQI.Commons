@@ -1,9 +1,9 @@
 using Xunit;
 
-using Net.Data.Commons.Criteria.Support;
+using Net.Data.Commons.Criterions.Support;
 using Net.Data.Commons.Test.Repository.Sample;
 
-namespace Net.Data.Commons.Test.Criteria
+namespace Net.Data.Commons.Test.Criterios
 {
     public class CriteriaTest
     {
@@ -238,7 +238,7 @@ namespace Net.Data.Commons.Test.Criteria
         [Fact]
         public void TestCriteriaBuildSqlSimplePropertyCorrectly()
         {
-            var criteria = new Criteria<FakeEntity>()
+            var criteria = new Criteria()
                 .Add(Restrictions.Equal("FirstName", "@firstName"));
 
             Assert.Equal("FirstName = @firstName", criteria.ToSqlString());
@@ -247,7 +247,7 @@ namespace Net.Data.Commons.Test.Criteria
         [Fact]
         public void TestCriteriaBuildSqlAddPropertiesCorrectly()
         {
-            var criteria = new Criteria<FakeEntity>()
+            var criteria = new Criteria()
                 .Add(Restrictions.Equal("FirstName", "@firstName"))
                 .Add(Restrictions.Equal("LastName", "@lastName"));
 
@@ -257,7 +257,7 @@ namespace Net.Data.Commons.Test.Criteria
         [Fact]
         public void TestCriteriaBuildSqlAddSimplePropertyAndSimpleConjunctionCorrectly()
         {
-            var criteria = new Criteria<FakeEntity>()
+            var criteria = new Criteria()
                 .Add(Restrictions.Equal("FirstName", "@firstName"))
                 .Add(Restrictions
                     .Conjuction()
@@ -275,7 +275,7 @@ namespace Net.Data.Commons.Test.Criteria
         [Fact]
         public void TestCriteriaBuildSqlAddPropertiesAndConjunctionCorrectly()
         {
-            var criteria = new Criteria<FakeEntity>()
+            var criteria = new Criteria()
                 .Add(Restrictions.Equal("FirstName", "@firstName"))
                 .Add(Restrictions.Equal("LastName", "@lastName"))
                 .Add(Restrictions
@@ -296,7 +296,7 @@ namespace Net.Data.Commons.Test.Criteria
         [Fact]
         public void TestCriteriaBuildSqlAddSimplePropertyAndSimpleDisjunctionCorrectly()
         {
-            var criteria = new Criteria<FakeEntity>()
+            var criteria = new Criteria()
                 .Add(Restrictions.Equal("FirstName", "@firstName"))
                 .Add(Restrictions
                     .Disjuction()
@@ -314,7 +314,7 @@ namespace Net.Data.Commons.Test.Criteria
         [Fact]
         public void TestCriteriaBuildSqlAddPropertiesAndDisjunctionCorrectly()
         {
-            var criteria = new Criteria<FakeEntity>()
+            var criteria = new Criteria()
                 .Add(Restrictions.Equal("FirstName", "@firstName"))
                 .Add(Restrictions.Equal("LastName", "@lastName"))
                 .Add(Restrictions

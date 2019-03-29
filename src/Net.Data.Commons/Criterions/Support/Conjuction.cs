@@ -5,7 +5,7 @@ using System.Text;
 
 using Net.Data.Commons.Repository.Query;
 
-namespace Net.Data.Commons.Criteria.Support
+namespace Net.Data.Commons.Criterions.Support
 {
     public class Conjuction : Junction
     {

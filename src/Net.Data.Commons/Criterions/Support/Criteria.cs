@@ -5,15 +5,15 @@ using System.Text;
 
 using Net.Data.Commons.Util;
 
-namespace Net.Data.Commons.Criteria.Support
+namespace Net.Data.Commons.Criterions.Support
 {
-    public class Criteria<TEntity> : ICriteria<TEntity> where TEntity : class, new()
+    public class Criteria : ICriteria
     {
         private List<ICriterion> criterions = new List<ICriterion>();
 
         public object[] Parameters { get; set; }
 
-        public ICriteria<TEntity> Add(ICriterion criterion)
+        public ICriteria Add(ICriterion criterion)
         {
             criterions.Add(criterion);
             return this;

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Net.Data.Commons.Criteria
+namespace Net.Data.Commons.Criterions
 {
     public interface ICriterion
     {

@@ -1,4 +1,4 @@
-namespace Net.Data.Commons.Criteria
+namespace Net.Data.Commons.Criterions
 {
     public interface IJunction : ICriterion
     {

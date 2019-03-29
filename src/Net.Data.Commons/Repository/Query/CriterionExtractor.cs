@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-using Net.Data.Commons.Criteria.Support;
+using Net.Data.Commons.Criterions.Support;
 using Net.Data.Commons.Util;
 
 namespace Net.Data.Commons.Repository.Query
