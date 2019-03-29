@@ -267,7 +267,7 @@ namespace Net.Data.Commons.Test.Criterios
             var sqlWhereExpected = 
                 "FirstName = @firstName" 
               + " AND "
-              + "(DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd AND Phone IS NOT NULL)";
+              + "DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd AND Phone IS NOT NULL";
 
             Assert.Equal(sqlWhereExpected, criteria.ToSqlString());
         }
@@ -288,7 +288,7 @@ namespace Net.Data.Commons.Test.Criterios
               + " AND "
               + "LastName = @lastName"
               + " AND "
-              + "(DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd AND Phone IS NOT NULL)";
+              + "DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd AND Phone IS NOT NULL";
 
             Assert.Equal(sqlWhereExpected, criteria.ToSqlString());
         }
@@ -306,7 +306,7 @@ namespace Net.Data.Commons.Test.Criterios
             var sqlWhereExpected = 
                 "FirstName = @firstName" 
               + " AND "
-              + "(DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd OR Phone IS NOT NULL)";
+              + "DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd OR Phone IS NOT NULL";
 
             Assert.Equal(sqlWhereExpected, criteria.ToSqlString());
         }
@@ -327,7 +327,7 @@ namespace Net.Data.Commons.Test.Criterios
               + " AND "
               + "LastName = @lastName"
               + " AND "
-              + "(DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd OR Phone IS NOT NULL)";
+              + "DateOfBirth BETWEEN @dateOfBirthStart AND @dateOfBirthEnd OR Phone IS NOT NULL";
 
             Assert.Equal(sqlWhereExpected, criteria.ToSqlString());
         }

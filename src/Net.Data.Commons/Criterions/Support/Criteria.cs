@@ -11,11 +11,15 @@ namespace Net.Data.Commons.Criterions.Support
     {
         private List<ICriterion> criterions = new List<ICriterion>();
 
-        public object[] Parameters { get; set; }
-
         public ICriteria Add(ICriterion criterion)
         {
             criterions.Add(criterion);
+            return this;
+        }
+
+        public ICriteria WithParameters(dynamic parameters)
+        {
+            Parameters = parameters;
             return this;
         }
 
@@ -30,12 +34,12 @@ namespace Net.Data.Commons.Criterions.Support
                     sqlWhereBuilder.Append(" AND ");
                 
                 var criterion = enumerator.Current;
-                var sqlFormat = criterion is IJunction ? "({0})" : "{0}";
-
-                sqlWhereBuilder.AppendFormat(sqlFormat, criterion.ToSqlString());
+                sqlWhereBuilder.Append(criterion.ToSqlString());
             }
 
             return sqlWhereBuilder.ToString();
         }
+
+        public object Parameters { get; private set; }
     }
 }

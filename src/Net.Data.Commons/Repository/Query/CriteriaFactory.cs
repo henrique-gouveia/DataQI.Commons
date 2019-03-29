@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Reflection;
 
 using Net.Data.Commons.Criterions;
@@ -12,31 +13,45 @@ namespace Net.Data.Commons.Repository.Query
 {
     public class CriteriaFactory
     {
-        private readonly IEnumerator<OrCriterion> orCriterions;
+        private readonly MethodInfo queryMethod;
 
-        private readonly ParameterInfo[] methodParameters;
+        private readonly object[] queryMethodArgs;
 
-        public CriteriaFactory(IEnumerator<OrCriterion> orCriterions, ParameterInfo[] methodParameters)
+        public CriteriaFactory(MethodInfo queryMethod, object[] queryMethodArgs)
         {
-            Assert.NotNull(orCriterions, "Criterions must not be null");
-            Assert.NotNull(methodParameters, "Method Parameters must not be null");
+            Assert.NotNull(queryMethod, "Query Method must not be null");
+            Assert.NotNull(queryMethodArgs, "Query Method Parameters must not be null");
 
-            this.orCriterions = orCriterions;
-            this.methodParameters = methodParameters;
+            this.queryMethod = queryMethod;
+            this.queryMethodArgs = queryMethodArgs;
         }
 
 
         public ICriteria Create()
         {
             var criteria = new Criteria();
-            
+
+            AddCriterions(criteria);
+            AddParameters(criteria);
+
+            return criteria;
+        }
+
+        private void AddCriterions(ICriteria criteria)
+        {
+            var extractor = new CriterionExtractor(queryMethod.Name);
+            var orCriterions = extractor.GetEnumerator();
+
             while (orCriterions.MoveNext())
             {
                 var orCriterion = orCriterions.Current;
                 criteria.Add(CreateDisjunction(orCriterion));
             }
-            
-            return criteria;
+        }
+
+        private void AddParameters(ICriteria criteria)
+        {
+            criteria.WithParameters(CreateCriteriaParameters());
         }
 
         private IJunction CreateDisjunction(OrCriterion orCriterion)
@@ -72,12 +87,26 @@ namespace Net.Data.Commons.Repository.Query
         private string[] CreateCriterionParameters(CriterionType type)
         {
             var criterionParameters = new List<string>();
+            
+            var parameters = queryMethod.GetParameters();
             int parameterIndex = 0;
 
             for (var i = 0; i < type.NumberOfArgs(); i++)
-                criterionParameters.Add($"@{methodParameters[parameterIndex++].Name}");
+                criterionParameters.Add($"@{parameters[parameterIndex++].Name}");
 
             return criterionParameters.ToArray();
+        }
+
+        private dynamic CreateCriteriaParameters()
+        {
+            dynamic parameters = new ExpandoObject();
+            var parametersDictionary = (IDictionary<string, object>) parameters;
+
+            var methodParameters = queryMethod.GetParameters();
+            for (var i = 0; i < methodParameters.Length; i++) 
+                parametersDictionary.Add(methodParameters[i].Name, queryMethodArgs[i]);
+
+            return parameters;
         }
     }
 }

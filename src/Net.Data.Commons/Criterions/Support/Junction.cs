@@ -22,16 +22,15 @@ namespace Net.Data.Commons.Criterions.Support
             var sqlWhereBuilder = new StringBuilder();
             var enumerator = criterions.GetEnumerator();
 
-            while (enumerator.MoveNext()) {
-                var criterion = enumerator.Current;
-
+            while (enumerator.MoveNext()) 
+            {
                 if (sqlWhereBuilder.Length > 0)
                     sqlWhereBuilder.Append(GetWhereOperator());
                 
-                if (criterion is IJunction)
-                    sqlWhereBuilder.AppendFormat($"({criterion.ToSqlString()})");
-                else
-                    sqlWhereBuilder.Append(criterion.ToSqlString());
+                var criterion = enumerator.Current;
+                var sqlFormat = criterion is IJunction ? "({0})" : "{0}";
+                
+                sqlWhereBuilder.AppendFormat(sqlFormat, criterion.ToSqlString());
             }
 
             return sqlWhereBuilder.ToString();
