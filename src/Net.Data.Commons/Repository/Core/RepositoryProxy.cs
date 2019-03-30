@@ -41,10 +41,8 @@ namespace Net.Data.Commons.Repository.Core
 
             if (defaultMethods.TryGetValue("Find", out method))
             {
-                FormattableString whereClause = CreateWhereClause(targetMethod);
-                dynamic parameters = createParameters(targetMethod, args);
-
-                return method.Invoke(defaultRepository, new object[] { whereClause, parameters });
+                var criteria = new CriteriaFactory(targetMethod, args).Create();
+                return method.Invoke(defaultRepository, new object[] { criteria });
             }
             
             return null;
@@ -73,63 +71,6 @@ namespace Net.Data.Commons.Repository.Core
             var method = defaultRepository.GetType().GetMethod(methodName);
             if (method != null)
                 defaultMethods.Add(methodName, method);
-        }
-
-        protected FormattableString CreateWhereClause(MethodInfo targetMethod)
-        {
-            return $"Name = @name";
-            // var methodParameters = targetMethod.GetParameters();
-            // int argIndex = 0;
-
-            // var whereClauseDisjunctionBuilder = new StringBuilder();
-            
-            // var extractor = new CriterionExtractor(targetMethod.Name);
-            // var orCriterions = extractor.GetEnumerator();
-            
-            // while(orCriterions.MoveNext())
-            // {
-            //     if (whereClauseDisjunctionBuilder.Length > 0)
-            //         whereClauseDisjunctionBuilder.Append(" OR ");
-                
-            //     whereClauseDisjunctionBuilder.Append("(");
-            //     var whereClauseJunctionBuilder = new StringBuilder();
-
-            //     var criterions = orCriterions.Current.GetEnumerator();
-            //     while(criterions.MoveNext())
-            //     {
-            //         if (whereClauseJunctionBuilder.Length > 0)
-            //             whereClauseJunctionBuilder.Append(" AND ");
-                        
-            //         var criterion = criterions.Current;
-
-            //         var parameters = new List<string>() { criterion.PropertyName };
-            //         for (var i = 0; i < criterion.Type.NumberOfArgs(); i++)
-            //             parameters.Add($"@{methodParameters[argIndex++].Name}");
-                    
-            //         var whereClause = string.Format(
-            //             criterion.Type.CommandTemplate(), 
-            //             parameters.ToArray());
-
-            //         whereClauseJunctionBuilder.Append(whereClause);
-            //     }
-
-            //     whereClauseDisjunctionBuilder.Append(whereClauseJunctionBuilder.ToString());
-            //     whereClauseDisjunctionBuilder.Append(")");
-            // }
-
-            // return $"{whereClauseDisjunctionBuilder.ToString()}";
-        }
-
-        protected dynamic createParameters(MethodInfo targetMethod, object[] args)
-        {
-            dynamic parameters = new ExpandoObject();
-            var parametersDictionary = (IDictionary<string, object>) parameters;
-
-            var methodParameters = targetMethod.GetParameters();
-            for (var i = 0; i < methodParameters.Length; i++) 
-                parametersDictionary.Add(methodParameters[i].Name, args[i]);
-
-            return parameters;
         }
     }
 }

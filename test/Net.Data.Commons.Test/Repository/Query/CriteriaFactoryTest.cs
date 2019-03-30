@@ -29,7 +29,7 @@ namespace Net.Data.Commons.Test.Repository.Query
         }
 
         [Fact]
-        public void TestRejectsNullMethodParameters()
+        public void TestRejectsNullQueryMethodParameters()
         {
             var findByNameMethod = FakeRepositoryQueryMehod("FindByName");
             
@@ -45,7 +45,7 @@ namespace Net.Data.Commons.Test.Repository.Query
         public void TestCreateCriteriaSimplePropertyCorrectly()
         {
             var findByNameMethod = FakeRepositoryQueryMehod("FindByName");
-            var findByNameParameters = Parameters(KeyValuePair.Create("name", "fake name"));
+            var findByNameParameters = Parameters(KeyValuePair.Create("name", (object) "fake name"));
             var findByNameArgs = new object[] { findByNameParameters.name };
 
             var criteria = new CriteriaFactory(findByNameMethod, findByNameArgs).Create();
@@ -61,10 +61,10 @@ namespace Net.Data.Commons.Test.Repository.Query
             return method;
         }
 
-        private dynamic Parameters<TValue>(params KeyValuePair<string, TValue>[] parametersKeyValue)
+        private dynamic Parameters(params KeyValuePair<string, object>[] parametersKeyValue)
         {
             dynamic parameters = new ExpandoObject();
-            var parametersDictionary = (IDictionary<string, TValue>) parameters;
+            var parametersDictionary = (IDictionary<string, object>) parameters;
 
             foreach (var parameter in parametersKeyValue) 
                 parametersDictionary.Add(parameter.Key, parameter.Value);

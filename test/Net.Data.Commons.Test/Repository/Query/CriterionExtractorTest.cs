@@ -8,6 +8,8 @@ using ExpectedObjects;
 using Net.Data.Commons.Repository.Query;
 using Net.Data.Commons.Criterions.Support;
 
+using static Net.Data.Commons.Repository.Query.CriterionExtractor;
+
 namespace Net.Data.Commons.Test.Repository.Query
 {
     public class CriterionExtractorTest
@@ -81,7 +83,7 @@ namespace Net.Data.Commons.Test.Repository.Query
             Assert.False(criterions.MoveNext());
         }
 
-        private void AssertCriterionsIn(CriterionExtractor.OrCriterion criterion, Criterion[] exptectedCriterions) 
+        private void AssertCriterionsIn(OrCriterion criterion, Criterion[] exptectedCriterions) 
         {
             var criterions = criterion.GetEnumerator();
 

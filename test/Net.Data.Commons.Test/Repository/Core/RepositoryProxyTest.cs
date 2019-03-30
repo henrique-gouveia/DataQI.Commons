@@ -2,13 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+
 using Bogus;
 using ExpectedObjects;
 using Moq;
+using Xunit;
+
+using Net.Data.Commons.Criterions;
+using Net.Data.Commons.Criterions.Support;
 using Net.Data.Commons.Repository;
 using Net.Data.Commons.Repository.Core;
 using Net.Data.Commons.Test.Repository.Sample;
-using Xunit;
 
 namespace Net.Data.Commons.Test.Repository.Core
 {
@@ -35,261 +39,256 @@ namespace Net.Data.Commons.Test.Repository.Core
             Assert.IsType<ArgumentException>(exception.GetBaseException());
             Assert.Equal("Repository must not be null", exceptionMessage);
         }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void TestInvokeInsertCorrectly(bool useAsyncMethod)
+        {
+            var entityExpected = CreateTestFakeEntity();
+            SetupFakeRepositoryInsertMethod(fe => fe.Id = entityExpected.Id, useAsyncMethod);
+
+            var entity = new FakeEntity() { Name = entityExpected.Name };
+            if (useAsyncMethod)
+                fakeRepository.InsertAsync(entity).GetAwaiter().GetResult();
+            else
+                fakeRepository.Insert(entity);
+
+            AssertExpectedObject(entityExpected, entity);
+        }
         
-        [Fact] 
-        public void TestInvokeInsert() 
+        private void SetupFakeRepositoryInsertMethod(Action<FakeEntity> callback, bool useAsyncMethod)
         {
-            var entityExpected = CreateTestFakeEntity();
-            fakeRepositoryMock
-                .Setup(r => r.Insert(It.IsAny<FakeEntity>()))
-                .Callback<FakeEntity>(fe => fe.Id = entityExpected.Id);
-
-            var entity = new FakeEntity() { Name = entityExpected.Name };
-            fakeRepository.Insert(entity);
-
-            AssertExpectedObject(entityExpected, entity);
+            if (useAsyncMethod)
+            {
+                fakeRepositoryMock
+                    .Setup(r => r.InsertAsync(It.IsAny<FakeEntity>()))
+                    .Callback<FakeEntity>(callback)
+                    .Returns(Task.FromResult(0));
+            }
+            else 
+            {
+                fakeRepositoryMock
+                    .Setup(r => r.Insert(It.IsAny<FakeEntity>()))
+                    .Callback<FakeEntity>(callback);
+            }
         }
 
-        [Fact] 
-        public async void TestInvokeInsertAsync()
+        [Theory]
+        [InlineData(0, "Inserted", false)]
+        [InlineData(1, "Updated", false)]
+        [InlineData(0, "Inserted", true)]
+        [InlineData(1, "Updated", true)]
+        public void TestInvokeSaveMethodCorrectly(int fakeEntityId, string fakeEntityName, bool useAsyncMethod)
         {
-            var entityExpected = CreateTestFakeEntity();
-            fakeRepositoryMock
-                .Setup(r => r.InsertAsync(It.IsAny<FakeEntity>()))
-                .Callback<FakeEntity>(fe => fe.Id = entityExpected.Id)
-                .Returns(Task.FromResult(0));
-
-            var entity = new FakeEntity() { Name = entityExpected.Name };
-            await fakeRepository.InsertAsync(entity);
-            
-            AssertExpectedObject(entityExpected, entity);
-        }
-
-        [Fact] 
-        public void TestInvokeSave() 
-        {
-            var entityExpected = CreateTestFakeEntity();
-            fakeRepositoryMock
-                .Setup(r => r.Save(It.IsAny<FakeEntity>()))
-                .Callback<FakeEntity>(fe => 
+            FakeEntity entityExpected = null;
+            SetupFakeRepositorySaveMethod(fe => 
                 {
                     var isNew = fe.Id == 0;
                     if (isNew)
+                    {
+                        entityExpected = CreateTestFakeEntity(null, fe.Name);
                         fe.Id = entityExpected.Id;
+                    }
                     else
-                        entityExpected.Name = fe.Name;
-                });
-            
-            var entity = new FakeEntity() { Name = entityExpected.Name };
-            fakeRepository.Save(entity);
-            AssertExpectedObject(entityExpected, entity);
+                        entityExpected = CreateTestFakeEntity(fe.Id, fe.Name);
+                },
+                useAsyncMethod);
 
-            entity.Name = CreateTestFakeEntity().Name;
-            fakeRepository.Save(entity);
+            var entity = CreateTestFakeEntity(fakeEntityId, fakeEntityName);
+            if (useAsyncMethod)
+                fakeRepository.SaveAsync(entity).GetAwaiter().GetResult();
+            else
+                fakeRepository.Save(entity);
+
+            AssertExpectedObject(entityExpected, entity);
+        }
+        private void SetupFakeRepositorySaveMethod(Action<FakeEntity> callback, bool useAsyncMethod)
+        {
+            if (useAsyncMethod)
+            {
+                fakeRepositoryMock
+                    .Setup(r => r.SaveAsync(It.IsAny<FakeEntity>()))
+                    .Callback<FakeEntity>(callback)
+                    .Returns(Task.FromResult(0));
+            }
+            else
+            {
+                fakeRepositoryMock
+                    .Setup(r => r.Save(It.IsAny<FakeEntity>()))
+                    .Callback<FakeEntity>(callback);
+            }
+        }
+
+        [Theory]
+        [InlineData(true, false)]
+        [InlineData(false, false)]
+        [InlineData(true, true)]
+        [InlineData(false, true)]
+        public void TestInvokeExistsCorrectly(bool returnsExists, bool useAsyncMethod)
+        {
+            var entityExpected = CreateTestFakeEntity();
+            SetupFakeRepositoryExistsMethod(entityExpected.Id, returnsExists, useAsyncMethod);
+
+            bool exists;
+            if (useAsyncMethod)
+                exists = fakeRepository.ExistsAsync(entityExpected.Id).Result;
+            else
+                exists = fakeRepository.Exists(entityExpected.Id);
+            
+            Assert.Equal(returnsExists, exists);
+        }
+
+        private void SetupFakeRepositoryExistsMethod(int fakeEntityId, bool returnsExists, bool useAsyncMethod)
+        {
+            if (useAsyncMethod)
+            {
+                fakeRepositoryMock
+                    .Setup(r => r.ExistsAsync(fakeEntityId))
+                    .Returns(Task.FromResult(returnsExists));
+            }
+            else
+            {
+                fakeRepositoryMock
+                    .Setup(r => r.Exists(fakeEntityId))
+                    .Returns(returnsExists);
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void TestInvokeFindCorrectly(bool useAsyncMethod)
+        {
+            var entitiesExpected = CreateTestFakeEntities();
+            var criteria = new Criteria()
+                .Add(Restrictions.Equal("Name", "@name"));
+            SetupFakeRepositoryFindMethod(criteria, entitiesExpected, useAsyncMethod);
+
+            IEnumerable<FakeEntity> entities;
+            if (useAsyncMethod)
+                entities = fakeRepository.FindAsync(criteria).Result;
+            else
+                entities = fakeRepository.Find(criteria);
+
+            AssertExpectedObject(entitiesExpected, entities);
+        }
+
+        private void SetupFakeRepositoryFindMethod(ICriteria criteria, IEnumerable<FakeEntity> returnsFakeEntities, bool useAsyncMethod)
+        {
+            if (useAsyncMethod)
+            {
+                fakeRepositoryMock
+                    .Setup(r => r.FindAsync(criteria))
+                    .Returns(Task.FromResult<IEnumerable<FakeEntity>>(returnsFakeEntities));
+            }
+            else
+            {
+                fakeRepositoryMock
+                    .Setup(r => r.Find(criteria))
+                    .Returns(returnsFakeEntities);
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void TestInvokeFindAllCorrectly(bool useAsyncMethod)
+        {
+            var entitiesExpected = CreateTestFakeEntities();
+            SetupFakeRepositoryFindAllMethod(entitiesExpected, useAsyncMethod);
+
+            IEnumerable<FakeEntity> entities;
+            if (useAsyncMethod)
+                entities = fakeRepository.FindAllAsync().Result;
+            else
+                entities = fakeRepository.FindAll();
+
+            AssertExpectedObject(entitiesExpected, entities);
+        }
+
+        private void SetupFakeRepositoryFindAllMethod(IEnumerable<FakeEntity> returnsFakeEntities, bool useAsyncMethod)
+        {
+            if (useAsyncMethod)
+            {
+                fakeRepositoryMock
+                    .Setup(r => r.FindAllAsync())
+                    .Returns(Task.FromResult<IEnumerable<FakeEntity>>(returnsFakeEntities));
+            }
+            else
+            {
+                fakeRepositoryMock
+                    .Setup(r => r.FindAll())
+                    .Returns(returnsFakeEntities);
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void TestInvokeFindOneCorrectly(bool useAsyncMethod) 
+        {
+            var entityExpected = CreateTestFakeEntity();
+            SetupFakeRepositoryFindOneMethod(entityExpected, useAsyncMethod);
+
+            FakeEntity entity;
+            if (useAsyncMethod)
+                entity = fakeRepository.FindOneAsync(entityExpected.Id).Result;
+            else
+                entity = fakeRepository.FindOne(entityExpected.Id);
+            
             AssertExpectedObject(entityExpected, entity);
         }
 
-        [Fact] 
-        public async void TestInvokeSaveAsync()
+        private void SetupFakeRepositoryFindOneMethod(FakeEntity returnsFakeEntity, bool useAsyncMethod)
         {
-            var entityExpected = CreateTestFakeEntity();
-            fakeRepositoryMock
-                .Setup(r => r.SaveAsync(It.IsAny<FakeEntity>()))
-                .Callback<FakeEntity>(fe => 
-                {
-                    var isNew = fe.Id == 0;
-                    if (isNew)
-                        fe.Id = entityExpected.Id;
-                    else
-                        entityExpected.Name = fe.Name;
-                })
-                .Returns(Task.FromResult(0));
-
-            var entity = new FakeEntity() { Name = entityExpected.Name };
-            await fakeRepository.SaveAsync(entity);
-            AssertExpectedObject(entityExpected, entity);
-
-            entity.Name = CreateTestFakeEntity().Name;
-            await fakeRepository.SaveAsync(entity);
-            AssertExpectedObject(entityExpected, entity);
+            if (useAsyncMethod)
+            {
+                fakeRepositoryMock
+                    .Setup(r => r.FindOneAsync(returnsFakeEntity.Id))
+                    .Returns(Task.FromResult<FakeEntity>(returnsFakeEntity));
+            }
+            else
+            {
+                fakeRepositoryMock
+                    .Setup(r => r.FindOne(returnsFakeEntity.Id))
+                    .Returns(returnsFakeEntity);
+            }
         }
 
-        [Fact] 
-        public void TestInvokeExists() 
+        [Theory]
+        [InlineData(false)] 
+        [InlineData(true)] 
+        public void TestInvokeDeleteCorrectly(bool useAsyncMethod) 
         {
             var entityExpected = CreateTestFakeEntity();
-            fakeRepositoryMock
-                .Setup(r => r.Exists(entityExpected.Id))
-                .Returns(true);
 
-            var exists = fakeRepository.Exists(entityExpected.Id);
-            
-            Assert.True(exists);
-        }
-
-        [Fact] 
-        public async void TestInvokeExistsAsync() 
-        {
-            var entityExpected = CreateTestFakeEntity();
-            fakeRepositoryMock
-                .Setup(r => r.ExistsAsync(entityExpected.Id))
-                .Returns(Task.FromResult(true));
-
-            var exists = await fakeRepository.ExistsAsync(entityExpected.Id);
-            
-            Assert.True(exists);
+            if (useAsyncMethod)
+            {
+                fakeRepository.Delete(entityExpected.Id);
+                fakeRepositoryMock.Verify(r => r.Delete(entityExpected.Id), Times.Once());
+            }
+            else
+            {
+                fakeRepository.DeleteAsync(entityExpected.Id).GetAwaiter().GetResult();
+                fakeRepositoryMock.Verify(r => r.DeleteAsync(entityExpected.Id), Times.Once());
+            }
         }
 
         [Fact]
-        public void TestInvokeFind()
-        {
-            var entitiesExpected = CreateTestFakeEntities();
-            fakeRepositoryMock
-                .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
-                .Returns(entitiesExpected);
-
-            var entities = fakeRepository.Find($"Name = @name", new object());
-
-            AssertExpectedObject(entitiesExpected, entities);
-        }
-
-        [Fact]
-        public async void TestInvokeFindAsync()
-        {
-            var entitiesExpected = CreateTestFakeEntities();
-            fakeRepositoryMock
-                .Setup(r => r.FindAsync(It.IsAny<FormattableString>(), It.IsAny<object>()))
-                .Returns(Task.FromResult<IEnumerable<FakeEntity>>(entitiesExpected));
-
-            var entities = await fakeRepository.FindAsync($"Name = @name", new object());
-
-            AssertExpectedObject(entitiesExpected, entities);
-        }
-
-        [Fact] 
-        public void TestInvokeFindAll() 
-        {
-            var entitiesExpected = CreateTestFakeEntities();
-            fakeRepositoryMock
-                .Setup(r => r.FindAll())
-                .Returns(entitiesExpected);
-
-            var entities = fakeRepository.FindAll();
-
-            AssertExpectedObject(entitiesExpected, entities);
-        }
-
-        [Fact] 
-        public async void TestInvokeFindAllAsync() 
-        {
-            var entitiesExpected = CreateTestFakeEntities();
-            fakeRepositoryMock
-                .Setup(r => r.FindAllAsync())
-                .Returns(Task.FromResult<IEnumerable<FakeEntity>>(entitiesExpected));
-
-            var entities = await fakeRepository.FindAllAsync();
-            
-            AssertExpectedObject(entitiesExpected, entities);
-        }
-  
-        [Fact] 
-        public void TestInvokeFindOne() 
-        {
-            var entityExpected = CreateTestFakeEntity();
-            fakeRepositoryMock
-                .Setup(r => r.FindOne(entityExpected.Id))
-                .Returns(entityExpected);
-
-            var entity = fakeRepository.FindOne(entityExpected.Id);
-            
-            AssertExpectedObject(entityExpected, entity);
-        }
-
-        [Fact] 
-        public async void TestInvokeFindOneAsync() 
-        {
-            var entityExpected = CreateTestFakeEntity();
-            fakeRepositoryMock
-                .Setup(r => r.FindOneAsync(entityExpected.Id))
-                .Returns(Task.FromResult<FakeEntity>(entityExpected));
-
-            var entity = await fakeRepository.FindOneAsync(entityExpected.Id);
-            
-            AssertExpectedObject(entityExpected, entity);
-        }
-
-        [Fact] 
-        public void TestInvokeDelete() 
-        {
-            var entityExpected = CreateTestFakeEntity();
-
-            fakeRepository.Delete(entityExpected.Id);
-            fakeRepositoryMock.Verify(r => r.Delete(entityExpected.Id), Times.Once());
-        }
-
-        [Fact] 
-        public async void TestInvokeDeleteAsync()
-        {
-            var entityExpected = CreateTestFakeEntity();
-
-            await fakeRepository.DeleteAsync(entityExpected.Id);
-            fakeRepositoryMock.Verify(r => r.DeleteAsync(entityExpected.Id), Times.Once());
-        }
-
-        // [Fact]
-        // public void TestInvokeFindByNameIsNull()
-        // {
-        //     var entityExpected = CreateTestFakeEntity();
-        //     var entitiesExpected = new List<FakeEntity>() { entityExpected };
-        //     fakeRepositoryMock
-        //         .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
-        //         .Returns(entitiesExpected);
-
-        //     var entities = fakeRepository.FindByNameIsNull();
-
-        //     AssertExpectedObject(entitiesExpected, entities);
-        // }
-
-        [Fact]
-        public void TestInvokeFindByName()
+        public void TestInvokeNonDefaultFindMethodCorrectly()
         {
             var entityExpected = CreateTestFakeEntity();
             var entitiesExpected = new List<FakeEntity>() { entityExpected };
+
             fakeRepositoryMock
-                .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
+                .Setup(r => r.Find(It.IsAny<Criteria>()))
                 .Returns(entitiesExpected);
 
             var entities = fakeRepository.FindByName(entityExpected.Name);
 
             AssertExpectedObject(entitiesExpected, entities);
         }
-
-        // [Fact]
-        // public void TestInvokeFindByNameOrLastName()
-        // {
-        //     var entityExpected = CreateTestFakeEntity();
-        //     var entitiesExpected = new List<FakeEntity>() { entityExpected };
-        //     fakeRepositoryMock
-        //         .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
-        //         .Returns(entitiesExpected);
-
-        //     var entities = fakeRepository.FindByNameOrLastName(entityExpected.Name, entityExpected.LastName);
-
-        //     AssertExpectedObject(entitiesExpected, entities);
-        // }
-
-        // [Fact]
-        // public void TestInvokeFindByDateOfBirthBetween()
-        // {
-        //     var entityExpected = CreateTestFakeEntity();
-        //     var entitiesExpected = new List<FakeEntity>() { entityExpected };
-        //     fakeRepositoryMock
-        //         .Setup(r => r.Find(It.IsAny<FormattableString>(), It.IsAny<object>()))
-        //         .Returns(entitiesExpected);
-
-        //     var entities = fakeRepository.FindByDateOfBirthBetween(new DateTime(2000, 1, 1), new DateTime(2019, 1, 1));
-        //     AssertExpectedObject(entitiesExpected, entities);
-        // }
 
         private void AssertExpectedObject(object expected, object actual)
         {
@@ -308,10 +307,10 @@ namespace Net.Data.Commons.Test.Repository.Core
             };
         }
 
-        private FakeEntity CreateTestFakeEntity()
+        private FakeEntity CreateTestFakeEntity(int? fakeEntityId = null, string fakeEntityName = null)
         {
-            var id = faker.Random.Int(0, 100);
-            var name = faker.Person.FullName;
+            var id = fakeEntityId.HasValue ? fakeEntityId.Value : faker.Random.Int(0, 100);
+            var name = fakeEntityName != null ? fakeEntityName : faker.Person.FullName;
 
             return new FakeEntity(id, name);
         }

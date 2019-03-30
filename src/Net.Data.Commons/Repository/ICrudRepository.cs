@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Net.Data.Commons.Criterions;
 
 namespace Net.Data.Commons.Repository
 {
@@ -14,9 +15,9 @@ namespace Net.Data.Commons.Repository
 
         Task<bool> ExistsAsync(TId id);
 
-        IEnumerable<TEntity> Find(FormattableString whereClause, object parameters);
+        IEnumerable<TEntity> Find(ICriteria criteria);
         
-        Task<IEnumerable<TEntity>> FindAsync(FormattableString whereClause, object parameters);
+        Task<IEnumerable<TEntity>> FindAsync(ICriteria criteria);
 
         IEnumerable<TEntity> FindAll();
 
