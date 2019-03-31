@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 
 using Net.Data.Commons.Criterions;
 using Net.Data.Commons.Repository.Query;
@@ -42,15 +39,24 @@ namespace Net.Data.Commons.Repository.Core
 
             if (defaultMethods.TryGetValue("Find", out method))
             {
-                Action<ICriteria> criteriaBuilder = criteria => 
-                {
-                    var factory = new CriteriaFactory(targetMethod, args);
-                    factory.BuildCriteria(criteria);
-                };
+                var criteriaBuilder = CreateCriteriaBuilder(targetMethod, args);
                 return method.Invoke(defaultRepository, new object[] { criteriaBuilder });
             }
             
             return null;
+        }
+
+        protected virtual Func<ICriteria, ICriteria> CreateCriteriaBuilder(MethodInfo targetMethod, object[] args)
+        {
+            Func<ICriteria, ICriteria> criteriaBuilder = criteria => 
+            {
+                var factory = new CriteriaFactory(targetMethod, args);
+                factory.BuildCriteria(criteria);
+
+                return criteria;
+            };
+
+            return criteriaBuilder;
         }
 
         protected virtual void RegisterDefaultMethods()

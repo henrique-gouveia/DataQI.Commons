@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using Net.Data.Commons.Criterions;
 
 namespace Net.Data.Commons.Repository
@@ -15,9 +16,9 @@ namespace Net.Data.Commons.Repository
 
         Task<bool> ExistsAsync(TId id);
 
-        IEnumerable<TEntity> Find(Action<ICriteria> criteriaBuilder);
+        IEnumerable<TEntity> Find(Func<ICriteria, ICriteria> criteriaBuilder);
         
-        Task<IEnumerable<TEntity>> FindAsync(Action<ICriteria> criteriaBuilder);
+        Task<IEnumerable<TEntity>> FindAsync(Func<ICriteria, ICriteria> criteriaBuilder);
 
         IEnumerable<TEntity> FindAll();
 

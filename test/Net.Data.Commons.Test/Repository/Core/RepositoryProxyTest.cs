@@ -160,7 +160,7 @@ namespace Net.Data.Commons.Test.Repository.Core
         [InlineData(true)]
         public void TestInvokeFindCorrectly(bool useAsyncMethod)
         {
-            Action<ICriteria> criteriaBuilder = criteria => 
+            Func<ICriteria, ICriteria> criteriaBuilder = criteria => 
                 criteria.Add(Restrictions.Equal("Name", "@name"));
             var entitiesExpected = CreateTestFakeEntities();
             SetupFakeRepositoryFindMethod(criteriaBuilder, entitiesExpected, useAsyncMethod);
@@ -174,7 +174,7 @@ namespace Net.Data.Commons.Test.Repository.Core
             AssertExpectedObject(entitiesExpected, entities);
         }
 
-        private void SetupFakeRepositoryFindMethod(Action<ICriteria> criteriaBuilder, IEnumerable<FakeEntity> returnsFakeEntities, bool useAsyncMethod)
+        private void SetupFakeRepositoryFindMethod(Func<ICriteria, ICriteria> criteriaBuilder, IEnumerable<FakeEntity> returnsFakeEntities, bool useAsyncMethod)
         {
             if (useAsyncMethod)
             {
@@ -282,7 +282,7 @@ namespace Net.Data.Commons.Test.Repository.Core
             var entitiesExpected = new List<FakeEntity>() { entityExpected };
 
             fakeRepositoryMock
-                .Setup(r => r.Find(It.IsAny<Action<ICriteria>>()))
+                .Setup(r => r.Find(It.IsAny<Func<ICriteria, ICriteria>>()))
                 .Returns(entitiesExpected);
 
             var entities = fakeRepository.FindByName(entityExpected.Name);
