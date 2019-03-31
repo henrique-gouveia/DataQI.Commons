@@ -30,11 +30,15 @@ namespace Net.Data.Commons.Repository.Query
         public ICriteria Create()
         {
             var criteria = new Criteria();
-
-            AddCriterions(criteria);
-            AddParameters(criteria);
+            BuildCriteria(criteria);
 
             return criteria;
+        }
+
+        public void BuildCriteria(ICriteria criteria)
+        {
+            AddCriterions(criteria);
+            AddParameters(criteria);
         }
 
         private void AddCriterions(ICriteria criteria)

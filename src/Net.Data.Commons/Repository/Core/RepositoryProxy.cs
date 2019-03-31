@@ -1,11 +1,13 @@
-using System.Linq;
-using System.Text;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
 using System.Reflection;
+using System.Text;
 
+using Net.Data.Commons.Criterions;
 using Net.Data.Commons.Repository.Query;
+using Net.Data.Commons.Util;
 
 namespace Net.Data.Commons.Repository.Core
 {
@@ -22,8 +24,7 @@ namespace Net.Data.Commons.Repository.Core
             defaultMethods = new Dictionary<string, MethodInfo>();
             defaultRepository = DefaultRepositoryFactory();
 
-            if (defaultRepository == null)
-                throw new ArgumentException("Repository must not be null");
+            Assert.NotNull(defaultRepository, "Repository must not be null");
 
             RegisterDefaultMethods();
         }
@@ -41,8 +42,12 @@ namespace Net.Data.Commons.Repository.Core
 
             if (defaultMethods.TryGetValue("Find", out method))
             {
-                var criteria = new CriteriaFactory(targetMethod, args).Create();
-                return method.Invoke(defaultRepository, new object[] { criteria });
+                Action<ICriteria> criteriaBuilder = criteria => 
+                {
+                    var factory = new CriteriaFactory(targetMethod, args);
+                    factory.BuildCriteria(criteria);
+                };
+                return method.Invoke(defaultRepository, new object[] { criteriaBuilder });
             }
             
             return null;

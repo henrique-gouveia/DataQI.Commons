@@ -19,7 +19,7 @@ namespace Net.Data.Commons.Repository.Core
 
         public RepositoryMetadata(Type repositoryInterface)
         {
-            Assert.IsTrue(repositoryInterface.IsInterface, "The parameter should be interface.");
+            Assert.True(repositoryInterface.IsInterface, "The parameter should be interface.");
 
             this.repositoryInterface = repositoryInterface;
             this.entityType = ExtractDomainType();

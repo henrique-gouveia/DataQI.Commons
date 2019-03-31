@@ -160,32 +160,32 @@ namespace Net.Data.Commons.Test.Repository.Core
         [InlineData(true)]
         public void TestInvokeFindCorrectly(bool useAsyncMethod)
         {
+            Action<ICriteria> criteriaBuilder = criteria => 
+                criteria.Add(Restrictions.Equal("Name", "@name"));
             var entitiesExpected = CreateTestFakeEntities();
-            var criteria = new Criteria()
-                .Add(Restrictions.Equal("Name", "@name"));
-            SetupFakeRepositoryFindMethod(criteria, entitiesExpected, useAsyncMethod);
+            SetupFakeRepositoryFindMethod(criteriaBuilder, entitiesExpected, useAsyncMethod);
 
             IEnumerable<FakeEntity> entities;
             if (useAsyncMethod)
-                entities = fakeRepository.FindAsync(criteria).Result;
+                entities = fakeRepository.FindAsync(criteriaBuilder).Result;
             else
-                entities = fakeRepository.Find(criteria);
+                entities = fakeRepository.Find(criteriaBuilder);
 
             AssertExpectedObject(entitiesExpected, entities);
         }
 
-        private void SetupFakeRepositoryFindMethod(ICriteria criteria, IEnumerable<FakeEntity> returnsFakeEntities, bool useAsyncMethod)
+        private void SetupFakeRepositoryFindMethod(Action<ICriteria> criteriaBuilder, IEnumerable<FakeEntity> returnsFakeEntities, bool useAsyncMethod)
         {
             if (useAsyncMethod)
             {
                 fakeRepositoryMock
-                    .Setup(r => r.FindAsync(criteria))
+                    .Setup(r => r.FindAsync(criteriaBuilder))
                     .Returns(Task.FromResult<IEnumerable<FakeEntity>>(returnsFakeEntities));
             }
             else
             {
                 fakeRepositoryMock
-                    .Setup(r => r.Find(criteria))
+                    .Setup(r => r.Find(criteriaBuilder))
                     .Returns(returnsFakeEntities);
             }
         }
@@ -282,7 +282,7 @@ namespace Net.Data.Commons.Test.Repository.Core
             var entitiesExpected = new List<FakeEntity>() { entityExpected };
 
             fakeRepositoryMock
-                .Setup(r => r.Find(It.IsAny<Criteria>()))
+                .Setup(r => r.Find(It.IsAny<Action<ICriteria>>()))
                 .Returns(entitiesExpected);
 
             var entities = fakeRepository.FindByName(entityExpected.Name);

@@ -14,7 +14,7 @@ namespace Net.Data.Commons.Repository.Query
 
         public CriterionExtractor(string source)
         {
-            Assert.IsNotNullOrEmpty(source, "Source must not be null or empty");
+            Assert.NotNullOrEmpty(source, "Source must not be null or empty");
             
             var match = preffixRegex.Match(source);
             if(match.Length > 0)

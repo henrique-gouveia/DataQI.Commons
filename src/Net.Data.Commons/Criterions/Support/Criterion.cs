@@ -10,7 +10,7 @@ namespace Net.Data.Commons.Criterions.Support
     {
         public Criterion(string source)
         {
-            Assert.IsNotNullOrEmpty(source, "Criterion source must not be null or empty");
+            Assert.NotNullOrEmpty(source, "Criterion source must not be null or empty");
 
             Type = CriterionTypeHelper.FromProperty(source);
             PropertyName = CriterionTypeHelper.ExtractProperty(source, Type);

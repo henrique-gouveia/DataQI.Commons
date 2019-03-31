@@ -15,9 +15,9 @@ namespace Net.Data.Commons.Repository
 
         Task<bool> ExistsAsync(TId id);
 
-        IEnumerable<TEntity> Find(ICriteria criteria);
+        IEnumerable<TEntity> Find(Action<ICriteria> criteriaBuilder);
         
-        Task<IEnumerable<TEntity>> FindAsync(ICriteria criteria);
+        Task<IEnumerable<TEntity>> FindAsync(Action<ICriteria> criteriaBuilder);
 
         IEnumerable<TEntity> FindAll();
 
