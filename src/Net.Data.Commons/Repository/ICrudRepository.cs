@@ -1,10 +1,25 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
+using Net.Data.Commons.Criterions;
 
 namespace Net.Data.Commons.Repository
 {
     public interface ICrudRepository<TEntity, TId> where TEntity : class, new()
     {
+        void Delete(TId entity);
+
+        Task DeleteAsync(TId entity);
+    
+         bool Exists(TId id);
+
+        Task<bool> ExistsAsync(TId id);
+
+        IEnumerable<TEntity> Find(Func<ICriteria, ICriteria> criteriaBuilder);
+        
+        Task<IEnumerable<TEntity>> FindAsync(Func<ICriteria, ICriteria> criteriaBuilder);
+
         IEnumerable<TEntity> FindAll();
 
         Task<IEnumerable<TEntity>> FindAllAsync();
@@ -13,10 +28,6 @@ namespace Net.Data.Commons.Repository
 
         Task<TEntity> FindOneAsync(TId id);
 
-        bool Exists(TId id);
-
-        Task<bool> ExistsAsync(TId id);
-
         void Insert(TEntity entity);
 
         Task InsertAsync(TEntity entity);
@@ -24,9 +35,5 @@ namespace Net.Data.Commons.Repository
         void Save(TEntity entity);
 
         Task SaveAsync(TEntity entity);
-
-        void Delete(TEntity entity);
-
-        Task DeleteAsync(TEntity entity);
     }
 }

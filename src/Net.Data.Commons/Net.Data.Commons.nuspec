@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Net.Data.Commons</id>
+    <version>1.0.0-preview</version>
+    <title></title>
+    <authors>Henrique Gouveia,Brenno Brandão</authors>
+    <owners>Henrique Gouveia,Brenno Brandão</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Core para construção de soluções para manipulação de dados.</description>
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="System.Reflection.DispatchProxy" version="4.5.1" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
