@@ -10,8 +10,13 @@
     <description>Core para construção de soluções para manipulação de dados.</description>
     <dependencies>
       <group targetFramework=".NETStandard2.0">
+        <dependency id="Microsoft.CSharp" version="4.5.0" />
         <dependency id="System.Reflection.DispatchProxy" version="4.5.1" />
       </group>
     </dependencies>
   </metadata>
+  <files>
+    <file src="lib\netstandard2.0\Net.Data.Commons.dll" target="lib\netstandard2.0\Net.Data.Commons.dll" />
+    <file src="lib\netstandard2.0\Net.Data.Commons.pdb" target="lib\netstandard2.0\Net.Data.Commons.pdb" />
+  </files>
 </package>
