@@ -26,7 +26,33 @@ namespace Net.Data.Commons.Repository.Core
             RegisterDefaultMethods();
         }
 
+        protected virtual void RegisterDefaultMethods()
+        {
+            RegisterDefaultMethod("Delete");
+            RegisterDefaultMethod("DeleteAsync");
+            RegisterDefaultMethod("Exists");
+            RegisterDefaultMethod("ExistsAsync");
+            RegisterDefaultMethod("Find");
+            RegisterDefaultMethod("FindAsync");
+            RegisterDefaultMethod("FindAll");
+            RegisterDefaultMethod("FindAllAsync");
+            RegisterDefaultMethod("FindOne");
+            RegisterDefaultMethod("FindOneAsync");
+            RegisterDefaultMethod("Insert");
+            RegisterDefaultMethod("InsertAsync");
+            RegisterDefaultMethod("Save");
+            RegisterDefaultMethod("SaveAsync");
+        }
+
+        protected virtual void RegisterDefaultMethod(string methodName)
+        {
+            var method = defaultRepository.GetType().GetMethod(methodName);
+            if (method != null)
+                defaultMethods.Add(methodName, method);
+        }        
+
         public static TRepository Create<TRepository>(Func<Object> defaultRepositoryFactory)
+            where TRepository : class
         {
             DefaultRepositoryFactory = defaultRepositoryFactory;
             return Create<TRepository, RepositoryProxy>();
@@ -57,31 +83,6 @@ namespace Net.Data.Commons.Repository.Core
             };
 
             return criteriaBuilder;
-        }
-
-        protected virtual void RegisterDefaultMethods()
-        {
-            RegisterDefaultMethod("Delete");
-            RegisterDefaultMethod("DeleteAsync");
-            RegisterDefaultMethod("Exists");
-            RegisterDefaultMethod("ExistsAsync");
-            RegisterDefaultMethod("Find");
-            RegisterDefaultMethod("FindAsync");
-            RegisterDefaultMethod("FindAll");
-            RegisterDefaultMethod("FindAllAsync");
-            RegisterDefaultMethod("FindOne");
-            RegisterDefaultMethod("FindOneAsync");
-            RegisterDefaultMethod("Insert");
-            RegisterDefaultMethod("InsertAsync");
-            RegisterDefaultMethod("Save");
-            RegisterDefaultMethod("SaveAsync");
-        }
-
-        protected virtual void RegisterDefaultMethod(string methodName)
-        {
-            var method = defaultRepository.GetType().GetMethod(methodName);
-            if (method != null)
-                defaultMethods.Add(methodName, method);
         }
     }
 }

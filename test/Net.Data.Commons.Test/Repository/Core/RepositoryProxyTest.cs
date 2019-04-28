@@ -12,6 +12,7 @@ using Net.Data.Commons.Criterions;
 using Net.Data.Commons.Criterions.Support;
 using Net.Data.Commons.Repository;
 using Net.Data.Commons.Repository.Core;
+
 using Net.Data.Commons.Test.Repository.Sample;
 
 namespace Net.Data.Commons.Test.Repository.Core
@@ -19,21 +20,22 @@ namespace Net.Data.Commons.Test.Repository.Core
     public class RepositoryProxyTest
     {
         private static readonly Faker faker = new Faker();
-        private readonly Mock<IFakeRepository> fakeRepositoryMock;
+        private readonly RepositoryFactory repositoryFactory;
+        private readonly Mock<IFakeRepository> customImplementationMock;
         private readonly IFakeRepository fakeRepository;
 
         public RepositoryProxyTest()
         {
-            fakeRepositoryMock = new Mock<IFakeRepository>();
-            fakeRepository = RepositoryProxy.Create<IFakeRepository>(() => 
-                fakeRepositoryMock.Object);
+            customImplementationMock = new Mock<IFakeRepository>();
+            repositoryFactory = new FakeRepositoryFactory(customImplementationMock.Object);
+            fakeRepository = repositoryFactory.GetRepository<IFakeRepository>();
         }
 
         [Fact]
         public void TestRejectsNullRepository()
         {
             var exception = Assert.Throws<TargetInvocationException>(() => 
-                RepositoryProxy.Create<ICrudRepository<Object, int>>(() => null));
+                new FakeRepositoryFactory(null).GetRepository<ICrudRepository<Object, int>>());
             var exceptionMessage = exception.GetBaseException().Message;
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
@@ -61,14 +63,14 @@ namespace Net.Data.Commons.Test.Repository.Core
         {
             if (useAsyncMethod)
             {
-                fakeRepositoryMock
+                customImplementationMock
                     .Setup(r => r.InsertAsync(It.IsAny<FakeEntity>()))
                     .Callback<FakeEntity>(callback)
                     .Returns(Task.FromResult(0));
             }
             else 
             {
-                fakeRepositoryMock
+                customImplementationMock
                     .Setup(r => r.Insert(It.IsAny<FakeEntity>()))
                     .Callback<FakeEntity>(callback);
             }
@@ -107,14 +109,14 @@ namespace Net.Data.Commons.Test.Repository.Core
         {
             if (useAsyncMethod)
             {
-                fakeRepositoryMock
+                customImplementationMock
                     .Setup(r => r.SaveAsync(It.IsAny<FakeEntity>()))
                     .Callback<FakeEntity>(callback)
                     .Returns(Task.FromResult(0));
             }
             else
             {
-                fakeRepositoryMock
+                customImplementationMock
                     .Setup(r => r.Save(It.IsAny<FakeEntity>()))
                     .Callback<FakeEntity>(callback);
             }
@@ -143,13 +145,13 @@ namespace Net.Data.Commons.Test.Repository.Core
         {
             if (useAsyncMethod)
             {
-                fakeRepositoryMock
+                customImplementationMock
                     .Setup(r => r.ExistsAsync(fakeEntityId))
                     .Returns(Task.FromResult(returnsExists));
             }
             else
             {
-                fakeRepositoryMock
+                customImplementationMock
                     .Setup(r => r.Exists(fakeEntityId))
                     .Returns(returnsExists);
             }
@@ -178,13 +180,13 @@ namespace Net.Data.Commons.Test.Repository.Core
         {
             if (useAsyncMethod)
             {
-                fakeRepositoryMock
+                customImplementationMock
                     .Setup(r => r.FindAsync(criteriaBuilder))
                     .Returns(Task.FromResult<IEnumerable<FakeEntity>>(returnsFakeEntities));
             }
             else
             {
-                fakeRepositoryMock
+                customImplementationMock
                     .Setup(r => r.Find(criteriaBuilder))
                     .Returns(returnsFakeEntities);
             }
@@ -211,13 +213,13 @@ namespace Net.Data.Commons.Test.Repository.Core
         {
             if (useAsyncMethod)
             {
-                fakeRepositoryMock
+                customImplementationMock
                     .Setup(r => r.FindAllAsync())
                     .Returns(Task.FromResult<IEnumerable<FakeEntity>>(returnsFakeEntities));
             }
             else
             {
-                fakeRepositoryMock
+                customImplementationMock
                     .Setup(r => r.FindAll())
                     .Returns(returnsFakeEntities);
             }
@@ -244,13 +246,13 @@ namespace Net.Data.Commons.Test.Repository.Core
         {
             if (useAsyncMethod)
             {
-                fakeRepositoryMock
+                customImplementationMock
                     .Setup(r => r.FindOneAsync(returnsFakeEntity.Id))
                     .Returns(Task.FromResult<FakeEntity>(returnsFakeEntity));
             }
             else
             {
-                fakeRepositoryMock
+                customImplementationMock
                     .Setup(r => r.FindOne(returnsFakeEntity.Id))
                     .Returns(returnsFakeEntity);
             }
@@ -266,12 +268,12 @@ namespace Net.Data.Commons.Test.Repository.Core
             if (useAsyncMethod)
             {
                 fakeRepository.Delete(entityExpected.Id);
-                fakeRepositoryMock.Verify(r => r.Delete(entityExpected.Id), Times.Once());
+                customImplementationMock.Verify(r => r.Delete(entityExpected.Id), Times.Once());
             }
             else
             {
                 fakeRepository.DeleteAsync(entityExpected.Id).GetAwaiter().GetResult();
-                fakeRepositoryMock.Verify(r => r.DeleteAsync(entityExpected.Id), Times.Once());
+                customImplementationMock.Verify(r => r.DeleteAsync(entityExpected.Id), Times.Once());
             }
         }
 
@@ -281,7 +283,7 @@ namespace Net.Data.Commons.Test.Repository.Core
             var entityExpected = CreateTestFakeEntity();
             var entitiesExpected = new List<FakeEntity>() { entityExpected };
 
-            fakeRepositoryMock
+            customImplementationMock
                 .Setup(r => r.Find(It.IsAny<Func<ICriteria, ICriteria>>()))
                 .Returns(entitiesExpected);
 
@@ -313,6 +315,21 @@ namespace Net.Data.Commons.Test.Repository.Core
             var name = fakeEntityName != null ? fakeEntityName : faker.Person.FullName;
 
             return new FakeEntity(id, name);
+        }
+
+        private class FakeRepositoryFactory : RepositoryFactory
+        {
+            private readonly object customImplementation;
+
+            public FakeRepositoryFactory(object customImplementation)
+            {
+                this.customImplementation = customImplementation;
+            }
+
+            protected override object GetCustomImplementation(Type repositoryInterface) 
+            {
+                return customImplementation;
+            }
         }
     }
 }

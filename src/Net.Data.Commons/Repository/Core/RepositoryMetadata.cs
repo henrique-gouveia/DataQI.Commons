@@ -1,6 +1,7 @@
-using System.Reflection;
 using System;
 using System.Linq;
+using System.Reflection;
+
 using Net.Data.Commons.Util;
 
 namespace Net.Data.Commons.Repository.Core
@@ -9,21 +10,17 @@ namespace Net.Data.Commons.Repository.Core
     {
         private readonly Type repositoryInterface;
 
-        private readonly Type entityType;
+        public Type EntityType { get; }
 
-        public Type EntityType { get { return entityType; } }
-
-        private readonly Type typeId;
-
-        public Type TypeId { get { return typeId; } }
+        public Type TypeId { get; }
 
         public RepositoryMetadata(Type repositoryInterface)
         {
             Assert.True(repositoryInterface.IsInterface, "The parameter should be interface.");
 
             this.repositoryInterface = repositoryInterface;
-            this.entityType = ExtractDomainType();
-            this.typeId = ExtractTypeId();
+            this.EntityType = ExtractDomainType();
+            this.TypeId = ExtractTypeId();
         }
 
         private Type ExtractDomainType()
