@@ -35,7 +35,12 @@ namespace Net.Data.Commons.Repository.Core
             var interfaces = ((TypeInfo)repositoryInterface).ImplementedInterfaces;
             if (interfaces.Count() < 1)
                 throw new InvalidOperationException($"Could not resolve domain type of {repositoryInterface}");
-            return interfaces.First().GenericTypeArguments[0];
+
+            foreach (var item in interfaces)
+                if (item.GenericTypeArguments.Length >= 2)
+                    return item.GenericTypeArguments[0];
+
+            throw new ArgumentException("The entity should be informated.");
         }
 
         private Type ExtractTypeId()
@@ -50,7 +55,12 @@ namespace Net.Data.Commons.Repository.Core
             var interfaces = ((TypeInfo)repositoryInterface).ImplementedInterfaces;
             if (interfaces.Count() < 1)
                 throw new InvalidOperationException($"Could not resolve id type of {repositoryInterface}");
-            return interfaces.First().GenericTypeArguments[1];
+
+            foreach (var item in interfaces)
+                if (item.GenericTypeArguments.Length >= 2)
+                    return item.GenericTypeArguments[1];
+
+            throw new ArgumentException("The id should be informated.");
         }
     }
 }

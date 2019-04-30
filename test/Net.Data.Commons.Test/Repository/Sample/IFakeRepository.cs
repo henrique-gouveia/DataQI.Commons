@@ -4,7 +4,7 @@ using Net.Data.Commons.Repository;
 
 namespace Net.Data.Commons.Test.Repository.Sample
 {
-    public interface IFakeRepository : ICrudRepository<FakeEntity, int>
+    public interface IFakeRepository : IDefaultRepository<FakeEntity>
     {
          IEnumerable<FakeEntity> FindByName(string name);
     }
