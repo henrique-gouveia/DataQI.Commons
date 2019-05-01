@@ -71,7 +71,7 @@ namespace Net.Data.Commons.Test.Repository.Core
             var exceptionMessage = exception.GetBaseException().Message;
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
-            Assert.Equal("The entity should be informated.", exceptionMessage);
+            Assert.Equal("Could not resolve entity type.", exceptionMessage);
         }
 
         private void AssertExpectedObject(object expected, object actual)
