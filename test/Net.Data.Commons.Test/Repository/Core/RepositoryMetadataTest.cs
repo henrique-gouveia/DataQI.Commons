@@ -64,6 +64,16 @@ namespace Net.Data.Commons.Test.Repository.Core
             Assert.Equal("The parameter should be interface.", exceptionMessage);          
         }
 
+        [Fact]
+        public void TestRejectInterfaceWithoutEntity()
+        {
+            var exception = Assert.Throws<ArgumentException>(() => new RepositoryMetadata(typeof(IFakeFailRepository)));
+            var exceptionMessage = exception.GetBaseException().Message;
+
+            Assert.IsType<ArgumentException>(exception.GetBaseException());
+            Assert.Equal("Could not resolve entity type.", exceptionMessage);
+        }
+
         private void AssertExpectedObject(object expected, object actual)
         {
             expected.ToExpectedObject().ShouldEqual(actual);
