@@ -8,6 +8,7 @@ namespace Net.Data.Commons.Repository.Core
 {
     public class RepositoryMetadata
     {
+        private const Type baseRepository = typeof(ICrudRepository<>);
         private readonly Type repositoryInterface;
 
         public Type EntityType { get; }
