@@ -1,1 +1,1 @@
-# Net.Data.Commons
+# DataQI - Data Query Interface
