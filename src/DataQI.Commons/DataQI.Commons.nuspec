@@ -3,11 +3,12 @@
   <metadata>
     <id>DataQI.Commons</id>
     <version>1.0.0-preview</version>
-    <title>Data Query Interface</title>
-    <authors>Henrique Gouveia, Brenno Brandão</authors>
-    <owners>Henrique Gouveia, Brenno Brandão</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Core para manipulação de dados com base em interface repositories.</description>
+    <authors>Henrique Gouveia</authors>
+    <owners>Henrique Gouveia</owners>
+    <licenseUrl>http://www.opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/henrique-gouveia/DataQI.Commons</projectUrl>    
+    <description>DataQI.Commons is built around essential features of the C# 6 / VB that for simplify SQL constructs through signature of methods in repository interface.</description>
     <dependencies>
       <group targetFramework=".NETStandard2.0">
         <dependency id="Microsoft.CSharp" version="4.5.0" />
@@ -16,7 +17,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="lib\netstandard2.0\Net.Data.Commons.dll" target="lib\netstandard2.0\Net.Data.Commons.dll" />
-    <file src="lib\netstandard2.0\Net.Data.Commons.pdb" target="lib\netstandard2.0\Net.Data.Commons.pdb" />
+    <file src="lib\netstandard2.0\DataQI.Commons.dll" target="lib\netstandard2.0\DataQI.Commons.dll" />
   </files>
 </package>
