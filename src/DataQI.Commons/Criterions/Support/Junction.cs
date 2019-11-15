@@ -16,6 +16,8 @@ namespace DataQI.Commons.Criterions.Support
             criterions.Add(criterion);
             return this;
         }
+        
+        public abstract string GetWhereOperator();
 
         public string ToSqlString()
         {
@@ -35,6 +37,5 @@ namespace DataQI.Commons.Criterions.Support
 
             return sqlWhereBuilder.ToString();
         }
-        public abstract string GetWhereOperator();
     }
 }

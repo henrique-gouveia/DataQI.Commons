@@ -17,26 +17,6 @@ namespace DataQI.Commons.Criterions.Support
             return CreateCriterion(propertyName, CriterionType.NotBetween, CreateParametersNames(parameterNameStart, parameterNameEnd));
         }
 
-        public static ICriterion Containing(string propertyName, string parameterName)
-        {
-            return CreateCriterion(propertyName, CriterionType.Containing, CreateParametersNames(parameterName));
-        }
-
-        public static ICriterion NotContaining(string propertyName, string parameterName)
-        {
-            return CreateCriterion(propertyName, CriterionType.NotContaining, CreateParametersNames(parameterName));
-        }
-
-        public static ICriterion EndingWith(string propertyName, string parameterName)
-        {
-            return CreateCriterion(propertyName, CriterionType.EndingWith, CreateParametersNames(parameterName));
-        }
- 
-        public static ICriterion NotEndingWith(string propertyName, string parameterName)
-        {
-            return CreateCriterion(propertyName, CriterionType.NotEndingWith, CreateParametersNames(parameterName));
-        }
- 
         public static ICriterion Equal(string propertyName, string parameterName)
         {
             return CreateCriterion(propertyName, CriterionType.Equals, CreateParametersNames(parameterName));
@@ -87,14 +67,14 @@ namespace DataQI.Commons.Criterions.Support
             return CreateCriterion(propertyName, CriterionType.LessThanEqual, CreateParametersNames(parameterName));
         }        
 
-        public static ICriterion StartingWith(string propertyName, string parameterName)
+        public static ICriterion Like(string propertyName, string parameterName)
         {
-            return CreateCriterion(propertyName, CriterionType.StartingWith, CreateParametersNames(parameterName));
+            return CreateCriterion(propertyName, CriterionType.Like, CreateParametersNames(parameterName));
         }
  
-        public static ICriterion NotStartingWith(string propertyName, string parameterName)
+        public static ICriterion NotLike(string propertyName, string parameterName)
         {
-            return CreateCriterion(propertyName, CriterionType.NotStartingWith, CreateParametersNames(parameterName));
+            return CreateCriterion(propertyName, CriterionType.NotLike, CreateParametersNames(parameterName));
         }
 
         public static ICriterion CreateCriterion(string propertyName, CriterionType type, params string[] parametersNames)

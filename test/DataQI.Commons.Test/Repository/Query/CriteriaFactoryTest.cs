@@ -58,8 +58,8 @@ namespace DataQI.Commons.Test.Repository.Query
         {
             var findByMethod = FakeRepositoryQueryMehod("FindByFirstNameAndLastName");
             var findByParameters = Parameters(
-                KeyValuePair.Create("firstName", (object) "fake name"), 
-                KeyValuePair.Create("lastName", (object) "fake last name"));
+                KeyValuePair.Create<string, object>("firstName", "fake name"), 
+                KeyValuePair.Create<string, object>("lastName", "fake last name"));
             var findByArgs = new object[] { findByParameters.firstName, findByParameters.lastName };
 
             var criteria = new CriteriaFactory(findByMethod, findByArgs).Create();
@@ -72,9 +72,9 @@ namespace DataQI.Commons.Test.Repository.Query
         {
             var findByMethod = FakeRepositoryQueryMehod("FindByFirstNameOrLastNameAndEmail");
             var findByParameters = Parameters(
-                KeyValuePair.Create("firstName", (object) "fake name"), 
-                KeyValuePair.Create("lastName", (object) "fake last name"),
-                KeyValuePair.Create("email", (object) "fake email"));
+                KeyValuePair.Create<string, object>("firstName", "fake name"), 
+                KeyValuePair.Create<string, object>("lastName", "fake last name"),
+                KeyValuePair.Create<string, object>("email", "fake email"));
             var findByArgs = new object[] { findByParameters.firstName, findByParameters.lastName, findByParameters.email };
 
             var criteria = new CriteriaFactory(findByMethod, findByArgs).Create();
@@ -85,12 +85,12 @@ namespace DataQI.Commons.Test.Repository.Query
         [Fact]
         public void TestCreateCriteriaAndOrPropertiesCorrectly()
         {
-            var findByMethod = FakeRepositoryQueryMehod("FindByFirstNameStartingWithAndLastNameContainingOrDateOfBirthBetween");
+            var findByMethod = FakeRepositoryQueryMehod("FindByFirstNameLikeAndLastNameLikeOrDateOfBirthBetween");
             var findByParameters = Parameters(
-                KeyValuePair.Create("firstName", (object) "fake name"), 
-                KeyValuePair.Create("lastName", (object) "fake last name"),
-                KeyValuePair.Create("startDateOfBirth", (object) "2000-01-01"),
-                KeyValuePair.Create("endDateOfBirth", (object) "2020-01-01"));
+                KeyValuePair.Create<string, object>("firstName", "fake name"), 
+                KeyValuePair.Create<string, object>("lastName", "fake last name"),
+                KeyValuePair.Create<string, object>("startDateOfBirth", "2000-01-01"),
+                KeyValuePair.Create<string, object>("endDateOfBirth", "2020-01-01"));
             var findByArgs = new object[] 
                 { 
                     findByParameters.firstName, 

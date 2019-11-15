@@ -115,41 +115,41 @@ namespace DataQI.Commons.Test.Criterios
             Assert.Equal("DateOfBirth NOT BETWEEN @dateOfBirthStart AND @dateOfBirthEnd", junction.ToSqlString());
         }
 
-        [Fact]
-        public void TestJunctionBuildSqlContainingCorrectly()
-        {
-            var junction = Restrictions.Disjuction();
-            junction.Add(Restrictions.Containing("FullName", "@fullName"));
+        // [Fact]
+        // public void TestJunctionBuildSqlContainingCorrectly()
+        // {
+        //     var junction = Restrictions.Disjuction();
+        //     junction.Add(Restrictions.Containing("FullName", "@fullName"));
 
-            Assert.Equal("FullName LIKE @fullName", junction.ToSqlString());
-        }
+        //     Assert.Equal("FullName LIKE @fullName", junction.ToSqlString());
+        // }
 
-        [Fact]
-        public void TestJunctionBuildSqlNotContainingCorrectly()
-        {
-            var junction = Restrictions.Conjuction();
-            junction.Add(Restrictions.NotContaining("FullName", "@fullName"));
+        // [Fact]
+        // public void TestJunctionBuildSqlNotContainingCorrectly()
+        // {
+        //     var junction = Restrictions.Conjuction();
+        //     junction.Add(Restrictions.NotContaining("FullName", "@fullName"));
 
-            Assert.Equal("FullName NOT LIKE @fullName", junction.ToSqlString());
-        }
+        //     Assert.Equal("FullName NOT LIKE @fullName", junction.ToSqlString());
+        // }
 
-        [Fact]
-        public void TestJunctionBuildSqlEndingWithCorrectly()
-        {
-            var junction = Restrictions.Conjuction();
-            junction.Add(Restrictions.EndingWith("FullName", "@fullName"));
+        // [Fact]
+        // public void TestJunctionBuildSqlEndingWithCorrectly()
+        // {
+        //     var junction = Restrictions.Conjuction();
+        //     junction.Add(Restrictions.EndingWith("FullName", "@fullName"));
 
-            Assert.Equal("FullName LIKE @fullName", junction.ToSqlString());
-        }
+        //     Assert.Equal("FullName LIKE @fullName", junction.ToSqlString());
+        // }
 
-        [Fact]
-        public void TestJunctionBuildSqlNotEndingWithCorrectly()
-        {
-            var junction = Restrictions.Disjuction();
-            junction.Add(Restrictions.NotEndingWith("FullName", "@fullName"));
+        // [Fact]
+        // public void TestJunctionBuildSqlNotEndingWithCorrectly()
+        // {
+        //     var junction = Restrictions.Disjuction();
+        //     junction.Add(Restrictions.NotEndingWith("FullName", "@fullName"));
 
-            Assert.Equal("FullName NOT LIKE @fullName", junction.ToSqlString());
-        }
+        //     Assert.Equal("FullName NOT LIKE @fullName", junction.ToSqlString());
+        // }
 
         [Fact]
         public void TestJunctionBuildSqlGreatherThanCorrectly()
@@ -224,22 +224,40 @@ namespace DataQI.Commons.Test.Criterios
         }
 
         [Fact]
-        public void TestJunctionBuildSqlStartingWithCorrectly()
+        public void TestJunctionBuildSqlLikeCorrectly()
         {
             var junction = Restrictions.Disjuction();
-            junction.Add(Restrictions.StartingWith("FullName", "@fullName"));
+            junction.Add(Restrictions.Like("FullName", "@fullName"));
 
             Assert.Equal("FullName LIKE @fullName", junction.ToSqlString());
         }
 
         [Fact]
-        public void TestJunctionBuildSqlNotStartingWithCorrectly()
+        public void TestJunctionBuildSqlNotLikeCorrectly()
         {
-            var junction = Restrictions.Disjuction();
-            junction.Add(Restrictions.NotStartingWith("FullName", "@fullName"));
+            var junction = Restrictions.Conjuction();
+            junction.Add(Restrictions.NotLike("FullName", "@fullName"));
 
             Assert.Equal("FullName NOT LIKE @fullName", junction.ToSqlString());
         }        
+
+        // [Fact]
+        // public void TestJunctionBuildSqlStartingWithCorrectly()
+        // {
+        //     var junction = Restrictions.Disjuction();
+        //     junction.Add(Restrictions.StartingWith("FullName", "@fullName"));
+
+        //     Assert.Equal("FullName LIKE @fullName", junction.ToSqlString());
+        // }
+
+        // [Fact]
+        // public void TestJunctionBuildSqlNotStartingWithCorrectly()
+        // {
+        //     var junction = Restrictions.Disjuction();
+        //     junction.Add(Restrictions.NotStartingWith("FullName", "@fullName"));
+
+        //     Assert.Equal("FullName NOT LIKE @fullName", junction.ToSqlString());
+        // }        
 
         [Fact]
         public void TestJunctionBuildSqlOrAndJunctionsPropertiesCorrectly()

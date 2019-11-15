@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 using DataQI.Commons.Extensions.Reflection;
@@ -14,16 +11,6 @@ namespace DataQI.Commons.Criterions.Support
         Between, 
         [CriterionTypeData(2, "{0} NOT BETWEEN {1} AND {2}")]
         NotBetween, 
-
-        [CriterionTypeData(1, "{0} LIKE {1}")]
-        Containing, 
-        [CriterionTypeData(1, "{0} NOT LIKE {1}")]
-        NotContaining,
-
-        [CriterionTypeData(1, "{0} LIKE {1}")]
-        EndingWith, 
-        [CriterionTypeData(1, "{0} NOT LIKE {1}")]
-        NotEndingWith, 
 
         [CriterionTypeData(1, "{0} = {1}")]
         Equals, 
@@ -51,10 +38,10 @@ namespace DataQI.Commons.Criterions.Support
         LessThanEqual, 
 
         [CriterionTypeData(1, "{0} LIKE {1}")]
-        StartingWith, 
+        Like,
         [CriterionTypeData(1, "{0} NOT LIKE {1}")]
-        NotStartingWith,
-        
+        NotLike,
+
         [CriterionTypeData(1, "{0} = {1}")]
         SimpleProperty
     }
@@ -75,7 +62,9 @@ namespace DataQI.Commons.Criterions.Support
 
     public static class CriterionTypeHelper
     {
-        private static readonly string TYPE_TEMPLATE = "(Is)?(Not)?(Null|Equals|Between|Containing|In|((End|Start)+ingWith))|(Less|Greater)+Than(Equal)?";
+        // Full Expression: "(Is)?(Not)?(Null|Equals|Between|Containing|In|Like|((End|Start)+ingWith))|(Less|Greater)+Than(Equal)?"
+        private static readonly string TYPE_TEMPLATE = "(Is)?(Not)?(Null|Equals|Between|In|Like)|(Less|Greater)+Than(Equal)?";
+
         private static readonly Regex TYPE_REGEX = new Regex(TYPE_TEMPLATE, RegexOptions.Compiled);
 
         public static CriterionType FromProperty(string source) 

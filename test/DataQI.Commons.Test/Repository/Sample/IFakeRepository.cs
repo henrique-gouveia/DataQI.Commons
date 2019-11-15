@@ -13,6 +13,6 @@ namespace DataQI.Commons.Test.Repository.Sample
 
          IEnumerable<FakeEntity> FindByFirstNameOrLastNameAndEmail(string firstName, string lastName, string email);
          
-         IEnumerable<FakeEntity> FindByFirstNameStartingWithAndLastNameContainingOrDateOfBirthBetween(string firstName, string lastName, DateTime startDateOfBirth, DateTime endDateOfBirth);
+         IEnumerable<FakeEntity> FindByFirstNameLikeAndLastNameLikeOrDateOfBirthBetween(string firstName, string lastName, DateTime startDateOfBirth, DateTime endDateOfBirth);
     }
 }

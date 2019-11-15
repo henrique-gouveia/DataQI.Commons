@@ -136,49 +136,49 @@ namespace DataQI.Commons.Test.Repository.Query
                 commandTemplateExpected: "{0} NOT BETWEEN {1} AND {2}");
         }
 
-        [Fact]
-        public void TestSupportContainingTypeCorrectly()
-        {
-            AssertSuportCriterionType(
-                source: "LastNameContaining", 
-                propertyNameExptected: "LastName", 
-                criterionTypeExpected: CriterionType.Containing,
-                numberOfArgsExpected: 1,
-                commandTemplateExpected: "{0} LIKE {1}");
-        }
+        // [Fact]
+        // public void TestSupportContainingTypeCorrectly()
+        // {
+        //     AssertSuportCriterionType(
+        //         source: "LastNameContaining", 
+        //         propertyNameExptected: "LastName", 
+        //         criterionTypeExpected: CriterionType.Containing,
+        //         numberOfArgsExpected: 1,
+        //         commandTemplateExpected: "{0} LIKE {1}");
+        // }
 
-        [Fact]
-        public void TestSupportNotContainingTypeCorrectly()
-        {
-            AssertSuportCriterionType(
-                source: "LastNameNotContaining", 
-                propertyNameExptected: "LastName", 
-                criterionTypeExpected: CriterionType.NotContaining,
-                numberOfArgsExpected: 1,
-                commandTemplateExpected: "{0} NOT LIKE {1}");
-        }
+        // [Fact]
+        // public void TestSupportNotContainingTypeCorrectly()
+        // {
+        //     AssertSuportCriterionType(
+        //         source: "LastNameNotContaining", 
+        //         propertyNameExptected: "LastName", 
+        //         criterionTypeExpected: CriterionType.NotContaining,
+        //         numberOfArgsExpected: 1,
+        //         commandTemplateExpected: "{0} NOT LIKE {1}");
+        // }
 
-        [Fact]
-        public void TestSupportEndingWithTypeCorrectly()
-        {
-            AssertSuportCriterionType(
-                source: "LastNameEndingWith", 
-                propertyNameExptected: "LastName", 
-                criterionTypeExpected: CriterionType.EndingWith,
-                numberOfArgsExpected: 1,
-                commandTemplateExpected: "{0} LIKE {1}");
-        }
+        // [Fact]
+        // public void TestSupportEndingWithTypeCorrectly()
+        // {
+        //     AssertSuportCriterionType(
+        //         source: "LastNameEndingWith", 
+        //         propertyNameExptected: "LastName", 
+        //         criterionTypeExpected: CriterionType.EndingWith,
+        //         numberOfArgsExpected: 1,
+        //         commandTemplateExpected: "{0} LIKE {1}");
+        // }
 
-        [Fact]
-        public void TestSupportNotEndingWithTypeCorrectly()
-        {
-            AssertSuportCriterionType(
-                source: "LastNameNotEndingWith", 
-                propertyNameExptected: "LastName", 
-                criterionTypeExpected: CriterionType.NotEndingWith,
-                numberOfArgsExpected: 1,
-                commandTemplateExpected: "{0} NOT LIKE {1}");
-        }
+        // [Fact]
+        // public void TestSupportNotEndingWithTypeCorrectly()
+        // {
+        //     AssertSuportCriterionType(
+        //         source: "LastNameNotEndingWith", 
+        //         propertyNameExptected: "LastName", 
+        //         criterionTypeExpected: CriterionType.NotEndingWith,
+        //         numberOfArgsExpected: 1,
+        //         commandTemplateExpected: "{0} NOT LIKE {1}");
+        // }
 
         [Fact]
         public void TestSupportEqualsTypeCorrectly()
@@ -291,26 +291,48 @@ namespace DataQI.Commons.Test.Repository.Query
         }
 
         [Fact]
-        public void TestSupportStartingWithTypeCorrectly()
+        public void TestSupportLikeTypeCorrectly()
         {
             AssertSuportCriterionType(
-                source: "LastNameStartingWith", 
+                source: "LastNameLike", 
                 propertyNameExptected: "LastName", 
-                criterionTypeExpected: CriterionType.StartingWith,
+                criterionTypeExpected: CriterionType.Like,
                 numberOfArgsExpected: 1,
                 commandTemplateExpected: "{0} LIKE {1}");
         }
 
         [Fact]
-        public void TestSupportNotStartingWithTypeCorrectly()
+        public void TestSupportNotLikeTypeCorrectly()
         {
             AssertSuportCriterionType(
-                source: "LastNameNotStartingWith", 
+                source: "LastNameNotLike", 
                 propertyNameExptected: "LastName", 
-                criterionTypeExpected: CriterionType.NotStartingWith,
+                criterionTypeExpected: CriterionType.NotLike,
                 numberOfArgsExpected: 1,
                 commandTemplateExpected: "{0} NOT LIKE {1}");
         }
+
+        // [Fact]
+        // public void TestSupportStartingWithTypeCorrectly()
+        // {
+        //     AssertSuportCriterionType(
+        //         source: "LastNameStartingWith", 
+        //         propertyNameExptected: "LastName", 
+        //         criterionTypeExpected: CriterionType.StartingWith,
+        //         numberOfArgsExpected: 1,
+        //         commandTemplateExpected: "{0} LIKE {1}");
+        // }
+
+        // [Fact]
+        // public void TestSupportNotStartingWithTypeCorrectly()
+        // {
+        //     AssertSuportCriterionType(
+        //         source: "LastNameNotStartingWith", 
+        //         propertyNameExptected: "LastName", 
+        //         criterionTypeExpected: CriterionType.NotStartingWith,
+        //         numberOfArgsExpected: 1,
+        //         commandTemplateExpected: "{0} NOT LIKE {1}");
+        // }
 
         private void AssertSuportCriterionType(string source, string propertyNameExptected, CriterionType criterionTypeExpected, 
             int numberOfArgsExpected, string commandTemplateExpected)
