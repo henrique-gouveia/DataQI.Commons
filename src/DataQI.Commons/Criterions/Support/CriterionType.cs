@@ -15,14 +15,14 @@ namespace DataQI.Commons.Criterions.Support
         [CriterionTypeData(2, "{0} NOT BETWEEN {1} AND {2}")]
         NotBetween, 
 
-        [CriterionTypeData(1, "{0} LIKE %{1}%")]
+        [CriterionTypeData(1, "{0} LIKE {1}")]
         Containing, 
-        [CriterionTypeData(1, "{0} NOT LIKE %{1}%")]
+        [CriterionTypeData(1, "{0} NOT LIKE {1}")]
         NotContaining,
 
-        [CriterionTypeData(1, "{0} LIKE %{1}")]
+        [CriterionTypeData(1, "{0} LIKE {1}")]
         EndingWith, 
-        [CriterionTypeData(1, "{0} NOT LIKE %{1}")]
+        [CriterionTypeData(1, "{0} NOT LIKE {1}")]
         NotEndingWith, 
 
         [CriterionTypeData(1, "{0} = {1}")]
@@ -31,9 +31,9 @@ namespace DataQI.Commons.Criterions.Support
         NotEquals,
 
         [CriterionTypeData(1, "{0} > {1}")]
-        GreatherThan,
+        GreaterThan,
         [CriterionTypeData(1, "{0} >= {1}")]
-        GreatherThanEqual, 
+        GreaterThanEqual, 
 
         [CriterionTypeData(1, "{0} IN {1}")]
         In, 
@@ -50,9 +50,9 @@ namespace DataQI.Commons.Criterions.Support
         [CriterionTypeData(1, "{0} <= {1}")]
         LessThanEqual, 
 
-        [CriterionTypeData(1, "{0} LIKE {1}%")]
+        [CriterionTypeData(1, "{0} LIKE {1}")]
         StartingWith, 
-        [CriterionTypeData(1, "{0} NOT LIKE {1}%")]
+        [CriterionTypeData(1, "{0} NOT LIKE {1}")]
         NotStartingWith,
         
         [CriterionTypeData(1, "{0} = {1}")]
@@ -75,7 +75,7 @@ namespace DataQI.Commons.Criterions.Support
 
     public static class CriterionTypeHelper
     {
-        private static readonly string TYPE_TEMPLATE = "(Is)?(Not)?(Null|Equals|Between|Containing|In|((End|Start)+ingWith))|(Less|Greather)+Than(Equal)?";
+        private static readonly string TYPE_TEMPLATE = "(Is)?(Not)?(Null|Equals|Between|Containing|In|((End|Start)+ingWith))|(Less|Greater)+Than(Equal)?";
         private static readonly Regex TYPE_REGEX = new Regex(TYPE_TEMPLATE, RegexOptions.Compiled);
 
         public static CriterionType FromProperty(string source) 

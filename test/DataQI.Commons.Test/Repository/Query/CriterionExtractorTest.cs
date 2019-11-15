@@ -144,7 +144,7 @@ namespace DataQI.Commons.Test.Repository.Query
                 propertyNameExptected: "LastName", 
                 criterionTypeExpected: CriterionType.Containing,
                 numberOfArgsExpected: 1,
-                commandTemplateExpected: "{0} LIKE %{1}%");
+                commandTemplateExpected: "{0} LIKE {1}");
         }
 
         [Fact]
@@ -155,7 +155,7 @@ namespace DataQI.Commons.Test.Repository.Query
                 propertyNameExptected: "LastName", 
                 criterionTypeExpected: CriterionType.NotContaining,
                 numberOfArgsExpected: 1,
-                commandTemplateExpected: "{0} NOT LIKE %{1}%");
+                commandTemplateExpected: "{0} NOT LIKE {1}");
         }
 
         [Fact]
@@ -166,7 +166,7 @@ namespace DataQI.Commons.Test.Repository.Query
                 propertyNameExptected: "LastName", 
                 criterionTypeExpected: CriterionType.EndingWith,
                 numberOfArgsExpected: 1,
-                commandTemplateExpected: "{0} LIKE %{1}");
+                commandTemplateExpected: "{0} LIKE {1}");
         }
 
         [Fact]
@@ -177,7 +177,7 @@ namespace DataQI.Commons.Test.Repository.Query
                 propertyNameExptected: "LastName", 
                 criterionTypeExpected: CriterionType.NotEndingWith,
                 numberOfArgsExpected: 1,
-                commandTemplateExpected: "{0} NOT LIKE %{1}");
+                commandTemplateExpected: "{0} NOT LIKE {1}");
         }
 
         [Fact]
@@ -203,23 +203,23 @@ namespace DataQI.Commons.Test.Repository.Query
         }
 
         [Fact]
-        public void TestSupportGreatherThanTypeCorrectly()
+        public void TestSupportGreaterThanTypeCorrectly()
         {
             AssertSuportCriterionType(
-                source: "DateOfBirthGreatherThan", 
+                source: "DateOfBirthGreaterThan", 
                 propertyNameExptected: "DateOfBirth", 
-                criterionTypeExpected: CriterionType.GreatherThan,
+                criterionTypeExpected: CriterionType.GreaterThan,
                 numberOfArgsExpected: 1,
                 commandTemplateExpected: "{0} > {1}");
         }
 
         [Fact]
-        public void TestSupportGreatherThanEqualTypeCorrectly()
+        public void TestSupportGreaterThanEqualTypeCorrectly()
         {
             AssertSuportCriterionType(
-                source: "DateOfBirthGreatherThanEqual", 
+                source: "DateOfBirthGreaterThanEqual", 
                 propertyNameExptected: "DateOfBirth", 
-                criterionTypeExpected: CriterionType.GreatherThanEqual,
+                criterionTypeExpected: CriterionType.GreaterThanEqual,
                 numberOfArgsExpected: 1,
                 commandTemplateExpected: "{0} >= {1}");
         }
@@ -298,7 +298,7 @@ namespace DataQI.Commons.Test.Repository.Query
                 propertyNameExptected: "LastName", 
                 criterionTypeExpected: CriterionType.StartingWith,
                 numberOfArgsExpected: 1,
-                commandTemplateExpected: "{0} LIKE {1}%");
+                commandTemplateExpected: "{0} LIKE {1}");
         }
 
         [Fact]
@@ -309,7 +309,7 @@ namespace DataQI.Commons.Test.Repository.Query
                 propertyNameExptected: "LastName", 
                 criterionTypeExpected: CriterionType.NotStartingWith,
                 numberOfArgsExpected: 1,
-                commandTemplateExpected: "{0} NOT LIKE {1}%");
+                commandTemplateExpected: "{0} NOT LIKE {1}");
         }
 
         private void AssertSuportCriterionType(string source, string propertyNameExptected, CriterionType criterionTypeExpected, 

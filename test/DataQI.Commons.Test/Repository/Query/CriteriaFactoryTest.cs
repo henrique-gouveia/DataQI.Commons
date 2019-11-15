@@ -44,13 +44,64 @@ namespace DataQI.Commons.Test.Repository.Query
         [Fact]
         public void TestCreateCriteriaSimplePropertyCorrectly()
         {
-            var findByNameMethod = FakeRepositoryQueryMehod("FindByName");
-            var findByNameParameters = Parameters(KeyValuePair.Create("name", (object) "fake name"));
-            var findByNameArgs = new object[] { findByNameParameters.name };
+            var findByMethod = FakeRepositoryQueryMehod("FindByName");
+            var findByParameters = Parameters(KeyValuePair.Create("name", (object) "fake name"));
+            var findByArgs = new object[] { findByParameters.name };
 
-            var criteria = new CriteriaFactory(findByNameMethod, findByNameArgs).Create();
+            var criteria = new CriteriaFactory(findByMethod, findByArgs).Create();
 
-            AssertCriteria(criteria, "(Name = @name)", findByNameParameters);
+            AssertCriteria(criteria, "(Name = @name)", findByParameters);
+        }
+
+        [Fact]
+        public void TestCreateCriteriaAndSimplePropertiesCorrectly()
+        {
+            var findByMethod = FakeRepositoryQueryMehod("FindByFirstNameAndLastName");
+            var findByParameters = Parameters(
+                KeyValuePair.Create("firstName", (object) "fake name"), 
+                KeyValuePair.Create("lastName", (object) "fake last name"));
+            var findByArgs = new object[] { findByParameters.firstName, findByParameters.lastName };
+
+            var criteria = new CriteriaFactory(findByMethod, findByArgs).Create();
+
+            AssertCriteria(criteria, "(FirstName = @firstName AND LastName = @lastName)", findByParameters);
+        }
+
+        [Fact]
+        public void TestCreateCriteriaOrAndSimplePropertiesCorrectly()
+        {
+            var findByMethod = FakeRepositoryQueryMehod("FindByFirstNameOrLastNameAndEmail");
+            var findByParameters = Parameters(
+                KeyValuePair.Create("firstName", (object) "fake name"), 
+                KeyValuePair.Create("lastName", (object) "fake last name"),
+                KeyValuePair.Create("email", (object) "fake email"));
+            var findByArgs = new object[] { findByParameters.firstName, findByParameters.lastName, findByParameters.email };
+
+            var criteria = new CriteriaFactory(findByMethod, findByArgs).Create();
+
+            AssertCriteria(criteria, "(FirstName = @firstName) OR (LastName = @lastName AND Email = @email)", findByParameters);
+        }
+
+        [Fact]
+        public void TestCreateCriteriaAndOrPropertiesCorrectly()
+        {
+            var findByMethod = FakeRepositoryQueryMehod("FindByFirstNameStartingWithAndLastNameContainingOrDateOfBirthBetween");
+            var findByParameters = Parameters(
+                KeyValuePair.Create("firstName", (object) "fake name"), 
+                KeyValuePair.Create("lastName", (object) "fake last name"),
+                KeyValuePair.Create("startDateOfBirth", (object) "2000-01-01"),
+                KeyValuePair.Create("endDateOfBirth", (object) "2020-01-01"));
+            var findByArgs = new object[] 
+                { 
+                    findByParameters.firstName, 
+                    findByParameters.lastName, 
+                    findByParameters.startDateOfBirth,
+                    findByParameters.endDateOfBirth 
+                };
+
+            var criteria = new CriteriaFactory(findByMethod, findByArgs).Create();
+
+            AssertCriteria(criteria, "(FirstName LIKE @firstName AND LastName LIKE @lastName) OR (DateOfBirth BETWEEN @startDateOfBirth AND @endDateOfBirth)", findByParameters);
         }
 
         private MethodInfo FakeRepositoryQueryMehod(string name) 

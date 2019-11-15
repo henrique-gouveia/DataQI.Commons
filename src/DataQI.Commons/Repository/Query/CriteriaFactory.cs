@@ -1,4 +1,4 @@
-using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Reflection;
@@ -14,8 +14,10 @@ namespace DataQI.Commons.Repository.Query
     public class CriteriaFactory
     {
         private readonly MethodInfo queryMethod;
-
+        
         private readonly object[] queryMethodArgs;
+
+        private readonly IEnumerator<ParameterInfo> queryMethodParameters;
 
         public CriteriaFactory(MethodInfo queryMethod, object[] queryMethodArgs)
         {
@@ -24,8 +26,8 @@ namespace DataQI.Commons.Repository.Query
 
             this.queryMethod = queryMethod;
             this.queryMethodArgs = queryMethodArgs;
+            this.queryMethodParameters = queryMethod.GetParameters().Cast<ParameterInfo>().GetEnumerator();
         }
-
 
         public ICriteria Create()
         {
@@ -44,59 +46,53 @@ namespace DataQI.Commons.Repository.Query
         private void AddCriterions(ICriteria criteria)
         {
             var extractor = new CriterionExtractor(queryMethod.Name);
-            var orCriterions = extractor.GetEnumerator();
-
-            while (orCriterions.MoveNext())
-            {
-                var orCriterion = orCriterions.Current;
-                criteria.Add(CreateDisjunction(orCriterion));
-            }
+            criteria.Add(CreateDisjunction(extractor.GetEnumerator()));
         }
 
-        private void AddParameters(ICriteria criteria)
-        {
-            criteria.WithParameters(CreateCriteriaParameters());
-        }
+        private void AddParameters(ICriteria criteria) => criteria.WithParameters(CreateCriteriaParameters());
 
-        private IJunction CreateDisjunction(OrCriterion orCriterion)
+        private IJunction CreateDisjunction(IEnumerator<OrCriterion> orCriterions)
         {
             var disjunction = Restrictions.Disjuction();
 
-            var andCriterions = orCriterion.GetEnumerator();
-            while (andCriterions.MoveNext()) 
+            while (orCriterions.MoveNext()) 
             {
-                var andCriterion = andCriterions.Current;
-                var andCriterionParameters = new List<string>();
-                disjunction.Add(CreateConjunction(andCriterion));
+                var orCriterion = orCriterions.Current;
+                disjunction.Add(CreateConjunction(orCriterion.GetEnumerator()));
             }
 
             return disjunction;
         }
 
-        private IJunction CreateConjunction(Criterion andCriterion)
+        private IJunction CreateConjunction(IEnumerator<Criterion> andCriterions)
         {
             var conjunction = Restrictions.Conjuction();
-            var andCriterionParameters = CreateCriterionParameters(andCriterion.Type);
 
-            conjunction.Add(Restrictions
-                .CreateCriterion(
-                    andCriterion.PropertyName, 
-                    andCriterion.Type, 
-                    andCriterionParameters)
-                );
+            while (andCriterions.MoveNext()) 
+            {
+                var andCriterion = andCriterions.Current;
+                conjunction.Add(CreateCriterion(andCriterion));
+            }
 
             return conjunction;
+        }
+
+        private ICriterion CreateCriterion(Criterion criterion)
+        {
+            var criterionParameters = CreateCriterionParameters(criterion.Type);
+            return Restrictions.CreateCriterion(
+                criterion.PropertyName, 
+                criterion.Type, 
+                criterionParameters);
         }
 
         private string[] CreateCriterionParameters(CriterionType type)
         {
             var criterionParameters = new List<string>();
-            
-            var parameters = queryMethod.GetParameters();
-            int parameterIndex = 0;
 
             for (var i = 0; i < type.NumberOfArgs(); i++)
-                criterionParameters.Add($"@{parameters[parameterIndex++].Name}");
+                if (queryMethodParameters.MoveNext() && queryMethodParameters.Current != null)
+                    criterionParameters.Add($"@{queryMethodParameters.Current.Name}");
 
             return criterionParameters.ToArray();
         }

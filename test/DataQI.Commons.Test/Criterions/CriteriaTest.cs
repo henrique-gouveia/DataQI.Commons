@@ -27,6 +27,32 @@ namespace DataQI.Commons.Test.Criterios
         }
 
         [Fact]
+        public void TestJunctionBuildSqlConjuctionAndConjunctionsPropertiesCorrectly()
+        {
+            var andFirstNameJuction = Restrictions.Conjuction().Add(Restrictions.Equal("FirstName", "@firstName"));
+            var andLastNameJuction = Restrictions.Conjuction().Add(Restrictions.NotEqual("LastName", "@lastName"));
+            var andJunction = Restrictions
+                .Conjuction()
+                .Add(andFirstNameJuction)
+                .Add(andLastNameJuction);
+
+            Assert.Equal("(FirstName = @firstName) AND (LastName <> @lastName)", andJunction.ToSqlString());
+        }
+
+        [Fact]
+        public void TestJunctionBuildSqlConjuctionOrDisjunctionsPropertiesCorrectly()
+        {
+            var orFirstNameJuction = Restrictions.Disjuction().Add(Restrictions.NotEqual("FirstName", "@firstName"));
+            var orLastNameJuction = Restrictions.Disjuction().Add(Restrictions.Equal("LastName", "@lastName"));
+            var andJunction = Restrictions
+                .Conjuction()
+                .Add(orFirstNameJuction)
+                .Add(orLastNameJuction);
+
+            Assert.Equal("(FirstName <> @firstName) AND (LastName = @lastName)", andJunction.ToSqlString());
+        }
+
+        [Fact]
         public void TestJunctionBuildSqlDisjunctionSimplePropertyCorrectly()
         {
             var orJunction = Restrictions.Disjuction();
@@ -43,6 +69,32 @@ namespace DataQI.Commons.Test.Criterios
             orJunction.Add(Restrictions.Equal("LastName", "@lastName"));
 
             Assert.Equal("FirstName = @firstName OR LastName = @lastName", orJunction.ToSqlString());
+        }
+
+        [Fact]
+        public void TestJunctionBuildSqlDisjunctionOrDisjunctionsPropertiesCorrectly()
+        {
+            var orFirstNameJuction = Restrictions.Disjuction().Add(Restrictions.NotEqual("FirstName", "@firstName"));
+            var orLastNameJuction = Restrictions.Disjuction().Add(Restrictions.Equal("LastName", "@lastName"));
+            var orJunction = Restrictions
+                .Disjuction()
+                .Add(orFirstNameJuction)
+                .Add(orLastNameJuction);
+
+            Assert.Equal("(FirstName <> @firstName) OR (LastName = @lastName)", orJunction.ToSqlString());
+        }
+
+        [Fact]
+        public void TestJunctionBuildSqlDisjunctionAndConjunctionsPropertiesCorrectly()
+        {
+            var andFirstNameJuction = Restrictions.Conjuction().Add(Restrictions.Equal("FirstName", "@firstName"));
+            var andLastNameJuction = Restrictions.Conjuction().Add(Restrictions.NotEqual("LastName", "@lastName"));
+            var orJunction = Restrictions
+                .Disjuction()
+                .Add(andFirstNameJuction)
+                .Add(andLastNameJuction);
+
+            Assert.Equal("(FirstName = @firstName) OR (LastName <> @lastName)", orJunction.ToSqlString());
         }
 
         [Fact]
@@ -69,7 +121,7 @@ namespace DataQI.Commons.Test.Criterios
             var junction = Restrictions.Disjuction();
             junction.Add(Restrictions.Containing("FullName", "@fullName"));
 
-            Assert.Equal("FullName LIKE %@fullName%", junction.ToSqlString());
+            Assert.Equal("FullName LIKE @fullName", junction.ToSqlString());
         }
 
         [Fact]
@@ -78,7 +130,7 @@ namespace DataQI.Commons.Test.Criterios
             var junction = Restrictions.Conjuction();
             junction.Add(Restrictions.NotContaining("FullName", "@fullName"));
 
-            Assert.Equal("FullName NOT LIKE %@fullName%", junction.ToSqlString());
+            Assert.Equal("FullName NOT LIKE @fullName", junction.ToSqlString());
         }
 
         [Fact]
@@ -87,7 +139,7 @@ namespace DataQI.Commons.Test.Criterios
             var junction = Restrictions.Conjuction();
             junction.Add(Restrictions.EndingWith("FullName", "@fullName"));
 
-            Assert.Equal("FullName LIKE %@fullName", junction.ToSqlString());
+            Assert.Equal("FullName LIKE @fullName", junction.ToSqlString());
         }
 
         [Fact]
@@ -96,14 +148,14 @@ namespace DataQI.Commons.Test.Criterios
             var junction = Restrictions.Disjuction();
             junction.Add(Restrictions.NotEndingWith("FullName", "@fullName"));
 
-            Assert.Equal("FullName NOT LIKE %@fullName", junction.ToSqlString());
+            Assert.Equal("FullName NOT LIKE @fullName", junction.ToSqlString());
         }
 
         [Fact]
         public void TestJunctionBuildSqlGreatherThanCorrectly()
         {
             var junction = Restrictions.Disjuction();
-            junction.Add(Restrictions.GreatherThan("Age", "@age"));
+            junction.Add(Restrictions.GreaterThan("Age", "@age"));
 
             Assert.Equal("Age > @age", junction.ToSqlString());
         }
@@ -112,7 +164,7 @@ namespace DataQI.Commons.Test.Criterios
         public void TestJunctionBuildSqlGreatherThanEqualCorrectly()
         {
             var junction = Restrictions.Conjuction();
-            junction.Add(Restrictions.GreatherThanEqual("Age", "@age"));
+            junction.Add(Restrictions.GreaterThanEqual("Age", "@age"));
 
             Assert.Equal("Age >= @age", junction.ToSqlString());
         }
@@ -177,7 +229,7 @@ namespace DataQI.Commons.Test.Criterios
             var junction = Restrictions.Disjuction();
             junction.Add(Restrictions.StartingWith("FullName", "@fullName"));
 
-            Assert.Equal("FullName LIKE @fullName%", junction.ToSqlString());
+            Assert.Equal("FullName LIKE @fullName", junction.ToSqlString());
         }
 
         [Fact]
@@ -186,7 +238,7 @@ namespace DataQI.Commons.Test.Criterios
             var junction = Restrictions.Disjuction();
             junction.Add(Restrictions.NotStartingWith("FullName", "@fullName"));
 
-            Assert.Equal("FullName NOT LIKE @fullName%", junction.ToSqlString());
+            Assert.Equal("FullName NOT LIKE @fullName", junction.ToSqlString());
         }        
 
         [Fact]

@@ -47,14 +47,14 @@ namespace DataQI.Commons.Criterions.Support
             return CreateCriterion(propertyName, CriterionType.NotEquals, CreateParametersNames(parameterName));
         }
 
-        public static ICriterion GreatherThan(string propertyName, string parameterName)
+        public static ICriterion GreaterThan(string propertyName, string parameterName)
         {
-            return CreateCriterion(propertyName, CriterionType.GreatherThan, CreateParametersNames(parameterName));
+            return CreateCriterion(propertyName, CriterionType.GreaterThan, CreateParametersNames(parameterName));
         }
 
-        public static ICriterion GreatherThanEqual(string propertyName, string parameterName)
+        public static ICriterion GreaterThanEqual(string propertyName, string parameterName)
         {
-            return CreateCriterion(propertyName, CriterionType.GreatherThanEqual, CreateParametersNames(parameterName));
+            return CreateCriterion(propertyName, CriterionType.GreaterThanEqual, CreateParametersNames(parameterName));
         }
 
         public static ICriterion In(string propertyName, string parameterName)
