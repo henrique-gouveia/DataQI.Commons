@@ -1,9 +1,5 @@
-using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Text;
-
-using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Criterions.Support
 {

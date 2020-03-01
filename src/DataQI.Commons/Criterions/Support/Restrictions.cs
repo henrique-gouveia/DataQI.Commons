@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Generic;
-
-using DataQI.Commons.Repository.Query;
 
 namespace DataQI.Commons.Criterions.Support
 {

@@ -1,7 +1,6 @@
 using Xunit;
 
 using DataQI.Commons.Criterions.Support;
-using DataQI.Commons.Test.Repository.Sample;
 
 namespace DataQI.Commons.Test.Criterios
 {
