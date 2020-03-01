@@ -89,6 +89,10 @@ var personsByDateRegisterBetween = personRepository.FindByDateRegisterBetween(Co
 | **And** | FindByName**And**Email | where Name = @name **and** Email = @email
 | **Or** | FindByName**Or**Email | where Name = @name **or** Email = @email
 
+## Limitations and caveats
+
+DataQI is in the experimental phase. It does attempt to solve some problems, but is expected that some improvements turn possible to arrive a stable version.
+
 ## License
 
 DataQI Commons is released under the [MIT License](https://opensource.org/licenses/MIT).
