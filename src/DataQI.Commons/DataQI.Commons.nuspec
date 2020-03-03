@@ -5,7 +5,7 @@
     <version>1.0.0-preview</version>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <authors>Henrique Gouveia</authors>
-    <owners>Henrique Gouveia</owners>
+    <owners>Henrique Gouveia; Brenno Brandão</owners>
     <licenseUrl>http://www.opensource.org/licenses/MIT</licenseUrl>
     <projectUrl>https://github.com/henrique-gouveia/DataQI.Commons</projectUrl>    
     <description>DataQI.Commons is built around essential features of the C# 6 that for simplify SQL constructs through signature of methods in repository interface.</description>
