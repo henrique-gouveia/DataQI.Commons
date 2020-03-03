@@ -1,6 +1,6 @@
 # DataQI Commons [![NuGet](https://img.shields.io/nuget/v/DataQI.Commons.svg)](https://www.nuget.org/packages/DataQI.Commons/)
 
-Data Query Interface Commons is built around essential features of the C# 6 / VB that provides shared infrastructure containing technology neutral repository interfaces underpinning every DataQI module.
+Data Query Interface Commons is built around essential features of the C# 6 / VB that provides shared infrastructure containing technology-neutral repository interfaces underpinning every DataQI module.
 
 ## Getting Started
 
@@ -91,7 +91,7 @@ var personsByDateRegisterBetween = personRepository.FindByDateRegisterBetween(Co
 
 ## Limitations and caveats
 
-DataQI is in the experimental phase. It does attempt to solve some problems, but is expected that some improvements turn possible to arrive a stable version.
+DataQI is in the experimental phase. It does attempt to solve some problems, but is expected that some improvements make possible to arrive a stable version.
 
 ## License
 
