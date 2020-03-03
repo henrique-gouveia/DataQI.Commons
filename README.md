@@ -93,6 +93,13 @@ var personsByDateRegisterBetween = personRepository.FindByDateRegisterBetween(Co
 
 DataQI is in the experimental phase. It does attempt to solve some problems, but is expected that some improvements turn possible to arrive a stable version.
 
+## Contributors
+
+* Henrique Gouveia
+* Brenno Brandão                                          
+
+A [recent list of contributors](https://github.com/henrique-gouveia/DataQI.Commons/graphs/contributors) can always be obtained on GitHub.
+
 ## License
 
 DataQI Commons is released under the [MIT License](https://opensource.org/licenses/MIT).
