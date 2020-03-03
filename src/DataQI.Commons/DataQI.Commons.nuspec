@@ -8,7 +8,7 @@
     <owners>Henrique Gouveia</owners>
     <licenseUrl>http://www.opensource.org/licenses/MIT</licenseUrl>
     <projectUrl>https://github.com/henrique-gouveia/DataQI.Commons</projectUrl>    
-    <description>DataQI.Commons is built around essential features of the C# 6 / VB that for simplify SQL constructs through signature of methods in repository interface.</description>
+    <description>DataQI.Commons is built around essential features of the C# 6 that for simplify SQL constructs through signature of methods in repository interface.</description>
     <dependencies>
       <group targetFramework=".NETStandard2.0">
         <dependency id="Microsoft.CSharp" version="4.5.0" />
