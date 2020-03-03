@@ -6,7 +6,7 @@ using DataQI.Commons.Criterions;
 
 namespace DataQI.Commons.Repository
 {
-    public interface ICrudRepository<TEntity, TId> where TEntity : class, new()
+    public interface ICrudRepository<TEntity, TId> : IDisposable where TEntity : class, new()
     {
         void Delete(TId entity);
 
