@@ -287,7 +287,7 @@ namespace DataQI.Commons.Test.Repository.Core
                 .Setup(r => r.Find(It.IsAny<Func<ICriteria, ICriteria>>()))
                 .Returns(entitiesExpected);
 
-            var entities = fakeRepository.FindByName(entityExpected.Name);
+            var entities = fakeRepository.FindByFirstName(entityExpected.Name);
 
             AssertExpectedObject(entitiesExpected, entities);
         }

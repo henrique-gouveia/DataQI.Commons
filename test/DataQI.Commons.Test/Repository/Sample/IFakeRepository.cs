@@ -1,18 +1,41 @@
 using System;
 using System.Collections.Generic;
 
-using DataQI.Commons.Repository;
-
 namespace DataQI.Commons.Test.Repository.Sample
 {
     public interface IFakeRepository : IDefaultRepository<FakeEntity>
     {
-         IEnumerable<FakeEntity> FindByName(string name);
-         
-         IEnumerable<FakeEntity> FindByFirstNameAndLastName(string firstName, string lastName);
+        object InvalidQueryMethod(string arg);
 
-         IEnumerable<FakeEntity> FindByFirstNameOrLastNameAndEmail(string firstName, string lastName, string email);
-         
-         IEnumerable<FakeEntity> FindByFirstNameLikeAndLastNameLikeOrDateOfBirthBetween(string firstName, string lastName, DateTime startDateOfBirth, DateTime endDateOfBirth);
+        IEnumerable<FakeEntity> FindByFirstName(string name);
+        IEnumerable<FakeEntity> FindByLastNameNot(string name);
+
+        IEnumerable<FakeEntity> FindByBirthDateBetween(DateTime start, DateTime end);
+        IEnumerable<FakeEntity> FindByHireDateNotBetween(DateTime start, DateTime end);
+
+        IEnumerable<FakeEntity> FindByTitleContaining(string name);
+        IEnumerable<FakeEntity> FindByTitleNotContaining(string name);
+        IEnumerable<FakeEntity> FindByTitleEndingWith(string name);
+        IEnumerable<FakeEntity> FindByTitleNotEndingWith(string name);
+        IEnumerable<FakeEntity> FindByTitleStartingWith(string name);
+        IEnumerable<FakeEntity> FindByTitleNotStartingWith(string name);
+        IEnumerable<FakeEntity> FindByTitleLike(string name);
+        IEnumerable<FakeEntity> FindByTitleNotLike(string name);
+        
+        IEnumerable<FakeEntity> FindByAgeGreaterThan(int age);
+        IEnumerable<FakeEntity> FindByAgeGreaterThanEqual(int age);
+        
+        IEnumerable<FakeEntity> FindByAgeLessThan(int age);
+        IEnumerable<FakeEntity> FindByAgeLessThanEqual(int age);
+
+        IEnumerable<FakeEntity> FindByCityIn(string[] status);
+        IEnumerable<FakeEntity> FindByCountryNotIn(string[] status);
+
+        IEnumerable<FakeEntity> FindByEmailNull();
+        IEnumerable<FakeEntity> FindByPhoneNotNull();
+        
+        IEnumerable<FakeEntity> FindByFirstNameOrLastName(string firstName, string lastName);
+        IEnumerable<FakeEntity> FindByFirstNameAndLastName(string firstName, string lastName);
+        IEnumerable<FakeEntity> FindByStateAndHireDateGreaterThanEqualOrCityInAndEmailEndingWith(string state, DateTime hireDate, string[] cities, string email);
     }
 }
