@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using DataQI.Commons.Query.Support;
 
 namespace DataQI.Commons.Query

@@ -8,7 +8,6 @@ using DataQI.Commons.Query;
 using DataQI.Commons.Query.Support;
 using DataQI.Commons.Util;
 
-using static DataQI.Commons.Repository.Query.QueryMember;
 using static DataQI.Commons.Repository.Query.QueryTree;
 
 namespace DataQI.Commons.Repository.Query
