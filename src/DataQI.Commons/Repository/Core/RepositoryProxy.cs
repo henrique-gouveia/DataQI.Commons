@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-using DataQI.Commons.Criterions;
+using DataQI.Commons.Query;
 using DataQI.Commons.Repository.Query;
 using DataQI.Commons.Util;
 
@@ -76,7 +76,7 @@ namespace DataQI.Commons.Repository.Core
         {
             Func<ICriteria, ICriteria> criteriaBuilder = criteria => 
             {
-                var factory = new CriteriaFactory(targetMethod, args);
+                var factory = new QueryFactory(targetMethod, args);
                 factory.BuildCriteria(criteria);
 
                 return criteria;

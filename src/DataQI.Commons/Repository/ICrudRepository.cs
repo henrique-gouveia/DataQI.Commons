@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using DataQI.Commons.Criterions;
+using DataQI.Commons.Query;
 
 namespace DataQI.Commons.Repository
 {
