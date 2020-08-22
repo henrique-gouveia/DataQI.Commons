@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 namespace DataQI.Commons.Query
 {
     public interface IJunction : ICriterion
