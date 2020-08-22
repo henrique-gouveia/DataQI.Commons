@@ -75,7 +75,7 @@ namespace DataQI.Commons.Test.Repository.Query
             Assert.False(members.MoveNext());
         }
 
-        private void AssertMembers(OrQueryMember member, QueryMember[] exptectedMembers)
+        private void AssertMembers(Node member, QueryMember[] exptectedMembers)
         {
             var members = member.GetEnumerator();
 

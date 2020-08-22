@@ -6,7 +6,7 @@ using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Query
 {
-    public class QueryTree : IEnumerable<QueryTree.OrQueryMember>
+    public class QueryTree : IEnumerable<QueryTree.Node>
     {
         private static readonly string PrefixPattern = @"\w+By";
 
@@ -25,62 +25,35 @@ namespace DataQI.Commons.Repository.Query
             return Regex.Split(input, pattern, RegexOptions.Compiled);
         }
 
-        #region IEnumerable<OrCriterion> implementations
-        public IEnumerator<QueryTree.OrQueryMember> GetEnumerator()
-        {
-            return predicate.GetEnumerator();
-        }
+        public IEnumerator<QueryTree.Node> GetEnumerator() => predicate.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
+        private class Predicate : IEnumerable<Node>
         {
-            return GetEnumerator();
-        }
-        #endregion
-
-        private class Predicate : IEnumerable<OrQueryMember>
-        {
-            private readonly ICollection<OrQueryMember> nodes = new List<OrQueryMember>();
+            private readonly ICollection<Node> nodes = new List<Node>();
 
             public Predicate(string predicate)
             {
                 foreach (var source in Split(predicate, "Or"))
-                    nodes.Add(new OrQueryMember(source));
+                    nodes.Add(new Node(source));
             }
 
-            #region IEnumerable<OrQueryMember> implementations
-            public IEnumerator<OrQueryMember> GetEnumerator()
-            {
-                return nodes.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-            #endregion
+            public IEnumerator<Node> GetEnumerator() => nodes.GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
-        public class OrQueryMember : IEnumerable<QueryMember>
+        public class Node : IEnumerable<QueryMember>
         {
             private readonly ICollection<QueryMember> members = new List<QueryMember>();
 
-            public OrQueryMember(string source)
+            public Node(string source)
             {
                 foreach (var criterion in Split(source, "And"))
                     members.Add(new QueryMember(criterion));
             }
 
-            #region IEnumerable<QueryMember> implementations
-            public IEnumerator<QueryMember> GetEnumerator()
-            {
-                return members.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-            #endregion
+            public IEnumerator<QueryMember> GetEnumerator() => members.GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }
