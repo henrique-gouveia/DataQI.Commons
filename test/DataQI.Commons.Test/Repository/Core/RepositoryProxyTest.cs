@@ -8,12 +8,12 @@ using ExpectedObjects;
 using Moq;
 using Xunit;
 
-using DataQI.Commons.Criterions;
-using DataQI.Commons.Criterions.Support;
 using DataQI.Commons.Repository;
 using DataQI.Commons.Repository.Core;
 
 using DataQI.Commons.Test.Repository.Sample;
+using DataQI.Commons.Query;
+using DataQI.Commons.Query.Support;
 
 namespace DataQI.Commons.Test.Repository.Core
 {
@@ -163,7 +163,7 @@ namespace DataQI.Commons.Test.Repository.Core
         public void TestInvokeFindCorrectly(bool useAsyncMethod)
         {
             Func<ICriteria, ICriteria> criteriaBuilder = criteria => 
-                criteria.Add(Restrictions.Equal("Name", "@name"));
+                criteria.Add(Restrictions.Equal("Name", "Name"));
             var entitiesExpected = CreateTestFakeEntities();
             SetupFakeRepositoryFindMethod(criteriaBuilder, entitiesExpected, useAsyncMethod);
 
