@@ -1,8 +1,10 @@
 /.vs
 /.vscode
+/.idea
 /packages
 bin
 obj
+lib
 *.user
 *.nupkg
 *.suo
