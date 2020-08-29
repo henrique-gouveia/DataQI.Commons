@@ -10,9 +10,13 @@ dotnet_csproj:
   version: '{version}'
   package_version: '{version}'
 before_build:
-- cmd: >-
+- ps: |
+    choco install opencover.portable --no-progress
+    choco install codecov --no-progress
     dotnet restore
-
     dotnet build
 build:
   verbosity: minimal
+after_test:
+  - OpenCover.Console.exe -register:user -target:"C:/Program Files/dotnet/dotnet.exe" -targetargs:test -filter:"+[DataQI.Commons*]* -[DataQI.Commons.Test*]*" -output:".\DataQI_Commons_Coverage.xml" -oldstyle
+  - codecov -f "DataQI_Commons_Coverage.xml" -t $env:CODECOV_TOKEN
