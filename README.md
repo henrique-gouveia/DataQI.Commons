@@ -1,6 +1,8 @@
-# DataQI Commons [![NuGet](https://img.shields.io/nuget/v/DataQI.Commons.svg)](https://www.nuget.org/packages/DataQI.Commons/)
+# DataQI Commons
 
 Data Query Interface Commons is written in C# and built around essential features of the .NET Standard that provides shared infrastructure containing technology-neutral repository interfaces underpinning every DataQI Providers.
+
+[![NuGet](https://img.shields.io/nuget/v/DataQI.Commons.svg)](https://www.nuget.org/packages/DataQI.Commons/) [![Build status](https://ci.appveyor.com/api/projects/status/rl2ja69994rt3ei6?svg=true)](https://ci.appveyor.com/project/henrique-gouveia/dataqi-commons) [![codecov](https://codecov.io/gh/henrique-gouveia/DataQI.Commons/branch/master/graph/badge.svg)](https://codecov.io/gh/henrique-gouveia/DataQI.Commons)
 
 ## Features
 
