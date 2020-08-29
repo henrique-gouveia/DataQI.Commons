@@ -1,6 +1,8 @@
-# DataQI Commons [![NuGet](https://img.shields.io/nuget/v/DataQI.Commons.svg)](https://www.nuget.org/packages/DataQI.Commons/)
+# DataQI Commons
 
-Data Query Interface .NET Commons is written in C# and built around essential features of the .NET Standard that provides shared infrastructure containing technology-neutral repository interfaces underpinning every DataQI Providers.
+Data Query Interface Commons is written in C# and built around essential features of the .NET Standard that provides shared infrastructure containing technology-neutral repository interfaces underpinning every DataQI Providers.
+
+[![NuGet](https://img.shields.io/nuget/v/DataQI.Commons.svg)](https://www.nuget.org/packages/DataQI.Commons/) [![Build status](https://ci.appveyor.com/api/projects/status/rl2ja69994rt3ei6?svg=true)](https://ci.appveyor.com/project/henrique-gouveia/dataqi-commons)
 
 ## Features
 
@@ -27,6 +29,7 @@ See [Nuget](https://www.nuget.org/packages/DataQI.Commons) for other options.
 * New! Added a new Query Parser
 * New! Added support for the keywords **_Containing_**, **_StartingWith_** and **_EndingWith_**
 * Changed! Keyword **_Equals_** to **_Equal_**
+* Changed! Keyword **_IsNull_** to **_Null_**
 * Fixed! [issue3](https://github.com/henrique-gouveia/DataQI.Dapper.FastCrud/issues/3)
 
 **v1.0.0 - 2020/03**
