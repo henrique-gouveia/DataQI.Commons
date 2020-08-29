@@ -8,7 +8,7 @@ dotnet_csproj:
 before_build:
 - cmd: >-
     dotnet restore
+
     dotnet build
-    dotnet test
 build:
   verbosity: minimal
