@@ -2,7 +2,7 @@
 
 namespace DataQI.Commons.Test.Repository.Sample
 {
-    public interface IFakeFailRepository : IDefaultWithoutEntityRepository
+    public interface IFakeInvalidRepository : IDefaultWithoutEntityRepository
     {
 
     }

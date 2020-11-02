@@ -1,9 +1,11 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
 namespace DataQI.Commons.Extensions.Reflection
 {
+    [ExcludeFromCodeCoverage]
     public static class CustomAttributeExtensions
     {
         public static bool HasAttribute<T>(this Assembly element) where T : Attribute

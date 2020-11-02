@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-using Bogus;
 using ExpectedObjects;
-using Moq;
 using Xunit;
 
 using DataQI.Commons.Repository;
@@ -14,17 +12,6 @@ namespace DataQI.Commons.Test.Repository.Core
 {
     public class RepositoryMetadataTest
     {
-        private static readonly Faker faker = new Faker();
-        private readonly Mock<IFakeRepository> fakeRepositoryMock;
-        private readonly IFakeRepository fakeRepository;
-
-        public RepositoryMetadataTest()
-        {
-            fakeRepositoryMock = new Mock<IFakeRepository>();
-            fakeRepository = RepositoryProxy.Create<IFakeRepository>(() => 
-                fakeRepositoryMock.Object);
-        }
-
         [Fact]
         public void TestExtractRepositoryMetadataCorrectly()
         {
@@ -63,17 +50,17 @@ namespace DataQI.Commons.Test.Repository.Core
             var exceptionMessage = exception.GetBaseException().Message;
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
-            Assert.Equal("The parameter should be interface.", exceptionMessage);          
+            Assert.Equal("The parameter should be interface", exceptionMessage);          
         }
 
         [Fact]
         public void TestRejectInterfaceWithoutEntity()
         {
-            var exception = Assert.Throws<ArgumentException>(() => new RepositoryMetadata(typeof(IFakeFailRepository)));
+            var exception = Assert.Throws<ArgumentException>(() => new RepositoryMetadata(typeof(IFakeInvalidRepository)));
             var exceptionMessage = exception.GetBaseException().Message;
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
-            Assert.Equal("Could not resolve entity type.", exceptionMessage);
+            Assert.Equal("Could not resolve entity type", exceptionMessage);
         }
 
         private void AssertExpectedObject(object expected, object actual)

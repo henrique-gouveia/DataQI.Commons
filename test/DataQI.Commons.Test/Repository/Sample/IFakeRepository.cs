@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DataQI.Commons.Test.Repository.Sample
 {
     public interface IFakeRepository : IDefaultRepository<FakeEntity>
     {
         object InvalidQueryMethod(string arg);
+
+        IQueryable<FakeEntity> Query();
 
         IEnumerable<FakeEntity> FindByFirstName(string name);
         IEnumerable<FakeEntity> FindByLastNameNot(string name);

@@ -2,7 +2,8 @@
 
 namespace DataQI.Commons.Test.Repository.Sample
 {
-    public interface IDefaultRepository<TEntity> : ICrudRepository<TEntity, int> where TEntity : class, new()
+    public interface IDefaultRepository<TEntity> : ICrudRepository<TEntity, int> 
+        where TEntity : class, new()
     {
 
     }

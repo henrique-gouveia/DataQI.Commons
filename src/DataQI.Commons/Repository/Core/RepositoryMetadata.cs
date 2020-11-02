@@ -18,7 +18,7 @@ namespace DataQI.Commons.Repository.Core
 
         public RepositoryMetadata(Type repositoryInterface)
         {
-            Assert.True(repositoryInterface.IsInterface, "The parameter should be interface.");
+            Assert.True(repositoryInterface.IsInterface, "The parameter should be interface");
 
             this.repositoryInterface = repositoryInterface;
             ExtractMetadata();
@@ -32,9 +32,7 @@ namespace DataQI.Commons.Repository.Core
                 IdType = idType;
             }
             else
-            {
                 ExtractMetadataFromDefaultInterface();
-            }
         }
 
         private bool TryExtractMetadataFromCurrentInterface(out Type entityType, out Type idType)
@@ -64,6 +62,7 @@ namespace DataQI.Commons.Repository.Core
         private void ExtractMetadataFromDefaultInterface()
         {
             var interfaces = ((TypeInfo)repositoryInterface).ImplementedInterfaces;
+
             if (interfaces.Count() < 1)
                 throw new InvalidOperationException($"Could not resolve entity/id type of {repositoryInterface}");
 
@@ -76,8 +75,8 @@ namespace DataQI.Commons.Repository.Core
                 }
             }    
 
-            Assert.NotNull(EntityType, "Could not resolve entity type.");
-            Assert.NotNull(IdType, "Could not resolve id type.");
+            Assert.NotNull(EntityType, "Could not resolve entity type");
+            Assert.NotNull(IdType, "Could not resolve id type");
         }
     }
 }
