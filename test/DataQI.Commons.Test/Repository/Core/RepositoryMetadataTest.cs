@@ -56,7 +56,7 @@ namespace DataQI.Commons.Test.Repository.Core
         [Fact]
         public void TestRejectInterfaceWithoutEntity()
         {
-            var exception = Assert.Throws<ArgumentException>(() => new RepositoryMetadata(typeof(IFakeInvalidRepository)));
+            var exception = Assert.Throws<ArgumentException>(() => new RepositoryMetadata(typeof(IInvalidRepository)));
             var exceptionMessage = exception.GetBaseException().Message;
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());

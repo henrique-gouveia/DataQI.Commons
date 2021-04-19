@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace DataQI.Commons.Test.Repository.Sample
 {
-    public interface IFakeRepository : IDefaultRepository<FakeEntity>
+    public interface IFakeRepository : IEntityRepository<FakeEntity>
     {
-        object InvalidQueryMethod(string arg);
-
+        FakeEntity NotImplementedMethod();
         IQueryable<FakeEntity> Query();
 
         IEnumerable<FakeEntity> FindByFirstName(string name);
@@ -25,10 +23,10 @@ namespace DataQI.Commons.Test.Repository.Sample
         IEnumerable<FakeEntity> FindByTitleNotStartingWith(string name);
         IEnumerable<FakeEntity> FindByTitleLike(string name);
         IEnumerable<FakeEntity> FindByTitleNotLike(string name);
-        
+
         IEnumerable<FakeEntity> FindByAgeGreaterThan(int age);
         IEnumerable<FakeEntity> FindByAgeGreaterThanEqual(int age);
-        
+
         IEnumerable<FakeEntity> FindByAgeLessThan(int age);
         IEnumerable<FakeEntity> FindByAgeLessThanEqual(int age);
 
@@ -37,7 +35,7 @@ namespace DataQI.Commons.Test.Repository.Sample
 
         IEnumerable<FakeEntity> FindByEmailNull();
         IEnumerable<FakeEntity> FindByPhoneNotNull();
-        
+
         IEnumerable<FakeEntity> FindByFirstNameOrLastName(string firstName, string lastName);
         IEnumerable<FakeEntity> FindByFirstNameAndLastName(string firstName, string lastName);
         IEnumerable<FakeEntity> FindByStateAndHireDateGreaterThanEqualOrCityInAndEmailEndingWith(string state, DateTime hireDate, string[] cities, string email);

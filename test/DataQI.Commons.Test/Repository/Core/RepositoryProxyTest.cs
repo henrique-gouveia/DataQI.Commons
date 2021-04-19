@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -12,7 +13,6 @@ using DataQI.Commons.Query;
 using DataQI.Commons.Query.Support;
 using DataQI.Commons.Repository.Core;
 using DataQI.Commons.Test.Repository.Sample;
-using System.Linq;
 
 namespace DataQI.Commons.Test.Repository.Core
 {
@@ -20,12 +20,12 @@ namespace DataQI.Commons.Test.Repository.Core
     {
         private static readonly Faker faker = new Faker();
 
-        private readonly Mock<IDefaultRepository<FakeEntity>> defaultImplementationMock;
+        private readonly Mock<IEntityRepository<FakeEntity>> defaultImplementationMock;
         private readonly IFakeRepository fakeRepository;
 
         public RepositoryProxyTest()
         {
-            defaultImplementationMock = new Mock<IDefaultRepository<FakeEntity>>();
+            defaultImplementationMock = new Mock<IEntityRepository<FakeEntity>>();
             fakeRepository = RepositoryProxy<IFakeRepository>.Create(() => defaultImplementationMock.Object);
         }
 
@@ -38,6 +38,23 @@ namespace DataQI.Commons.Test.Repository.Core
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
             Assert.Equal("Repository must not be null", exceptionMessage);
+        }
+
+        [Fact]
+        public void TestRejectsNotImplementedMethod()
+        {
+            var fakeRepository = RepositoryProxy<IFakeRepository>.Create(() => new CustomFakeRepository());
+
+            var exception = Assert.Throws<TargetInvocationException>(() =>
+                fakeRepository.NotImplementedMethod());
+            var exceptionMessage = exception.GetBaseException().Message;
+
+            var expectedMessage = string.Format("Unknown method {0} return type {1}", 
+                nameof(IFakeRepository.NotImplementedMethod), 
+                typeof(FakeEntity).FullName);
+
+            Assert.IsType<TargetInvocationException>(exception.GetBaseException());
+            Assert.Equal(expectedMessage, exceptionMessage);
         }
 
         [Theory]
@@ -320,8 +337,8 @@ namespace DataQI.Commons.Test.Repository.Core
 
         private FakeEntity CreateTestFakeEntity(int? fakeEntityId = null, string fakeEntityName = null)
         {
-            var id = fakeEntityId.HasValue ? fakeEntityId.Value : faker.Random.Int(0, 100);
-            var name = fakeEntityName != null ? fakeEntityName : faker.Person.FullName;
+            var id = fakeEntityId ?? faker.Random.Int(0, 100);
+            var name = fakeEntityName ?? faker.Person.FullName;
 
             return new FakeEntity(id, name);
         }
