@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -8,38 +9,52 @@ using ExpectedObjects;
 using Moq;
 using Xunit;
 
-using DataQI.Commons.Repository;
-using DataQI.Commons.Repository.Core;
-
-using DataQI.Commons.Test.Repository.Sample;
 using DataQI.Commons.Query;
 using DataQI.Commons.Query.Support;
+using DataQI.Commons.Repository.Core;
+using DataQI.Commons.Test.Repository.Sample;
 
 namespace DataQI.Commons.Test.Repository.Core
 {
     public class RepositoryProxyTest
     {
         private static readonly Faker faker = new Faker();
-        private readonly RepositoryFactory repositoryFactory;
-        private readonly Mock<IFakeRepository> customImplementationMock;
+
+        private readonly Mock<IEntityRepository<FakeEntity>> defaultImplementationMock;
         private readonly IFakeRepository fakeRepository;
 
         public RepositoryProxyTest()
         {
-            customImplementationMock = new Mock<IFakeRepository>();
-            repositoryFactory = new FakeRepositoryFactory(customImplementationMock.Object);
-            fakeRepository = repositoryFactory.GetRepository<IFakeRepository>();
+            defaultImplementationMock = new Mock<IEntityRepository<FakeEntity>>();
+            fakeRepository = RepositoryProxy<IFakeRepository>.Create(() => defaultImplementationMock.Object);
         }
 
         [Fact]
         public void TestRejectsNullRepository()
         {
-            var exception = Assert.Throws<TargetInvocationException>(() => 
-                new FakeRepositoryFactory(null).GetRepository<ICrudRepository<Object, int>>());
+            var exception = Assert.Throws<TargetInvocationException>(() =>
+                RepositoryProxy<IFakeRepository>.Create(() => null));
             var exceptionMessage = exception.GetBaseException().Message;
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
             Assert.Equal("Repository must not be null", exceptionMessage);
+        }
+
+        [Fact]
+        public void TestRejectsNotImplementedMethod()
+        {
+            var fakeRepository = RepositoryProxy<IFakeRepository>.Create(() => new CustomFakeRepository());
+
+            var exception = Assert.Throws<TargetInvocationException>(() =>
+                fakeRepository.NotImplementedMethod());
+            var exceptionMessage = exception.GetBaseException().Message;
+
+            var expectedMessage = string.Format("Unknown method {0} return type {1}", 
+                nameof(IFakeRepository.NotImplementedMethod), 
+                typeof(FakeEntity).FullName);
+
+            Assert.IsType<TargetInvocationException>(exception.GetBaseException());
+            Assert.Equal(expectedMessage, exceptionMessage);
         }
 
         [Theory]
@@ -63,16 +78,16 @@ namespace DataQI.Commons.Test.Repository.Core
         {
             if (useAsyncMethod)
             {
-                customImplementationMock
+                defaultImplementationMock
                     .Setup(r => r.InsertAsync(It.IsAny<FakeEntity>()))
-                    .Callback<FakeEntity>(callback)
+                    .Callback(callback)
                     .Returns(Task.FromResult(0));
             }
             else 
             {
-                customImplementationMock
+                defaultImplementationMock
                     .Setup(r => r.Insert(It.IsAny<FakeEntity>()))
-                    .Callback<FakeEntity>(callback);
+                    .Callback(callback);
             }
         }
 
@@ -109,16 +124,16 @@ namespace DataQI.Commons.Test.Repository.Core
         {
             if (useAsyncMethod)
             {
-                customImplementationMock
+                defaultImplementationMock
                     .Setup(r => r.SaveAsync(It.IsAny<FakeEntity>()))
-                    .Callback<FakeEntity>(callback)
+                    .Callback(callback)
                     .Returns(Task.FromResult(0));
             }
             else
             {
-                customImplementationMock
+                defaultImplementationMock
                     .Setup(r => r.Save(It.IsAny<FakeEntity>()))
-                    .Callback<FakeEntity>(callback);
+                    .Callback(callback);
             }
         }
 
@@ -145,13 +160,13 @@ namespace DataQI.Commons.Test.Repository.Core
         {
             if (useAsyncMethod)
             {
-                customImplementationMock
+                defaultImplementationMock
                     .Setup(r => r.ExistsAsync(fakeEntityId))
                     .Returns(Task.FromResult(returnsExists));
             }
             else
             {
-                customImplementationMock
+                defaultImplementationMock
                     .Setup(r => r.Exists(fakeEntityId))
                     .Returns(returnsExists);
             }
@@ -162,8 +177,7 @@ namespace DataQI.Commons.Test.Repository.Core
         [InlineData(true)]
         public void TestInvokeFindCorrectly(bool useAsyncMethod)
         {
-            Func<ICriteria, ICriteria> criteriaBuilder = criteria => 
-                criteria.Add(Restrictions.Equal("Name", "Name"));
+            Func<ICriteria, ICriteria> criteriaBuilder = criteria => criteria.Add(Restrictions.Equal("Name", "Name"));
             var entitiesExpected = CreateTestFakeEntities();
             SetupFakeRepositoryFindMethod(criteriaBuilder, entitiesExpected, useAsyncMethod);
 
@@ -180,13 +194,13 @@ namespace DataQI.Commons.Test.Repository.Core
         {
             if (useAsyncMethod)
             {
-                customImplementationMock
+                defaultImplementationMock
                     .Setup(r => r.FindAsync(criteriaBuilder))
                     .Returns(Task.FromResult<IEnumerable<FakeEntity>>(returnsFakeEntities));
             }
             else
             {
-                customImplementationMock
+                defaultImplementationMock
                     .Setup(r => r.Find(criteriaBuilder))
                     .Returns(returnsFakeEntities);
             }
@@ -213,13 +227,13 @@ namespace DataQI.Commons.Test.Repository.Core
         {
             if (useAsyncMethod)
             {
-                customImplementationMock
+                defaultImplementationMock
                     .Setup(r => r.FindAllAsync())
                     .Returns(Task.FromResult<IEnumerable<FakeEntity>>(returnsFakeEntities));
             }
             else
             {
-                customImplementationMock
+                defaultImplementationMock
                     .Setup(r => r.FindAll())
                     .Returns(returnsFakeEntities);
             }
@@ -246,13 +260,13 @@ namespace DataQI.Commons.Test.Repository.Core
         {
             if (useAsyncMethod)
             {
-                customImplementationMock
+                defaultImplementationMock
                     .Setup(r => r.FindOneAsync(returnsFakeEntity.Id))
                     .Returns(Task.FromResult<FakeEntity>(returnsFakeEntity));
             }
             else
             {
-                customImplementationMock
+                defaultImplementationMock
                     .Setup(r => r.FindOne(returnsFakeEntity.Id))
                     .Returns(returnsFakeEntity);
             }
@@ -268,28 +282,40 @@ namespace DataQI.Commons.Test.Repository.Core
             if (useAsyncMethod)
             {
                 fakeRepository.Delete(entityExpected.Id);
-                customImplementationMock.Verify(r => r.Delete(entityExpected.Id), Times.Once());
+                defaultImplementationMock.Verify(r => r.Delete(entityExpected.Id), Times.Once());
             }
             else
             {
                 fakeRepository.DeleteAsync(entityExpected.Id).GetAwaiter().GetResult();
-                customImplementationMock.Verify(r => r.DeleteAsync(entityExpected.Id), Times.Once());
+                defaultImplementationMock.Verify(r => r.DeleteAsync(entityExpected.Id), Times.Once());
             }
         }
 
         [Fact]
-        public void TestInvokeNonDefaultFindMethodCorrectly()
+        public void TestInvokeCustomizedFindMethodCorrectly()
         {
             var entityExpected = CreateTestFakeEntity();
             var entitiesExpected = new List<FakeEntity>() { entityExpected };
 
-            customImplementationMock
+            defaultImplementationMock
                 .Setup(r => r.Find(It.IsAny<Func<ICriteria, ICriteria>>()))
                 .Returns(entitiesExpected);
 
             var entities = fakeRepository.FindByFirstName(entityExpected.Name);
 
             AssertExpectedObject(entitiesExpected, entities);
+        }
+
+        [Fact]
+        public void TestInvokeCustomizedQueryMethodCorrectly()
+        {
+            var entitiesExpected = CreateTestFakeEntities().AsQueryable();
+            var customRepository = RepositoryProxy<IFakeRepository>.Create(()
+                => new CustomFakeRepository(entitiesExpected));
+
+            IQueryable<FakeEntity> entities = customRepository.Query();
+
+            AssertExpectedObject(entitiesExpected.ToList(), entities.ToList());
         }
 
         private void AssertExpectedObject(object expected, object actual)
@@ -311,25 +337,10 @@ namespace DataQI.Commons.Test.Repository.Core
 
         private FakeEntity CreateTestFakeEntity(int? fakeEntityId = null, string fakeEntityName = null)
         {
-            var id = fakeEntityId.HasValue ? fakeEntityId.Value : faker.Random.Int(0, 100);
-            var name = fakeEntityName != null ? fakeEntityName : faker.Person.FullName;
+            var id = fakeEntityId ?? faker.Random.Int(0, 100);
+            var name = fakeEntityName ?? faker.Person.FullName;
 
             return new FakeEntity(id, name);
-        }
-
-        private class FakeRepositoryFactory : RepositoryFactory
-        {
-            private readonly object customImplementation;
-
-            public FakeRepositoryFactory(object customImplementation)
-            {
-                this.customImplementation = customImplementation;
-            }
-
-            protected override object GetCustomImplementation(Type repositoryInterface) 
-            {
-                return customImplementation;
-            }
         }
     }
 }

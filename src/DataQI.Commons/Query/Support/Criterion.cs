@@ -5,7 +5,7 @@ namespace DataQI.Commons.Query.Support
         private readonly string propertyName;
         private readonly WhereOperator whereOperator;
 
-        internal Criterion(string propertyName, WhereOperator whereOperator)
+        protected Criterion(string propertyName, WhereOperator whereOperator)
         {
             this.propertyName = propertyName;
             this.whereOperator = whereOperator;

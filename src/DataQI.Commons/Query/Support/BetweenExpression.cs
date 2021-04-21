@@ -1,5 +1,3 @@
-using System;
-
 namespace DataQI.Commons.Query.Support
 {
     public class BetweenExpression : Criterion
