@@ -1,3 +1,4 @@
+using DataQI.Commons.Util;
 using System;
 
 namespace DataQI.Commons.Repository.Core
@@ -14,13 +15,16 @@ namespace DataQI.Commons.Repository.Core
         public TRepository GetRepository<TRepository>(object customImplementation)
             where TRepository : class
         {
-            return RepositoryProxy.Create<TRepository>(() => customImplementation);
+            Assert.NotNull(customImplementation, "Custom Repository Implementation must not be null");
+            return RepositoryProxy<TRepository>.Create(() => customImplementation);
         }
 
+        public RepositoryMetadata GetRepositoryMetadata<TRepository>()
+            where TRepository : class
+            => GetRepositoryMetadata(typeof(TRepository));
+
         public RepositoryMetadata GetRepositoryMetadata(Type repositoryInterface)
-        {
-            return new RepositoryMetadata(repositoryInterface);
-        }
+            => new RepositoryMetadata(repositoryInterface);
 
         protected abstract object GetCustomImplementation(Type repositoryInterface);
     }
