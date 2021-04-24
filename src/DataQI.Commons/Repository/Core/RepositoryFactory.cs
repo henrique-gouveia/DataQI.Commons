@@ -1,31 +1,33 @@
-using DataQI.Commons.Util;
 using System;
+using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Core
 {
     public abstract class RepositoryFactory
     {
-        public TRepository GetRepository<TRepository>()
+        public TRepository GetRepository<TRepository>(params object[] args)
             where TRepository : class
         {
-            var customImplementation = GetCustomImplementation(typeof(TRepository));
-            return GetRepository<TRepository>(customImplementation);
+            var repositoryInstance = GetRepositoryInstance(typeof(TRepository), args);
+            Assert.NotNull(repositoryInstance, "Repository Instance must not be null");
+
+            return GetRepository<TRepository>(() => repositoryInstance);
         }
 
-        public TRepository GetRepository<TRepository>(object customImplementation)
+        public TRepository GetRepository<TRepository>(Func<object> repositoryFactory)
             where TRepository : class
         {
-            Assert.NotNull(customImplementation, "Custom Repository Implementation must not be null");
-            return RepositoryProxy<TRepository>.Create(() => customImplementation);
+            Assert.NotNull(repositoryFactory, "Repository Factory must not be null");
+            return RepositoryProxy<TRepository>.Create(repositoryFactory);
         }
 
         public RepositoryMetadata GetRepositoryMetadata<TRepository>()
             where TRepository : class
             => GetRepositoryMetadata(typeof(TRepository));
 
-        public RepositoryMetadata GetRepositoryMetadata(Type repositoryInterface)
-            => new RepositoryMetadata(repositoryInterface);
+        public RepositoryMetadata GetRepositoryMetadata(Type repositoryType)
+            => new RepositoryMetadata(repositoryType);
 
-        protected abstract object GetCustomImplementation(Type repositoryInterface);
+        protected abstract object GetRepositoryInstance(Type repositoryType, params object[] args);
     }
 }

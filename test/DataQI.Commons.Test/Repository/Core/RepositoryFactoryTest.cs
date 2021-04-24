@@ -1,6 +1,8 @@
 ﻿using System;
-using Xunit;
+
 using Moq;
+using Xunit;
+
 using DataQI.Commons.Repository.Core;
 using DataQI.Commons.Test.Repository.Sample;
 
@@ -8,38 +10,50 @@ namespace DataQI.Commons.Test.Repository.Core
 {
     public class RepositoryFactoryTest
     {
-        private readonly Mock<IFakeRepository> customImplementationMock;
-        private readonly RepositoryFactory repositoryFactory;
+        private readonly Mock<IFakeRepository> fakeRepositoryMock;
+        private readonly RepositoryFactory fakeRepositoryFactory;
 
         public RepositoryFactoryTest()
         {
-            customImplementationMock = new Mock<IFakeRepository>();
-            repositoryFactory = new FakeRepositoryFactory(customImplementationMock.Object);
+            fakeRepositoryMock = new Mock<IFakeRepository>();
+            fakeRepositoryFactory = new FakeRepositoryFactory(() => fakeRepositoryMock.Object);
         }
 
         [Fact]
-        public void TestRejectsNullCustomImplementation()
+        public void TestRejectsNullRepositoryInstance()
         {
             var exception = Assert.Throws<ArgumentException>(() =>
-                new FakeRepositoryFactory(null).GetRepository<IFakeRepository>());
+                new FakeRepositoryFactory(() => null).GetRepository<IFakeRepository>());
             var exceptionMessage = exception.GetBaseException().Message;
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
-            Assert.Equal("Custom Repository Implementation must not be null", exceptionMessage);
+            Assert.Equal("Repository Instance must not be null", exceptionMessage);
+        }
+
+        [Fact]
+        public void TestRejectsNullRepositoryFactory()
+        {
+            Func<object> respositoryFactory = null;
+
+            var exception = Assert.Throws<ArgumentException>(() =>
+                new FakeRepositoryFactory().GetRepository<IFakeRepository>(respositoryFactory));
+            var exceptionMessage = exception.GetBaseException().Message;
+
+            Assert.IsType<ArgumentException>(exception.GetBaseException());
+            Assert.Equal("Repository Factory must not be null", exceptionMessage);
         }
 
         [Fact]
         public void TestGetRepositoryCorrectly()
         {
-            var repository = repositoryFactory.GetRepository<IFakeRepository>();
+            var repository = fakeRepositoryFactory.GetRepository<IFakeRepository>();
             Assert.NotNull(repository);
         }
-
 
         [Fact]
         public void TestGetRepositoryMetadataCorrectly()
         {
-            var repositoryMetadata = repositoryFactory.GetRepositoryMetadata<IFakeRepository>();
+            var repositoryMetadata = fakeRepositoryFactory.GetRepositoryMetadata<IFakeRepository>();
 
             Assert.NotNull(repositoryMetadata);
             Assert.Equal(typeof(int), repositoryMetadata.IdType);
@@ -48,13 +62,16 @@ namespace DataQI.Commons.Test.Repository.Core
 
         private class FakeRepositoryFactory : RepositoryFactory
         {
-            private readonly object customImplementation;
+            private readonly Func<object> repositoryFactory;
 
-            public FakeRepositoryFactory(object customImplementation)
-                => this.customImplementation = customImplementation;
+            public FakeRepositoryFactory() : this(null)
+            { }
 
-            protected override object GetCustomImplementation(Type repositoryInterface)
-                => customImplementation;
+            public FakeRepositoryFactory(Func<object> repositoryFactory)
+                => this.repositoryFactory = repositoryFactory;
+
+            protected override object GetRepositoryInstance(Type repositoryType, params object[] args)
+                => repositoryFactory();
         }
     }
 }
