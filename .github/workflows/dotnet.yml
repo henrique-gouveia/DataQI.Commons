@@ -29,22 +29,29 @@ jobs:
       with:
         dotnet-version: 2.2.300
 
+    # Install tools
     - name: Install tools
       run: dotnet tool install --global dotnet-reportgenerator-globaltool
 
-    # Restore, Build, Test and Package
+    # Restore
     - name: Install dependencies
       run: dotnet restore
+    
+    # Build
     - name: Build
       run: dotnet build --configuration Release --no-restore
+
+    # Test
     - name: Test
       run: dotnet test --configuration Release --no-restore --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput='./TestResults/'
+    
     - name: Package
       if: ${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/hotfix/') || startsWith(github.ref, 'refs/heads/release/') }}
       run: dotnet pack --configuration Release --no-restore -o lib
 
     # Upload
     - name: Upload artifacts
+      if: ${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/hotfix/') || startsWith(github.ref, 'refs/heads/release/') }}
       uses: actions/upload-artifact@v2
       with:
         name: artifacts
