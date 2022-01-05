@@ -26,14 +26,20 @@ See [Nuget](https://www.nuget.org/packages/DataQI.Commons) for other options.
 
 ## News
 
+**v1.2.0 - 2021/01**
+
+* New! Method _GetRepository_ on Repository Factory can receive a lambda expression to create a repository instance
+* Change! Method _GetRepository_ on Repository Factory can receive arguments for the repository constructor
+* Change! TEntity requirements on generic interface _ICrudRepository_
+
 **v1.1.0 - 2020/09**
 
 * New! Added a new Criteria Query API Core
 * New! Added a new Query Parser
 * New! Added support for the keywords **_Containing_**, **_StartingWith_** and **_EndingWith_**
-* Changed! Keyword **_Equals_** to **_Equal_**
-* Changed! Keyword **_IsNull_** to **_Null_**
-* Fixed! [issue3](https://github.com/henrique-gouveia/DataQI.Dapper.FastCrud/issues/3)
+* Change! Keyword **_Equals_** to **_Equal_**
+* Change! Keyword **_IsNull_** to **_Null_**
+* Fix! [issue3](https://github.com/henrique-gouveia/DataQI.Dapper.FastCrud/issues/3)
 
 **v1.0.0 - 2020/03**
 
