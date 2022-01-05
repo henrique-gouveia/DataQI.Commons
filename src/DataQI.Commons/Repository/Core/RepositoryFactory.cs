@@ -9,7 +9,7 @@ namespace DataQI.Commons.Repository.Core
             where TRepository : class
         {
             var repositoryInstance = GetRepositoryInstance(typeof(TRepository), args);
-            Assert.NotNull(repositoryInstance, "Repository Instance must not be null");
+            Assert.NotNull(repositoryInstance, "Repository instance must not be null");
 
             return GetRepository<TRepository>(() => repositoryInstance);
         }
@@ -17,7 +17,7 @@ namespace DataQI.Commons.Repository.Core
         public TRepository GetRepository<TRepository>(Func<object> repositoryFactory)
             where TRepository : class
         {
-            Assert.NotNull(repositoryFactory, "Repository Factory must not be null");
+            Assert.NotNull(repositoryFactory, "Repository factory must not be null");
             return RepositoryProxy<TRepository>.Create(repositoryFactory);
         }
 

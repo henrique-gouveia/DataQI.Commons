@@ -27,7 +27,7 @@ namespace DataQI.Commons.Test.Repository.Core
             var exceptionMessage = exception.GetBaseException().Message;
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
-            Assert.Equal("Repository Instance must not be null", exceptionMessage);
+            Assert.Equal("Repository instance must not be null", exceptionMessage);
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace DataQI.Commons.Test.Repository.Core
             var exceptionMessage = exception.GetBaseException().Message;
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
-            Assert.Equal("Repository Factory must not be null", exceptionMessage);
+            Assert.Equal("Repository factory must not be null", exceptionMessage);
         }
 
         [Fact]

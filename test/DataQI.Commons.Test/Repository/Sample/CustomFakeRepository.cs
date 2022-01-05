@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace DataQI.Commons.Test.Repository.Sample
@@ -8,7 +7,7 @@ namespace DataQI.Commons.Test.Repository.Sample
     {
         private readonly IEnumerable<FakeEntity> fakeEntities;
 
-        public CustomFakeRepository() : this(Array.Empty<FakeEntity>())
+        public CustomFakeRepository() : this(Enumerable.Empty<FakeEntity>())
         { }
 
         public CustomFakeRepository(IEnumerable<FakeEntity> fakeEntities)

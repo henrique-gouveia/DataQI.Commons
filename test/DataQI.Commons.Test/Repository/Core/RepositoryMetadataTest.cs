@@ -50,7 +50,7 @@ namespace DataQI.Commons.Test.Repository.Core
             var exceptionMessage = exception.GetBaseException().Message;
 
             Assert.IsType<ArgumentException>(exception.GetBaseException());
-            Assert.Equal("The parameter should be interface", exceptionMessage);          
+            Assert.Equal("The parameter should be an interface", exceptionMessage);          
         }
 
         [Fact]

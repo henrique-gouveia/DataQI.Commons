@@ -29,7 +29,7 @@ namespace DataQI.Commons.Test.Util
             var exception = Assert.Throws<ArgumentException>(() =>
                 AssertUtil.IsType(objOne.GetType(), objTwo, expectedMessage));
 
-            AssertExcetion<ArgumentException>(exception, expectedMessage);
+            AssertException<ArgumentException>(exception, expectedMessage);
         }
 
         [Fact]
@@ -51,7 +51,7 @@ namespace DataQI.Commons.Test.Util
             var exception = Assert.Throws<ArgumentException>(() =>
                 AssertUtil.IsType<TypeTwo>(objOne, expectedMessage));
 
-            AssertExcetion<ArgumentException>(exception, expectedMessage);
+            AssertException<ArgumentException>(exception, expectedMessage);
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace DataQI.Commons.Test.Util
             var exception = Assert.Throws<ArgumentException>(() =>
                 AssertUtil.True(false, expectedMessage));
 
-            AssertExcetion<ArgumentException>(exception, expectedMessage);
+            AssertException<ArgumentException>(exception, expectedMessage);
         }
 
         [Fact]
@@ -75,30 +75,30 @@ namespace DataQI.Commons.Test.Util
         [Fact]
         public void TestAssertNotNullThrowsException()
         {
-            var expectedMessage = "object must not be null";
+            var expectedMessage = "Object must not be null";
             var exception = Assert.Throws<ArgumentException>(() => 
                 AssertUtil.NotNull(null, expectedMessage));
 
-            AssertExcetion<ArgumentException>(exception, expectedMessage);
+            AssertException<ArgumentException>(exception, expectedMessage);
         }
 
         [Fact]
         public void TestAssertNotNullOrEmpty()
-            => AssertUtil.NotNullOrEmpty("Some text", "object must not be null or empty");
+            => AssertUtil.NotNullOrEmpty("Some text", "Object must not be null or empty");
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
         public void TestAssertNotNullOrEmptyThrowsException(string text)
         {
-            var expectedMessage = "object must not be null or empty";
+            var expectedMessage = "Object must not be null or empty";
             var exception = Assert.Throws<ArgumentException>(() =>
                 AssertUtil.NotNullOrEmpty(text, expectedMessage));
 
-            AssertExcetion<ArgumentException>(exception, expectedMessage);
+            AssertException<ArgumentException>(exception, expectedMessage);
         }
 
-        private void AssertExcetion<T>(Exception exception, string expectedMessage)
+        private void AssertException<T>(Exception exception, string expectedMessage)
         {
             var baseException = exception.GetBaseException();
 

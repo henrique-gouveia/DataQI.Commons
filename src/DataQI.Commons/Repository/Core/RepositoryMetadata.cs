@@ -18,7 +18,7 @@ namespace DataQI.Commons.Repository.Core
 
         public RepositoryMetadata(Type repositoryInterface)
         {
-            Assert.True(repositoryInterface.IsInterface, "The parameter should be interface");
+            Assert.True(repositoryInterface.IsInterface, "The parameter should be an interface");
 
             this.repositoryInterface = repositoryInterface;
             ExtractMetadata();
