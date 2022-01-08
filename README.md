@@ -3,9 +3,9 @@
 Data Query Interface Commons is written in C# and built around essential features of the .NET Standard that provides shared infrastructure containing technology-neutral repository interfaces underpinning every DataQI Providers.
 
 [![Build](https://github.com/henrique-gouveia/DataQI.Commons/actions/workflows/dotnet.yml/badge.svg)](https://github.com/henrique-gouveia/DataQI.Commons/actions/workflows/dotnet.yml)
-[![codecov](https://codecov.io/gh/henrique-gouveia/DataQI.Commons/branch/master/graph/badge.svg)](https://codecov.io/gh/henrique-gouveia/DataQI.Commons)
+[![codecov](https://codecov.io/gh/henrique-gouveia/DataQI.Commons/branch/main/graph/badge.svg)](https://codecov.io/gh/henrique-gouveia/DataQI.Commons)
 [![NuGet](https://img.shields.io/nuget/v/DataQI.Commons.svg)](https://www.nuget.org/packages/DataQI.Commons/) 
-<!-- [![License](https://img.shields.io/github/license/henrique-gouveia/DataQI.Commons.svg)](https://github.com/henrique-gouveia/DataQI.Commons/blob/master/LICENSE.txt) -->
+<!-- [![License](https://img.shields.io/github/license/henrique-gouveia/DataQI.Commons.svg)](https://github.com/henrique-gouveia/DataQI.Commons/blob/main/LICENSE.txt) -->
 
 ## Features
 
@@ -26,7 +26,7 @@ See [Nuget](https://www.nuget.org/packages/DataQI.Commons) for other options.
 
 ## News
 
-**v1.2.0 - 2021/01**
+**v1.2.0 - 2022/01**
 
 * New! Method _GetRepository_ on Repository Factory can receive a lambda expression to create a repository instance
 * Change! Method _GetRepository_ on Repository Factory can receive arguments for the repository constructor
