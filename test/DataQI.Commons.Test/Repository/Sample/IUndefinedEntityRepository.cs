@@ -1,7 +1,6 @@
 ﻿namespace DataQI.Commons.Test.Repository.Sample
 {
-    public interface IDefaultWithoutEntityRepository
+    public interface IUndefinedEntityRepository
     {
-
     }
 }
