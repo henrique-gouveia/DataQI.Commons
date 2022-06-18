@@ -27,11 +27,11 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 2.2.300
+        dotnet-version: 3.1.413
 
     # Install tools
     - name: Install tools
-      run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 4.8.13
+      run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.1.9
 
     # Restore
     - name: Install dependencies
