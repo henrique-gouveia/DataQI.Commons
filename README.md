@@ -26,6 +26,10 @@ See [Nuget](https://www.nuget.org/packages/DataQI.Commons) for other options.
 
 ## News
 
+**v1.3.0 - 2022/06**
+
+* Change! Upgraded package references
+
 **v1.2.0 - 2022/01**
 
 * New! Method _GetRepository_ on Repository Factory can receive a lambda expression to create a repository instance
