@@ -63,6 +63,7 @@ jobs:
 
   verify-code:
     name: Verify Code
+    if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/') || startsWith(github.ref, 'refs/heads/release/') }}
     runs-on: ubuntu-latest
     needs: build
 
