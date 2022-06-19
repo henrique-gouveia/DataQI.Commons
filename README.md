@@ -28,7 +28,7 @@ See [Nuget](https://www.nuget.org/packages/DataQI.Commons) for other options.
 
 **v1.3.0 - 2022/06**
 
-* Change! Upgraded package references
+* Change! Upgraded versions of the package references
 
 **v1.2.0 - 2022/01**
 
