@@ -27,69 +27,54 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: 3.1.x
+        dotnet-version: 6.x
 
     # Install tools
     - name: Install tools
       run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.1.9
 
     # Restore
-    - name: Install dependencies
+    - name: Restore
       run: dotnet restore
     
     # Build
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration Release --no-restore 
 
     # Test
     - name: Test
       run: dotnet test --configuration Release --no-restore --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput='./TestResults/'
     
+    # Package
     - name: Package
       if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/') || startsWith(github.ref, 'refs/heads/release/') }}
       run: dotnet pack --configuration Release --no-restore -o src/DataQI.Commons/lib
 
     # Upload
-    - name: Upload artifacts
+    - name: Publish artifacts
       if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/') || startsWith(github.ref, 'refs/heads/release/') }}
       uses: actions/upload-artifact@v3
       with:
         name: artifacts
-        path: |
-          ${{ github.workspace }}/codecov.yml
-          ${{ github.workspace }}/test/DataQI.Commons.Test/TestResults/*.xml
-          ${{ github.workspace }}/src/DataQI.Commons/lib/*.nupkg
+        path: ${{ github.workspace }}/src/DataQI.Commons/lib/*.nupkg
         retention-days: 5
 
-  verify-code:
-    name: Verify Code
-    if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/') || startsWith(github.ref, 'refs/heads/release/') }}
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-    # Download
-    - name: Download artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: artifacts
-
     # Codecov
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
+    - name: Publish Coverage
+      if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/') || startsWith(github.ref, 'refs/heads/release/') }}  
+      uses: codecov/codecov-action@v3
       with:
-        # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
-        directory: ${{ github.workspace }}/test/DataQI.Commons.Test/TestResults/
-        flags: unittests # optional
-        name: codecov-umbrella # optional
-        fail_ci_if_error: true # optional (default = false)
-        # verbose: true # optional (default = false)
+        directory: ${{ github.workspace }}/test/DataQI.Commons.Test/TestResults
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
         verbose: true
 
-  deploy-prod:
-    name: Deploy Prod
+  deploy-nuget:
+    name: Deploy Nuget
     if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/') }}
-    needs: verify-code
+    # needs: verify-code
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: prod
@@ -102,7 +87,7 @@ jobs:
         name: artifacts
 
     # NuGet  
-    - name: Publish nupkg
+    - name: Publish
       env:
-        NUGET_AUTH_TOKEN: ${{secrets.NUGET_AUTH_TOKEN}}
+        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
       run: dotnet nuget push --api-key $NUGET_AUTH_TOKEN --source https://api.nuget.org/v3/index.json  ${{ github.workspace }}/src/DataQI.Commons/lib/*.nupkg
