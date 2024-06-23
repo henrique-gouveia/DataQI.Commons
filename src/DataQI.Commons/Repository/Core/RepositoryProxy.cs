@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 using DataQI.Commons.Extensions.Reflection;
@@ -15,7 +16,9 @@ namespace DataQI.Commons.Repository.Core
 
         protected readonly object defaultRepository;
         protected readonly Type defaultRepositoryType;
-        protected readonly IDictionary<string, MethodInfo> defaultRepositoryMethods;
+
+        protected readonly IDictionary<string, MethodInfo> defaultRepositoryMethods = new Dictionary<string, MethodInfo>();
+        protected MethodInfo defaultFindByCriteriaMethod;
 
         public static TRepository Create(Func<object> defaultRepositoryFactory)
         {
@@ -30,28 +33,28 @@ namespace DataQI.Commons.Repository.Core
 
             Assert.NotNull(defaultRepository, "Repository must not be null");
 
-            defaultRepositoryMethods = new Dictionary<string, MethodInfo>();
             RegisterDefaultRepositoryMethods();
+            RegisterDefaultFindByCriteriaMethod();
         }
 
         protected override object Invoke(MethodInfo targetMethod, object[] args)
         {
-            if (TryGetDefaultMethod(targetMethod.Name, out var method))
+            if (TryGetDefaultMethod(targetMethod.UniqueName(), out var method))
                 return method.Invoke(defaultRepository, args);
 
-            if (TryGetDefaultMethod("Find", out method))
+            if (defaultFindByCriteriaMethod != null)
             {
                 var criteriaBuilder = CreateCriteriaBuilder(targetMethod, args);
-                return method.Invoke(defaultRepository, new object[] { criteriaBuilder });
+                return defaultFindByCriteriaMethod.Invoke(defaultRepository, new object[] { criteriaBuilder });
             }
 
             throw new TargetInvocationException(
-                $"Unknown method {targetMethod.Name} return type {targetMethod.ReturnType}", null);
+                $"Unknown method {targetMethod.Name} returning type {targetMethod.ReturnType}", null);
         }
 
         protected virtual Func<ICriteria, ICriteria> CreateCriteriaBuilder(MethodInfo targetMethod, object[] args)
         {
-            ICriteria criteriaBuilder(ICriteria criteria)
+            ICriteria CriteriaBuilder(ICriteria criteria)
             {
                 var factory = new QueryFactory(targetMethod, args);
                 factory.BuildCriteria(criteria);
@@ -59,25 +62,37 @@ namespace DataQI.Commons.Repository.Core
                 return criteria;
             }
 
-            return criteriaBuilder;
+            return CriteriaBuilder;
         }
         
+        private void RegisterDefaultFindByCriteriaMethod()
+        {
+            defaultFindByCriteriaMethod = defaultRepositoryType
+                .GetMethods()
+                .FirstOrDefault(m => 
+                    m.Name == "Find" &&
+                    m.GetParameters().Length == 1 &&
+                    m.GetParameters()[0].ParameterType.IsGenericType &&
+                    m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
+                    m.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
+                    m.GetParameters()[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria)
+                );          
+        }
+
         private void RegisterDefaultRepositoryMethods()
         {
             MethodInfo[] methods = defaultRepositoryType.GetInstancePublicMethods();
             foreach (var method in methods)
-                RegisterMethod( method);
+                RegisterMethod(method);
         }
 
         protected virtual void RegisterMethod(MethodInfo method)
         {
-            if (defaultRepositoryMethods.ContainsKey(method.Name)) return;
-            
-            if (method != null)
-                defaultRepositoryMethods.Add(method.Name, method);
+            if (method != null && !defaultRepositoryMethods.ContainsKey(method.Name))
+                defaultRepositoryMethods.Add(method.UniqueName(), method);
         }
 
-        protected bool TryGetDefaultMethod(string name, out MethodInfo method)
+        protected virtual bool TryGetDefaultMethod(string name, out MethodInfo method)
             => defaultRepositoryMethods.TryGetValue(name, out method);
     }
 }

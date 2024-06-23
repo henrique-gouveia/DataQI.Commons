@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 
 namespace DataQI.Commons.Extensions.Reflection
@@ -18,5 +19,14 @@ namespace DataQI.Commons.Extensions.Reflection
 
         public static MethodInfo[] GetInstancePublicMethods(this Type type)
             => type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+        
+        public static string GetFriendlyName(this Type type)
+        {
+            if (!type.IsGenericType) return type.Name;
+            var genericTypeName = type.GetGenericTypeDefinition().Name;
+            genericTypeName = genericTypeName.Substring(0, genericTypeName.IndexOf('`'));
+            var genericArgs = string.Join(",", type.GetGenericArguments().Select(GetFriendlyName));
+            return $"{genericTypeName}<{genericArgs}>";
+        }
     }
 }
