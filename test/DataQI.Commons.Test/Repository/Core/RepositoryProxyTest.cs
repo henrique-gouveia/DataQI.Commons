@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Bogus;
@@ -18,7 +19,7 @@ namespace DataQI.Commons.Test.Repository.Core
 {
     public class RepositoryProxyTest
     {
-        private static readonly Faker faker = new Faker();
+        private static readonly Faker Faker = new Faker();
 
         private readonly Mock<IEntityRepository<FakeEntity>> defaultImplementationMock;
         private readonly IFakeRepository fakeRepository;
@@ -43,13 +44,14 @@ namespace DataQI.Commons.Test.Repository.Core
         [Fact]
         public void TestRejectsNotImplementedMethod()
         {
-            var fakeRepository = RepositoryProxy<IFakeRepository>.Create(() => new CustomFakeRepository());
+            var fakeRepository = RepositoryProxy<IFakeRepository>.Create(() => 
+                new CustomFakeRepository());
 
             var exception = Assert.Throws<TargetInvocationException>(() =>
                 fakeRepository.NotImplementedMethod());
             var exceptionMessage = exception.GetBaseException().Message;
 
-            var expectedMessage = string.Format("Unknown method {0} return type {1}", 
+            var expectedMessage = string.Format("Unknown method {0} returning type {1}", 
                 nameof(IFakeRepository.NotImplementedMethod), 
                 typeof(FakeEntity).FullName);
 
@@ -79,8 +81,10 @@ namespace DataQI.Commons.Test.Repository.Core
             if (useAsyncMethod)
             {
                 defaultImplementationMock
-                    .Setup(r => r.InsertAsync(It.IsAny<FakeEntity>()))
-                    .Callback(callback)
+                    .Setup(r => r.InsertAsync(
+                        It.IsAny<FakeEntity>(),
+                        It.IsAny<CancellationToken>()))
+                    .Callback<FakeEntity, CancellationToken>((entity, _) => callback(entity))
                     .Returns(Task.FromResult(0));
             }
             else 
@@ -120,13 +124,16 @@ namespace DataQI.Commons.Test.Repository.Core
 
             AssertExpectedObject(entityExpected, entity);
         }
+        
         private void SetupFakeRepositorySaveMethod(Action<FakeEntity> callback, bool useAsyncMethod)
         {
             if (useAsyncMethod)
             {
                 defaultImplementationMock
-                    .Setup(r => r.SaveAsync(It.IsAny<FakeEntity>()))
-                    .Callback(callback)
+                    .Setup(r => r.SaveAsync(
+                        It.IsAny<FakeEntity>(),
+                        It.IsAny<CancellationToken>()))
+                    .Callback<FakeEntity, CancellationToken>((entity, _) => callback(entity))
                     .Returns(Task.FromResult(0));
             }
             else
@@ -161,7 +168,9 @@ namespace DataQI.Commons.Test.Repository.Core
             if (useAsyncMethod)
             {
                 defaultImplementationMock
-                    .Setup(r => r.ExistsAsync(fakeEntityId))
+                    .Setup(r => r.ExistsAsync(
+                        fakeEntityId,
+                        It.IsAny<CancellationToken>()))
                     .Returns(Task.FromResult(returnsExists));
             }
             else
@@ -195,7 +204,9 @@ namespace DataQI.Commons.Test.Repository.Core
             if (useAsyncMethod)
             {
                 defaultImplementationMock
-                    .Setup(r => r.FindAsync(criteriaBuilder))
+                    .Setup(r => r.FindAsync(
+                        criteriaBuilder,
+                        It.IsAny<CancellationToken>()))
                     .Returns(Task.FromResult<IEnumerable<FakeEntity>>(returnsFakeEntities));
             }
             else
@@ -228,8 +239,8 @@ namespace DataQI.Commons.Test.Repository.Core
             if (useAsyncMethod)
             {
                 defaultImplementationMock
-                    .Setup(r => r.FindAllAsync())
-                    .Returns(Task.FromResult<IEnumerable<FakeEntity>>(returnsFakeEntities));
+                    .Setup(r => r.FindAllAsync(It.IsAny<CancellationToken>()))
+                    .Returns(Task.FromResult(returnsFakeEntities));
             }
             else
             {
@@ -261,8 +272,10 @@ namespace DataQI.Commons.Test.Repository.Core
             if (useAsyncMethod)
             {
                 defaultImplementationMock
-                    .Setup(r => r.FindOneAsync(returnsFakeEntity.Id))
-                    .Returns(Task.FromResult<FakeEntity>(returnsFakeEntity));
+                    .Setup(r => r.FindOneAsync(
+                        returnsFakeEntity.Id,
+                        It.IsAny<CancellationToken>()))
+                    .Returns(Task.FromResult(returnsFakeEntity));
             }
             else
             {
@@ -281,13 +294,15 @@ namespace DataQI.Commons.Test.Repository.Core
 
             if (useAsyncMethod)
             {
-                fakeRepository.Delete(entityExpected.Id);
-                defaultImplementationMock.Verify(r => r.Delete(entityExpected.Id), Times.Once());
+                fakeRepository.DeleteAsync(entityExpected.Id).GetAwaiter().GetResult();
+                defaultImplementationMock.Verify(r => r.DeleteAsync(
+                    entityExpected.Id,
+                    It.IsAny<CancellationToken>()), Times.Once());
             }
             else
             {
-                fakeRepository.DeleteAsync(entityExpected.Id).GetAwaiter().GetResult();
-                defaultImplementationMock.Verify(r => r.DeleteAsync(entityExpected.Id), Times.Once());
+                fakeRepository.Delete(entityExpected.Id);
+                defaultImplementationMock.Verify(r => r.Delete(entityExpected.Id), Times.Once());
             }
         }
 
@@ -319,9 +334,7 @@ namespace DataQI.Commons.Test.Repository.Core
         }
 
         private void AssertExpectedObject(object expected, object actual)
-        {
-            expected.ToExpectedObject().ShouldEqual(actual);
-        }
+            => expected.ToExpectedObject().ShouldEqual(actual);
 
         private IList<FakeEntity> CreateTestFakeEntities()
         {
@@ -337,8 +350,8 @@ namespace DataQI.Commons.Test.Repository.Core
 
         private FakeEntity CreateTestFakeEntity(int? fakeEntityId = null, string fakeEntityName = null)
         {
-            var id = fakeEntityId ?? faker.Random.Int(0, 100);
-            var name = fakeEntityName ?? faker.Person.FullName;
+            var id = fakeEntityId ?? Faker.Random.Int(0, 100);
+            var name = fakeEntityName ?? Faker.Person.FullName;
 
             return new FakeEntity(id, name);
         }
