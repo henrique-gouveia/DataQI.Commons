@@ -45,17 +45,14 @@ namespace DataQI.Commons.Repository.Core
                     idType = repositoryInterface.GenericTypeArguments[1];
                     return true;
                 }
-                else
-                {
-                    entityType = repositoryInterface.GenericTypeArguments[0];
-                    idType = repositoryInterface.GenericTypeArguments[0];
-                    return true;
-                }
+
+                entityType = repositoryInterface.GenericTypeArguments[0];
+                idType = repositoryInterface.GenericTypeArguments[0];
+                return true;
             }
 
             entityType = null;
             idType = null;
-
             return false;
         }
 

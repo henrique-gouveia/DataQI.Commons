@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
 namespace DataQI.Commons.Extensions.Reflection
 {
+    [ExcludeFromCodeCoverage]
     public static class MehodInfoExtensions
     {
         public static string UniqueName(this MethodInfo method)

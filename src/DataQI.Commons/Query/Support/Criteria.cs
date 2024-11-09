@@ -12,7 +12,6 @@ namespace DataQI.Commons.Query.Support
         public ICriteria Add(ICriterion criterion)
         {
             Assert.NotNull(criterion, "Criterion must not be null");
-
             criterions.Add(criterion);
             return this;
         }

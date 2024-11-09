@@ -27,29 +27,22 @@ namespace DataQI.Commons.Repository.Query
             if (HasNot) source = NotMatcher.Replace(source, "");
 
             typeMatch = TypeMatcher.Match(source);
-            Type = TypeFromSource(source);
+            Type = TypeMatched();
             PropertyName = PropertyNameFromSource(source, Type);
         }
 
         private string PropertyNameFromSource(string source, MemberType type)
         {
-           if (type == MemberType.SimpleProperty)
-                return source;
-            else
-                return source.Substring(0, typeMatch.Index);
+            return type == MemberType.SimpleProperty
+                ? source
+                : source.Substring(0, typeMatch.Index);
         }
 
-        private MemberType TypeFromSource(string source)
+        private MemberType TypeMatched()
         {
-            var type = MemberType.SimpleProperty;
-
-            if (typeMatch.Success)
-            {
-                if (Enum.TryParse<MemberType>(typeMatch.Value, out type))
-                    return type;
-            }
-
-            return type;
+            return typeMatch.Success && Enum.TryParse<MemberType>(typeMatch.Value, out var type)
+                ? type
+                : MemberType.SimpleProperty;
         }
 
         public bool HasNot { get; private set; }

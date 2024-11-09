@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace DataQI.Commons.Extensions.Collections
 {
     [ExcludeFromCodeCoverage]
-    public static class IEnumeratorExtenstions
+    public static class EnumeratorExtensions
     {
         public static object NextValue(this IEnumerator enumerator)
         {
