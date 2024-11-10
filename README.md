@@ -26,6 +26,12 @@ See [Nuget](https://www.nuget.org/packages/DataQI.Commons) for other options.
 
 ## News
 
+**v2.0.0 - 2022/06**
+
+* Change! Add cancellation token parameter for async methods
+* Change! Add the use of collection methods instead of enumerator methods to the `QueryTree` extractor.
+* New! Add new way to generate a unique method name for caching
+
 **v1.3.0 - 2022/06**
 
 * Change! Upgraded versions of the package references
