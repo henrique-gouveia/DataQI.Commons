@@ -37,20 +37,18 @@ namespace DataQI.Commons.Repository.Query
         public void BuildCriteria(ICriteria criteria)
         {
             Assert.NotNull(criteria, "Criteria must be not null");
-            BuildOr(criteria, queryTree.Nodes, queryValues);
+            BuildOr(criteria, queryTree, queryValues);
         }
 
-        private static void BuildOr(ICriteria criteria, IReadOnlyCollection<Node> nodes, IEnumerator values)
+        private static void BuildOr(ICriteria criteria, IEnumerable<Node> nodes, IEnumerator values)
         {
             var or = new Disjunction();
             foreach (var node in nodes)
-            {
-                BuildAnd(or, node.Members, values);
-            }
+                BuildAnd(or, node, values);
             criteria.Add(or);
         }
 
-        private static void BuildAnd(IJunction or, IReadOnlyCollection<QueryMember> members, IEnumerator values)
+        private static void BuildAnd(IJunction or, IEnumerable<QueryMember> members, IEnumerator values)
         {
             var and = new Conjunction();
             foreach (var member in members)

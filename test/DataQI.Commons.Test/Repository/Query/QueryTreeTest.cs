@@ -64,7 +64,7 @@ namespace DataQI.Commons.Test.Repository.Query
 
         private static void AssertTree(QueryTree queryTree, params QueryMember[][] exptectedMembers)
         {
-            using var members = queryTree.Nodes.GetEnumerator();
+            using var members = queryTree.GetEnumerator();
             foreach (var expectedMember in exptectedMembers)
             {
                 Assert.True(members.MoveNext());
@@ -75,7 +75,7 @@ namespace DataQI.Commons.Test.Repository.Query
 
         private static void AssertMembers(Node node, QueryMember[] exptectedMembers)
         {
-            using var members = node.Members.GetEnumerator();
+            using var members = node.GetEnumerator();
             foreach (var expectedCriterion in exptectedMembers)
             {
                 Assert.True(members.MoveNext());

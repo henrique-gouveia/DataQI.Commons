@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -5,7 +6,7 @@ using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Query
 {
-    public class QueryTree
+    public class QueryTree: IEnumerable<QueryTree.Node>
     {
         private static readonly string PrefixPattern = @"\w+By";
 
@@ -24,9 +25,10 @@ namespace DataQI.Commons.Repository.Query
             return Regex.Split(input, pattern, RegexOptions.Compiled);
         }
 
-        public IReadOnlyCollection<Node> Nodes => predicate.Nodes; 
+        public IEnumerator<Node> GetEnumerator() => predicate.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        private class Predicate
+        private class Predicate: IEnumerable<Node>
         {
             public Predicate(string predicate)
             {
@@ -35,10 +37,11 @@ namespace DataQI.Commons.Repository.Query
             }
 
             private readonly List<Node> nodes = new List<Node>();
-            public IReadOnlyCollection<Node> Nodes => nodes;
+            public IEnumerator<Node> GetEnumerator() => nodes.GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
-        public class Node
+        public class Node : IEnumerable<QueryMember>
         {
             public Node(string source)
             {
@@ -47,7 +50,8 @@ namespace DataQI.Commons.Repository.Query
             }
             
             private readonly List<QueryMember> members = new List<QueryMember>();
-            public IReadOnlyCollection<QueryMember> Members => members;
+            public IEnumerator<QueryMember> GetEnumerator() => members.GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }
