@@ -12,9 +12,9 @@ namespace DataQI.Commons.Extensions.Reflection
             var key = $"{method.Name}:{method.ReturnType.GetFriendlyName()}";
             var paramIndex = 0;
             key = method
-            .GetParameters()
-            .Aggregate($"{key}", (currentKey, param) => 
-                $"{currentKey}_arg{paramIndex++}:{param.ParameterType.GetFriendlyName()}");
+                .GetParameters()
+                .Aggregate($"{key}", (currentKey, param) => 
+                    $"{currentKey}_arg{paramIndex++}:{param.ParameterType.GetFriendlyName()}");
             return key;
         }
     }
