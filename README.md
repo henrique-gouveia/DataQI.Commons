@@ -18,13 +18,19 @@ Data Query Interface Commons is written in C# and built around essential feature
 
 ### Installing
 
-This library can add in to the project by way:
+This library can add to the project by the way:
 
     dotnet add package DataQI.Commons
 
 See [Nuget](https://www.nuget.org/packages/DataQI.Commons) for other options.
 
 ## News
+
+**v2.0.0 - 2024/12**
+
+* Change! Add cancellation token parameter for async methods
+* Change! Add the use of collection methods instead of enumerator methods to the `QueryTree` extractor.
+* New! Add a new way to generate a unique method name for caching
 
 **v1.3.0 - 2022/06**
 

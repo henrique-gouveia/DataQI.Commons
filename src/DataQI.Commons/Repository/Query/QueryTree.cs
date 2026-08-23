@@ -6,7 +6,7 @@ using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Query
 {
-    public class QueryTree : IEnumerable<QueryTree.Node>
+    public class QueryTree: IEnumerable<QueryTree.Node>
     {
         private static readonly string PrefixPattern = @"\w+By";
 
@@ -25,33 +25,31 @@ namespace DataQI.Commons.Repository.Query
             return Regex.Split(input, pattern, RegexOptions.Compiled);
         }
 
-        public IEnumerator<QueryTree.Node> GetEnumerator() => predicate.GetEnumerator();
+        public IEnumerator<Node> GetEnumerator() => predicate.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        private class Predicate : IEnumerable<Node>
+        private class Predicate: IEnumerable<Node>
         {
-            private readonly ICollection<Node> nodes = new List<Node>();
-
             public Predicate(string predicate)
             {
                 foreach (var source in Split(predicate, "Or"))
                     nodes.Add(new Node(source));
             }
 
+            private readonly List<Node> nodes = new List<Node>();
             public IEnumerator<Node> GetEnumerator() => nodes.GetEnumerator();
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         public class Node : IEnumerable<QueryMember>
         {
-            private readonly ICollection<QueryMember> members = new List<QueryMember>();
-
             public Node(string source)
             {
                 foreach (var criterion in Split(source, "And"))
                     members.Add(new QueryMember(criterion));
             }
-
+            
+            private readonly List<QueryMember> members = new List<QueryMember>();
             public IEnumerator<QueryMember> GetEnumerator() => members.GetEnumerator();
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }

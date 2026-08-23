@@ -17,7 +17,7 @@ namespace DataQI.Commons.Test.Repository.Query
         [Fact]
         public void TestSupportSimplePropertyTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "firstName",
                 propertyNameExptected: "firstName",
                 typeExpected: MemberType.SimpleProperty,
@@ -27,8 +27,18 @@ namespace DataQI.Commons.Test.Repository.Query
         [Fact]
         public void TestSupportBeteweenTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "DateOfBirthBetween",
+                propertyNameExptected: "DateOfBirth",
+                typeExpected: MemberType.Between,
+                numberOfArgsExpected: 2);
+        }
+        
+        [Fact]
+        public void TestSupportIsBeteweenTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "DateOfBirthIsBetween",
                 propertyNameExptected: "DateOfBirth",
                 typeExpected: MemberType.Between,
                 numberOfArgsExpected: 2);
@@ -37,49 +47,134 @@ namespace DataQI.Commons.Test.Repository.Query
         [Fact]
         public void TestSupportNotBeteweenTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "DateOfBirthNotBetween",
                 propertyNameExptected: "DateOfBirth",
                 typeExpected: MemberType.Between,
                 numberOfArgsExpected: 2,
                 hasNotExpected: true);
         }
-
+        
         [Fact]
-        public void TestSupportContainingTypeCorrectly()
+        public void TestSupportIsNotBeteweenTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
+                source: "DateOfBirthIsNotBetween",
+                propertyNameExptected: "DateOfBirth",
+                typeExpected: MemberType.Between,
+                numberOfArgsExpected: 2,
+                hasNotExpected: true);
+        }
+        
+        [Fact]
+        public void TestSupportIsContainingTypeCorrectly()
+        {
+            AssertSupportsType(
                 source: "LastNameContaining",
                 propertyNameExptected: "LastName",
                 typeExpected: MemberType.Containing,
                 numberOfArgsExpected: 1);
         }
-
+        
+        [Fact]
+        public void TestSupportContainingTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "LastNameContaining",
+                propertyNameExptected: "LastName",
+                typeExpected: MemberType.Containing,
+                numberOfArgsExpected: 1);
+        }
+        
+        [Fact]
+        public void TestSupportContainsTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "LastNameContains",
+                propertyNameExptected: "LastName",
+                typeExpected: MemberType.Containing,
+                numberOfArgsExpected: 1);
+        }
+        
+        [Fact]
+        public void TestSupportIsNotContainingTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "LastNameIsNotContaining",
+                propertyNameExptected: "LastName",
+                typeExpected: MemberType.Containing,
+                numberOfArgsExpected: 1,
+                hasNotExpected: true);
+        }
+        
         [Fact]
         public void TestSupportNotContainingTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "LastNameNotContaining",
                 propertyNameExptected: "LastName",
                 typeExpected: MemberType.Containing,
                 numberOfArgsExpected: 1,
                 hasNotExpected: true);
         }
-
+        
+        [Fact]
+        public void TestSupportNotContainsTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "LastNameNotContains",
+                propertyNameExptected: "LastName",
+                typeExpected: MemberType.Containing,
+                numberOfArgsExpected: 1,
+                hasNotExpected: true);
+        }
+        
+        [Fact]
+        public void TestSupportIsEndingWithTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "LastNameIsEndingWith",
+                propertyNameExptected: "LastName",
+                typeExpected: MemberType.EndingWith,
+                numberOfArgsExpected: 1);
+        }
+        
         [Fact]
         public void TestSupportEndingWithTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "LastNameEndingWith",
                 propertyNameExptected: "LastName",
                 typeExpected: MemberType.EndingWith,
                 numberOfArgsExpected: 1);
         }
-
+        
+        [Fact]
+        public void TestSupportEndsWithTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "LastNameEndsWith",
+                propertyNameExptected: "LastName",
+                typeExpected: MemberType.EndingWith,
+                numberOfArgsExpected: 1);
+        }
+        
+        
+        [Fact]
+        public void TestSupportIsNotEndingWithTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "LastNameIsNotEndingWith",
+                propertyNameExptected: "LastName",
+                typeExpected: MemberType.EndingWith,
+                numberOfArgsExpected: 1,
+                hasNotExpected: true);
+        }        
+        
         [Fact]
         public void TestSupportNotEndingWithTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "LastNameNotEndingWith",
                 propertyNameExptected: "LastName",
                 typeExpected: MemberType.EndingWith,
@@ -88,9 +183,30 @@ namespace DataQI.Commons.Test.Repository.Query
         }
 
         [Fact]
+        public void TestSupportNotEndsWithTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "LastNameNotEndsWith",
+                propertyNameExptected: "LastName",
+                typeExpected: MemberType.EndingWith,
+                numberOfArgsExpected: 1,
+                hasNotExpected: true);
+        }
+
+        [Fact]
+        public void TestSupportIsEqualTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "firstNameIsEqual",
+                propertyNameExptected: "firstName",
+                typeExpected: MemberType.Equal,
+                numberOfArgsExpected: 1);
+        }
+        
+        [Fact]
         public void TestSupportEqualTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "firstNameEqual",
                 propertyNameExptected: "firstName",
                 typeExpected: MemberType.Equal,
@@ -98,9 +214,20 @@ namespace DataQI.Commons.Test.Repository.Query
         }
 
         [Fact]
+        public void TestSupportIsNotEqualTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "AgeIsNotEqual",
+                propertyNameExptected: "Age",
+                typeExpected: MemberType.Equal,
+                numberOfArgsExpected: 1,
+                hasNotExpected: true);
+        }
+        
+        [Fact]
         public void TestSupportNotEqualTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "AgeNotEqual",
                 propertyNameExptected: "Age",
                 typeExpected: MemberType.Equal,
@@ -109,9 +236,19 @@ namespace DataQI.Commons.Test.Repository.Query
         }
 
         [Fact]
+        public void TestSupportIsGreaterThanTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "DateOfBirthIsGreaterThan",
+                propertyNameExptected: "DateOfBirth",
+                typeExpected: MemberType.GreaterThan,
+                numberOfArgsExpected: 1);
+        }
+        
+        [Fact]
         public void TestSupportGreaterThanTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "DateOfBirthGreaterThan",
                 propertyNameExptected: "DateOfBirth",
                 typeExpected: MemberType.GreaterThan,
@@ -119,9 +256,19 @@ namespace DataQI.Commons.Test.Repository.Query
         }
 
         [Fact]
+        public void TestSupportIsGreaterThanEqualTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "DateOfBirthIsGreaterThanEqual",
+                propertyNameExptected: "DateOfBirth",
+                typeExpected: MemberType.GreaterThanEqual,
+                numberOfArgsExpected: 1);
+        }
+        
+        [Fact]
         public void TestSupportGreaterThanEqualTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "DateOfBirthGreaterThanEqual",
                 propertyNameExptected: "DateOfBirth",
                 typeExpected: MemberType.GreaterThanEqual,
@@ -129,19 +276,30 @@ namespace DataQI.Commons.Test.Repository.Query
         }
 
         [Fact]
-        public void TestSupportInTypeCorrectly()
+        public void TestSupportIsInTypeCorrectly()
         {
-            AssertSuportType(
-                source: "InvoiceIdIn",
+            AssertSupportsType(
+                source: "InvoiceIdIsIn",
                 propertyNameExptected: "InvoiceId",
                 typeExpected: MemberType.In,
                 numberOfArgsExpected: 1);
         }
-
+        
+        [Fact]
+        public void TestSupportIsNotInTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "InvoiceIdIsNotIn",
+                propertyNameExptected: "InvoiceId",
+                typeExpected: MemberType.In,
+                numberOfArgsExpected: 1,
+                hasNotExpected: true);
+        }
+        
         [Fact]
         public void TestSupportNotInTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "InvoiceIdNotIn",
                 propertyNameExptected: "InvoiceId",
                 typeExpected: MemberType.In,
@@ -152,7 +310,17 @@ namespace DataQI.Commons.Test.Repository.Query
         [Fact]
         public void TestSupportIsNullTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
+                source: "PhoneIsNull",
+                propertyNameExptected: "Phone",
+                typeExpected: MemberType.Null,
+                numberOfArgsExpected: 0);
+        }
+        
+        [Fact]
+        public void TestSupportNullTypeCorrectly()
+        {
+            AssertSupportsType(
                 source: "PhoneNull",
                 propertyNameExptected: "Phone",
                 typeExpected: MemberType.Null,
@@ -162,7 +330,18 @@ namespace DataQI.Commons.Test.Repository.Query
         [Fact]
         public void TestSupportIsNotNullTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
+                source: "PhoneIsNotNull",
+                propertyNameExptected: "Phone",
+                typeExpected: MemberType.Null,
+                numberOfArgsExpected: 0,
+                hasNotExpected: true);
+        }
+
+        [Fact]
+        public void TestSupportNotNullTypeCorrectly()
+        {
+            AssertSupportsType(
                 source: "PhoneNotNull",
                 propertyNameExptected: "Phone",
                 typeExpected: MemberType.Null,
@@ -171,9 +350,19 @@ namespace DataQI.Commons.Test.Repository.Query
         }
 
         [Fact]
+        public void TestSupportIsLessThanTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "DateOfBirthIsLessThan",
+                propertyNameExptected: "DateOfBirth",
+                typeExpected: MemberType.LessThan,
+                numberOfArgsExpected: 1);
+        }
+        
+        [Fact]
         public void TestSupportLessThanTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "DateOfBirthLessThan",
                 propertyNameExptected: "DateOfBirth",
                 typeExpected: MemberType.LessThan,
@@ -181,9 +370,19 @@ namespace DataQI.Commons.Test.Repository.Query
         }
 
         [Fact]
+        public void TestSupportIsLessThanEqualTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "DateOfBirthIsLessThanEqual",
+                propertyNameExptected: "DateOfBirth",
+                typeExpected: MemberType.LessThanEqual,
+                numberOfArgsExpected: 1);
+        }
+        
+        [Fact]
         public void TestSupportLessThanEqualTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "DateOfBirthLessThanEqual",
                 propertyNameExptected: "DateOfBirth",
                 typeExpected: MemberType.LessThanEqual,
@@ -191,9 +390,19 @@ namespace DataQI.Commons.Test.Repository.Query
         }
 
         [Fact]
+        public void TestSupportIsLikeTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "LastNameIsLike",
+                propertyNameExptected: "LastName",
+                typeExpected: MemberType.Like,
+                numberOfArgsExpected: 1);
+        }
+        
+        [Fact]
         public void TestSupportLikeTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "LastNameLike",
                 propertyNameExptected: "LastName",
                 typeExpected: MemberType.Like,
@@ -201,20 +410,41 @@ namespace DataQI.Commons.Test.Repository.Query
         }
 
         [Fact]
-        public void TestSupportNotLikeTypeCorrectly()
+        public void TestSupportIsNotLikeTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "LastNameNotLike",
                 propertyNameExptected: "LastName",
                 typeExpected: MemberType.Like,
                 numberOfArgsExpected: 1,
                 hasNotExpected: true);
         }
-
+        
+        [Fact]
+        public void TestSupportNotLikeTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "LastNameNotLike",
+                propertyNameExptected: "LastName",
+                typeExpected: MemberType.Like,
+                numberOfArgsExpected: 1,
+                hasNotExpected: true);
+        }
+                
+        [Fact]
+        public void TestSupportIsStartingWithTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "LastNameIsStartingWith",
+                propertyNameExptected: "LastName",
+                typeExpected: MemberType.StartingWith,
+                numberOfArgsExpected: 1);
+        }        
+                
         [Fact]
         public void TestSupportStartingWithTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "LastNameStartingWith",
                 propertyNameExptected: "LastName",
                 typeExpected: MemberType.StartingWith,
@@ -222,17 +452,49 @@ namespace DataQI.Commons.Test.Repository.Query
         }
 
         [Fact]
+        public void TestSupportStartsWithTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "LastNameStartsWith",
+                propertyNameExptected: "LastName",
+                typeExpected: MemberType.StartingWith,
+                numberOfArgsExpected: 1);
+        }
+
+        [Fact]
+        public void TestSupportIsNotStartingWithTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "LastNameIsNotStartingWith",
+                propertyNameExptected: "LastName",
+                typeExpected: MemberType.StartingWith,
+                numberOfArgsExpected: 1,
+                hasNotExpected: true);
+        }
+        
+        [Fact]
         public void TestSupportNotStartingWithTypeCorrectly()
         {
-            AssertSuportType(
+            AssertSupportsType(
                 source: "LastNameNotStartingWith",
                 propertyNameExptected: "LastName",
                 typeExpected: MemberType.StartingWith,
                 numberOfArgsExpected: 1,
                 hasNotExpected: true);
         }
+        
+        [Fact]
+        public void TestSupportNotStartsWithTypeCorrectly()
+        {
+            AssertSupportsType(
+                source: "LastNameNotStartsWith",
+                propertyNameExptected: "LastName",
+                typeExpected: MemberType.StartingWith,
+                numberOfArgsExpected: 1,
+                hasNotExpected: true);
+        }
 
-        private void AssertSuportType(
+        private static void AssertSupportsType(
             string source,
             string propertyNameExptected,
             MemberType typeExpected,

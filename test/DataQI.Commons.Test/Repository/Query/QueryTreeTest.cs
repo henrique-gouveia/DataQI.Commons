@@ -53,7 +53,7 @@ namespace DataQI.Commons.Test.Repository.Query
             AssertTree(queryTree, Members("FirstName"));
         }
 
-        private QueryMember[] Members(params string[] sources)
+        private static QueryMember[] Members(params string[] sources)
         {
             var members = new List<QueryMember>();
             foreach(var source in sources)
@@ -62,29 +62,25 @@ namespace DataQI.Commons.Test.Repository.Query
             return members.ToArray();
         }
 
-       private void AssertTree(QueryTree queryTree, params QueryMember[][] exptectedMembers)
+        private static void AssertTree(QueryTree queryTree, params QueryMember[][] exptectedMembers)
         {
-            var members = queryTree.GetEnumerator();
-
+            using var members = queryTree.GetEnumerator();
             foreach (var expectedMember in exptectedMembers)
             {
                 Assert.True(members.MoveNext());
                 AssertMembers(members.Current, expectedMember);
             }
-
             Assert.False(members.MoveNext());
         }
 
-        private void AssertMembers(Node member, QueryMember[] exptectedMembers)
+        private static void AssertMembers(Node node, QueryMember[] exptectedMembers)
         {
-            var members = member.GetEnumerator();
-
+            using var members = node.GetEnumerator();
             foreach (var expectedCriterion in exptectedMembers)
             {
                 Assert.True(members.MoveNext());
                 expectedCriterion.ToExpectedObject().ShouldMatch(members.Current);
             }
-
             Assert.False(members.MoveNext());
         }
     }

@@ -37,38 +37,33 @@ namespace DataQI.Commons.Repository.Query
         public void BuildCriteria(ICriteria criteria)
         {
             Assert.NotNull(criteria, "Criteria must be not null");
-            BuildOr(criteria, queryTree.GetEnumerator(), queryValues);
+            BuildOr(criteria, queryTree, queryValues);
         }
 
-        private void BuildOr(ICriteria criteria, IEnumerator<Node> nodes, IEnumerator values)
+        private static void BuildOr(ICriteria criteria, IEnumerable<Node> nodes, IEnumerator values)
         {
             var or = new Disjunction();
-            
-            while (nodes.MoveNext())
-                BuildAnd(or, nodes.Current.GetEnumerator(), values);
-            
+            foreach (var node in nodes)
+                BuildAnd(or, node, values);
             criteria.Add(or);
         }
 
-        private void BuildAnd(IJunction or, IEnumerator<QueryMember> members, IEnumerator values)
+        private static void BuildAnd(IJunction or, IEnumerable<QueryMember> members, IEnumerator values)
         {
             var and = new Conjunction();
-
-            while (members.MoveNext())
+            foreach (var member in members)
             {
-                var criterion = BuildCriterion(members.Current, values);
+                var criterion = BuildCriterion(member, values);
                 and.Add(criterion);
             }
-
             or.Add(and);
         }
 
-        private ICriterion BuildCriterion(QueryMember member, IEnumerator values)
+        private static ICriterion BuildCriterion(QueryMember member, IEnumerator values)
         {
             ICriterion criterion;
 
-            WhereOperator wo;
-            if (!Enum.TryParse(member.Type.ToString(), out wo))
+            if (!Enum.TryParse(member.Type.ToString(), out WhereOperator wo))
                 wo = WhereOperator.Equal;            
 
             switch (wo)
@@ -82,6 +77,18 @@ namespace DataQI.Commons.Repository.Query
                 case WhereOperator.Null:
                     criterion = new NullExpression(member.PropertyName);
                     break;
+                case WhereOperator.Containing:
+                case WhereOperator.EndingWith:
+                case WhereOperator.Equal:
+                case WhereOperator.GreaterThan:
+                case WhereOperator.GreaterThanEqual:
+                case WhereOperator.LessThan:
+                case WhereOperator.LessThanEqual:
+                case WhereOperator.Like:
+                case WhereOperator.Not:
+                case WhereOperator.StartingWith:
+                case WhereOperator.And:
+                case WhereOperator.Or:
                 default: 
                     criterion = new SimpleExpression(member.PropertyName, wo, values.NextValue());
                     break;
