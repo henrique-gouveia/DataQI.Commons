@@ -59,6 +59,35 @@ namespace DataQI.Commons.Test.Repository.Core
             Assert.Equal(expectedMessage, exceptionMessage);
         }
 
+        [Fact]
+        public void TestCreateIsThreadSafeUnderConcurrentCalls()
+        {
+            const int concurrency = 32;
+            var barrier = new Barrier(concurrency);
+            var results = new FakeEntity[concurrency];
+            var threads = new Thread[concurrency];
+
+            for (var t = 0; t < concurrency; t++)
+            {
+                var index = t;
+                threads[t] = new Thread(() =>
+                {
+                    var mock = new Mock<IEntityRepository<FakeEntity>>();
+                    mock.Setup(r => r.FindOne(It.IsAny<int>())).Returns(new FakeEntity(index));
+
+                    barrier.SignalAndWait();
+                    var repository = RepositoryProxy<IFakeRepository>.Create(() => mock.Object);
+                    results[index] = repository.FindOne(0);
+                });
+            }
+
+            foreach (var thread in threads) thread.Start();
+            foreach (var thread in threads) thread.Join();
+
+            for (var index = 0; index < concurrency; index++)
+                Assert.Equal(index, results[index].Id);
+        }
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]

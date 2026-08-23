@@ -12,6 +12,8 @@ namespace DataQI.Commons.Repository.Core
 {
     public class RepositoryProxy<TRepository> : DispatchProxy where TRepository : class
     {
+        private static readonly object createLock = new object();
+
         protected static Func<object> DefaultRepositoryFactory;
 
         protected readonly object defaultRepository;
@@ -22,8 +24,16 @@ namespace DataQI.Commons.Repository.Core
 
         public static TRepository Create(Func<object> defaultRepositoryFactory)
         {
-            DefaultRepositoryFactory = defaultRepositoryFactory;
-            return Create<TRepository, RepositoryProxy<TRepository>>();
+            // DefaultRepositoryFactory is static (shared by every RepositoryProxy<TRepository>
+            // instance for this closed generic type), because DispatchProxy.Create<T, TProxy>()
+            // offers no way to pass constructor arguments. The lock keeps the write and the
+            // constructor's read of it atomic with respect to concurrent Create calls for the
+            // same TRepository, so one caller's factory can never leak into another caller's proxy.
+            lock (createLock)
+            {
+                DefaultRepositoryFactory = defaultRepositoryFactory;
+                return Create<TRepository, RepositoryProxy<TRepository>>();
+            }
         }
 
         public RepositoryProxy()
