@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace DataQI.Commons.Extensions.Reflection
 {
@@ -27,6 +28,17 @@ namespace DataQI.Commons.Extensions.Reflection
             genericTypeName = genericTypeName.Substring(0, genericTypeName.IndexOf('`'));
             var genericArgs = string.Join(",", type.GetGenericArguments().Select(GetFriendlyName));
             return $"{genericTypeName}<{genericArgs}>";
+        }
+
+        public static bool TryGetAsyncResultType(this Type type, out Type resultType)
+        {
+            resultType = null;
+
+            if (!type.IsGenericType || type.GetGenericTypeDefinition() != typeof(Task<>))
+                return false;
+
+            resultType = type.GetGenericArguments()[0];
+            return true;
         }
     }
 }

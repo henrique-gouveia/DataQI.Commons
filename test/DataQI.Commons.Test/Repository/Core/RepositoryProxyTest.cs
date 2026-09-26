@@ -60,6 +60,26 @@ namespace DataQI.Commons.Test.Repository.Core
         }
 
         [Fact]
+        public void TestRejectsAsyncQueryMethodWhenNoAsyncDefaultMethodExists()
+        {
+            var customRepository = RepositoryProxy<IFakeRepository>.Create(() =>
+                new CustomFakeRepository());
+
+            var exception = Assert.Throws<TargetInvocationException>(() =>
+            {
+                _ = customRepository.FindByFirstNameAsync("Name");
+            });
+            var exceptionMessage = exception.GetBaseException().Message;
+
+            var expectedMessage = string.Format("Unknown method {0} returning type {1}",
+                nameof(IFakeRepository.FindByFirstNameAsync),
+                typeof(Task<IEnumerable<FakeEntity>>));
+
+            Assert.IsType<TargetInvocationException>(exception.GetBaseException());
+            Assert.Equal(expectedMessage, exceptionMessage);
+        }
+
+        [Fact]
         public void TestCreateIsThreadSafeUnderConcurrentCalls()
         {
             const int concurrency = 32;
@@ -346,6 +366,39 @@ namespace DataQI.Commons.Test.Repository.Core
                 .Returns(entitiesExpected);
 
             var entities = fakeRepository.FindByFirstName(entityExpected.Name);
+
+            AssertExpectedObject(entitiesExpected, entities);
+        }
+
+        [Fact]
+        public void TestInvokeCustomizedAsyncFindMethodCorrectly()
+        {
+            var entityExpected = CreateTestFakeEntity();
+            var entitiesExpected = new List<FakeEntity>() { entityExpected };
+
+            defaultImplementationMock
+                .Setup(r => r.FindAsync(It.IsAny<Func<ICriteria, ICriteria>>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult<IEnumerable<FakeEntity>>(entitiesExpected));
+
+            var entities = fakeRepository.FindByFirstNameAsync(entityExpected.Name).Result;
+
+            AssertExpectedObject(entitiesExpected, entities);
+        }
+
+        [Fact]
+        public void TestInvokeCustomizedAsyncFindMethodForwardsCancellationToken()
+        {
+            var entityExpected = CreateTestFakeEntity();
+            var entitiesExpected = new List<FakeEntity>() { entityExpected };
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            defaultImplementationMock
+                .Setup(r => r.FindAsync(It.IsAny<Func<ICriteria, ICriteria>>(), cancellationTokenSource.Token))
+                .Returns(Task.FromResult<IEnumerable<FakeEntity>>(entitiesExpected));
+
+            var entities = fakeRepository
+                .FindByFirstNameAsync(entityExpected.Name, cancellationTokenSource.Token)
+                .Result;
 
             AssertExpectedObject(entitiesExpected, entities);
         }

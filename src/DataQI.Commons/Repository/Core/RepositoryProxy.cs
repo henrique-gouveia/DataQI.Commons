@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 using DataQI.Commons.Extensions.Reflection;
 using DataQI.Commons.Query;
@@ -21,6 +22,7 @@ namespace DataQI.Commons.Repository.Core
 
         protected readonly IDictionary<string, MethodInfo> defaultRepositoryMethods = new Dictionary<string, MethodInfo>();
         protected MethodInfo defaultFindByCriteriaMethod;
+        protected MethodInfo defaultFindByCriteriaAsyncMethod;
 
         public static TRepository Create(Func<object> defaultRepositoryFactory)
         {
@@ -45,12 +47,16 @@ namespace DataQI.Commons.Repository.Core
 
             RegisterDefaultRepositoryMethods();
             RegisterDefaultFindByCriteriaMethod();
+            RegisterDefaultFindByCriteriaAsyncMethod();
         }
 
         protected override object Invoke(MethodInfo targetMethod, object[] args)
         {
             if (TryGetDefaultMethod(targetMethod.UniqueName(), out var method))
                 return method.Invoke(defaultRepository, args);
+
+            if (targetMethod.ReturnType.TryGetAsyncResultType(out _) && defaultFindByCriteriaAsyncMethod != null)
+                return InvokeFindByCriteriaAsync(targetMethod, args);
 
             if (defaultFindByCriteriaMethod != null)
             {
@@ -60,6 +66,24 @@ namespace DataQI.Commons.Repository.Core
 
             throw new TargetInvocationException(
                 $"Unknown method {targetMethod.Name} returning type {targetMethod.ReturnType}", null);
+        }
+
+        private object InvokeFindByCriteriaAsync(MethodInfo targetMethod, object[] args)
+        {
+            var parameters = targetMethod.GetParameters();
+            var hasCancellationToken = parameters.Length > 0 &&
+                parameters[parameters.Length - 1].ParameterType == typeof(CancellationToken);
+
+            var cancellationToken = hasCancellationToken
+                ? (CancellationToken)args[args.Length - 1]
+                : default;
+            var criteriaArgs = hasCancellationToken
+                ? args.Take(args.Length - 1).ToArray()
+                : args;
+
+            var criteriaBuilder = CreateCriteriaBuilder(targetMethod, criteriaArgs);
+            return defaultFindByCriteriaAsyncMethod.Invoke(
+                defaultRepository, new object[] { criteriaBuilder, cancellationToken });
         }
 
         protected virtual Func<ICriteria, ICriteria> CreateCriteriaBuilder(MethodInfo targetMethod, object[] args)
@@ -87,6 +111,21 @@ namespace DataQI.Commons.Repository.Core
                     m.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
                     m.GetParameters()[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria)
                 );          
+        }
+
+        private void RegisterDefaultFindByCriteriaAsyncMethod()
+        {
+            defaultFindByCriteriaAsyncMethod = defaultRepositoryType
+                .GetMethods()
+                .FirstOrDefault(m =>
+                    m.Name == "FindAsync" &&
+                    m.GetParameters().Length == 2 &&
+                    m.GetParameters()[0].ParameterType.IsGenericType &&
+                    m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
+                    m.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
+                    m.GetParameters()[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria) &&
+                    m.GetParameters()[1].ParameterType == typeof(CancellationToken)
+                );
         }
 
         private void RegisterDefaultRepositoryMethods()

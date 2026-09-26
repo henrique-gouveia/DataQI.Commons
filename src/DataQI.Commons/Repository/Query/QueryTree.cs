@@ -9,12 +9,15 @@ namespace DataQI.Commons.Repository.Query
     public class QueryTree: IEnumerable<QueryTree.Node>
     {
         private static readonly string PrefixPattern = @"\w+By";
+        private static readonly string AsyncSuffixPattern = "Async$";
 
         private readonly Predicate predicate;
 
         public QueryTree(string source)
         {
             Assert.NotNullOrEmpty(source, "Source must not be null or empty");
+
+            source = Regex.Replace(source, AsyncSuffixPattern, "");
 
             var match = Regex.Match(source, PrefixPattern);
             predicate = new Predicate(source.Substring(match.Length));

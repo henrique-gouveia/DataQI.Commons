@@ -53,6 +53,20 @@ namespace DataQI.Commons.Test.Repository.Query
             AssertTree(queryTree, Members("FirstName"));
         }
 
+        [Fact]
+        public void TestStripsAsyncSuffixCorrectly()
+        {
+            var queryTree = new QueryTree("FindByFirstNameAsync");
+            AssertTree(queryTree, Members("FirstName"));
+        }
+
+        [Fact]
+        public void TestStripsAsyncSuffixWithMultipleCriteriaCorrectly()
+        {
+            var queryTree = new QueryTree("FindByFirstNameAndLastNameAsync");
+            AssertTree(queryTree, Members("FirstName", "LastName"));
+        }
+
         private static QueryMember[] Members(params string[] sources)
         {
             var members = new List<QueryMember>();
