@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DataQI.Commons.Test.Repository.Sample
 {
@@ -39,5 +40,7 @@ namespace DataQI.Commons.Test.Repository.Sample
         IEnumerable<FakeEntity> FindByFirstNameOrLastName(string firstName, string lastName);
         IEnumerable<FakeEntity> FindByFirstNameAndLastName(string firstName, string lastName);
         IEnumerable<FakeEntity> FindByStateAndHireDateGreaterThanEqualOrCityInAndEmailEndingWith(string state, DateTime hireDate, string[] cities, string email);
+
+        Task<IEnumerable<FakeEntity>> FindByFirstNameAsync(string name);
     }
 }

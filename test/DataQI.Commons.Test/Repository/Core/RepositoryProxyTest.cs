@@ -351,6 +351,21 @@ namespace DataQI.Commons.Test.Repository.Core
         }
 
         [Fact]
+        public void TestInvokeCustomizedAsyncFindMethodCorrectly()
+        {
+            var entityExpected = CreateTestFakeEntity();
+            var entitiesExpected = new List<FakeEntity>() { entityExpected };
+
+            defaultImplementationMock
+                .Setup(r => r.FindAsync(It.IsAny<Func<ICriteria, ICriteria>>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult<IEnumerable<FakeEntity>>(entitiesExpected));
+
+            var entities = fakeRepository.FindByFirstNameAsync(entityExpected.Name).Result;
+
+            AssertExpectedObject(entitiesExpected, entities);
+        }
+
+        [Fact]
         public void TestInvokeCustomizedQueryMethodCorrectly()
         {
             var entitiesExpected = CreateTestFakeEntities().AsQueryable();
