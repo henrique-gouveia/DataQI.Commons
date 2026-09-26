@@ -30,6 +30,11 @@ namespace DataQI.Commons.Repository
 
         Task<TEntity> FindOneAsync(TId id, CancellationToken cancellationToken = default);
 
+        TEntity FindOne(Func<ICriteria, ICriteria> criteriaBuilder);
+
+        Task<TEntity> FindOneAsync(Func<ICriteria, ICriteria> criteriaBuilder,
+            CancellationToken cancellationToken = default);
+
         void Insert(TEntity entity);
 
         Task InsertAsync(TEntity entity, CancellationToken cancellationToken = default);

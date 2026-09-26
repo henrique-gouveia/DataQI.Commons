@@ -80,6 +80,44 @@ namespace DataQI.Commons.Test.Repository.Core
         }
 
         [Fact]
+        public void TestRejectsFindOneQueryMethodWhenNoDefaultMethodExists()
+        {
+            var customRepository = RepositoryProxy<IFakeRepository>.Create(() =>
+                new CustomFakeRepository());
+
+            var exception = Assert.Throws<TargetInvocationException>(() =>
+                customRepository.FindByEmail("name@example.com"));
+            var exceptionMessage = exception.GetBaseException().Message;
+
+            var expectedMessage = string.Format("Unknown method {0} returning type {1}",
+                nameof(IFakeRepository.FindByEmail),
+                typeof(FakeEntity).FullName);
+
+            Assert.IsType<TargetInvocationException>(exception.GetBaseException());
+            Assert.Equal(expectedMessage, exceptionMessage);
+        }
+
+        [Fact]
+        public void TestRejectsAsyncFindOneQueryMethodWhenNoDefaultMethodExists()
+        {
+            var customRepository = RepositoryProxy<IFakeRepository>.Create(() =>
+                new CustomFakeRepository());
+
+            var exception = Assert.Throws<TargetInvocationException>(() =>
+            {
+                _ = customRepository.FindByEmailAsync("name@example.com");
+            });
+            var exceptionMessage = exception.GetBaseException().Message;
+
+            var expectedMessage = string.Format("Unknown method {0} returning type {1}",
+                nameof(IFakeRepository.FindByEmailAsync),
+                typeof(Task<FakeEntity>));
+
+            Assert.IsType<TargetInvocationException>(exception.GetBaseException());
+            Assert.Equal(expectedMessage, exceptionMessage);
+        }
+
+        [Fact]
         public void TestCreateIsThreadSafeUnderConcurrentCalls()
         {
             const int concurrency = 32;
@@ -383,6 +421,79 @@ namespace DataQI.Commons.Test.Repository.Core
             var entities = fakeRepository.FindByFirstNameAsync(entityExpected.Name).Result;
 
             AssertExpectedObject(entitiesExpected, entities);
+        }
+
+        [Fact]
+        public void TestInvokeCustomizedFindOneMethodCorrectly()
+        {
+            var entityExpected = CreateTestFakeEntity();
+
+            defaultImplementationMock
+                .Setup(r => r.FindOne(It.IsAny<Func<ICriteria, ICriteria>>()))
+                .Returns(entityExpected);
+
+            var entity = fakeRepository.FindByEmail(entityExpected.Name);
+
+            AssertExpectedObject(entityExpected, entity);
+        }
+
+        [Fact]
+        public void TestInvokeCustomizedAsyncFindOneMethodCorrectly()
+        {
+            var entityExpected = CreateTestFakeEntity();
+
+            defaultImplementationMock
+                .Setup(r => r.FindOneAsync(It.IsAny<Func<ICriteria, ICriteria>>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(entityExpected));
+
+            var entity = fakeRepository.FindByEmailAsync(entityExpected.Name).Result;
+
+            AssertExpectedObject(entityExpected, entity);
+        }
+
+        [Fact]
+        public void TestInvokeCustomizedAsyncFindOneMethodForwardsCancellationToken()
+        {
+            var entityExpected = CreateTestFakeEntity();
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            defaultImplementationMock
+                .Setup(r => r.FindOneAsync(It.IsAny<Func<ICriteria, ICriteria>>(), cancellationTokenSource.Token))
+                .Returns(Task.FromResult(entityExpected));
+
+            var entity = fakeRepository
+                .FindByEmailAsync(entityExpected.Name, cancellationTokenSource.Token)
+                .Result;
+
+            AssertExpectedObject(entityExpected, entity);
+        }
+
+        [Fact]
+        public void TestInvokeCustomizedFindOneMethodPropagatesMultiMatchException()
+        {
+            defaultImplementationMock
+                .Setup(r => r.FindOne(It.IsAny<Func<ICriteria, ICriteria>>()))
+                .Throws(new InvalidOperationException("Sequence contains more than one element"));
+
+            var exception = Assert.Throws<TargetInvocationException>(() =>
+                fakeRepository.FindByEmail("duplicate@example.com"));
+
+            Assert.IsType<InvalidOperationException>(exception.GetBaseException());
+            Assert.Equal("Sequence contains more than one element", exception.GetBaseException().Message);
+        }
+
+        [Fact]
+        public void TestInvokeCustomizedAsyncFindOneMethodPropagatesMultiMatchException()
+        {
+            defaultImplementationMock
+                .Setup(r => r.FindOneAsync(It.IsAny<Func<ICriteria, ICriteria>>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromException<FakeEntity>(
+                    new InvalidOperationException("Sequence contains more than one element")));
+
+            var exception = Assert.ThrowsAsync<InvalidOperationException>(() =>
+                fakeRepository.FindByEmailAsync("duplicate@example.com")).GetAwaiter().GetResult();
+
+            Assert.Equal("Sequence contains more than one element", exception.Message);
         }
 
         [Fact]
