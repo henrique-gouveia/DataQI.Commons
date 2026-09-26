@@ -56,11 +56,7 @@ namespace DataQI.Commons.Repository.Core
                 return method.Invoke(defaultRepository, args);
 
             if (targetMethod.ReturnType.TryGetAsyncResultType(out _) && defaultFindByCriteriaAsyncMethod != null)
-            {
-                var asyncCriteriaBuilder = CreateCriteriaBuilder(targetMethod, args);
-                return defaultFindByCriteriaAsyncMethod.Invoke(
-                    defaultRepository, new object[] { asyncCriteriaBuilder, default(CancellationToken) });
-            }
+                return InvokeFindByCriteriaAsync(targetMethod, args);
 
             if (defaultFindByCriteriaMethod != null)
             {
@@ -70,6 +66,24 @@ namespace DataQI.Commons.Repository.Core
 
             throw new TargetInvocationException(
                 $"Unknown method {targetMethod.Name} returning type {targetMethod.ReturnType}", null);
+        }
+
+        private object InvokeFindByCriteriaAsync(MethodInfo targetMethod, object[] args)
+        {
+            var parameters = targetMethod.GetParameters();
+            var hasCancellationToken = parameters.Length > 0 &&
+                parameters[parameters.Length - 1].ParameterType == typeof(CancellationToken);
+
+            var cancellationToken = hasCancellationToken
+                ? (CancellationToken)args[args.Length - 1]
+                : default;
+            var criteriaArgs = hasCancellationToken
+                ? args.Take(args.Length - 1).ToArray()
+                : args;
+
+            var criteriaBuilder = CreateCriteriaBuilder(targetMethod, criteriaArgs);
+            return defaultFindByCriteriaAsyncMethod.Invoke(
+                defaultRepository, new object[] { criteriaBuilder, cancellationToken });
         }
 
         protected virtual Func<ICriteria, ICriteria> CreateCriteriaBuilder(MethodInfo targetMethod, object[] args)
