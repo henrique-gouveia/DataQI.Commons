@@ -55,7 +55,7 @@ namespace DataQI.Commons.Repository.Core
             if (TryGetDefaultMethod(targetMethod.UniqueName(), out var method))
                 return method.Invoke(defaultRepository, args);
 
-            if (targetMethod.ReturnType.TryGetAsyncResultType(out _))
+            if (targetMethod.ReturnType.TryGetAsyncResultType(out _) && defaultFindByCriteriaAsyncMethod != null)
             {
                 var asyncCriteriaBuilder = CreateCriteriaBuilder(targetMethod, args);
                 return defaultFindByCriteriaAsyncMethod.Invoke(

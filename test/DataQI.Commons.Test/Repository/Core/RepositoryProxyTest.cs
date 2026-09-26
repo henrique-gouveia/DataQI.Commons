@@ -60,6 +60,26 @@ namespace DataQI.Commons.Test.Repository.Core
         }
 
         [Fact]
+        public void TestRejectsAsyncQueryMethodWhenNoAsyncDefaultMethodExists()
+        {
+            var customRepository = RepositoryProxy<IFakeRepository>.Create(() =>
+                new CustomFakeRepository());
+
+            var exception = Assert.Throws<TargetInvocationException>(() =>
+            {
+                _ = customRepository.FindByFirstNameAsync("Name");
+            });
+            var exceptionMessage = exception.GetBaseException().Message;
+
+            var expectedMessage = string.Format("Unknown method {0} returning type {1}",
+                nameof(IFakeRepository.FindByFirstNameAsync),
+                typeof(Task<IEnumerable<FakeEntity>>));
+
+            Assert.IsType<TargetInvocationException>(exception.GetBaseException());
+            Assert.Equal(expectedMessage, exceptionMessage);
+        }
+
+        [Fact]
         public void TestCreateIsThreadSafeUnderConcurrentCalls()
         {
             const int concurrency = 32;
