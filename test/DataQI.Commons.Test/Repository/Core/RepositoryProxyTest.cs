@@ -469,6 +469,34 @@ namespace DataQI.Commons.Test.Repository.Core
         }
 
         [Fact]
+        public void TestInvokeCustomizedFindOneMethodPropagatesMultiMatchException()
+        {
+            defaultImplementationMock
+                .Setup(r => r.FindOne(It.IsAny<Func<ICriteria, ICriteria>>()))
+                .Throws(new InvalidOperationException("Sequence contains more than one element"));
+
+            var exception = Assert.Throws<TargetInvocationException>(() =>
+                fakeRepository.FindByEmail("duplicate@example.com"));
+
+            Assert.IsType<InvalidOperationException>(exception.GetBaseException());
+            Assert.Equal("Sequence contains more than one element", exception.GetBaseException().Message);
+        }
+
+        [Fact]
+        public void TestInvokeCustomizedAsyncFindOneMethodPropagatesMultiMatchException()
+        {
+            defaultImplementationMock
+                .Setup(r => r.FindOneAsync(It.IsAny<Func<ICriteria, ICriteria>>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromException<FakeEntity>(
+                    new InvalidOperationException("Sequence contains more than one element")));
+
+            var exception = Assert.ThrowsAsync<InvalidOperationException>(() =>
+                fakeRepository.FindByEmailAsync("duplicate@example.com")).GetAwaiter().GetResult();
+
+            Assert.Equal("Sequence contains more than one element", exception.Message);
+        }
+
+        [Fact]
         public void TestInvokeCustomizedAsyncFindMethodForwardsCancellationToken()
         {
             var entityExpected = CreateTestFakeEntity();
