@@ -44,5 +44,8 @@ namespace DataQI.Commons.Test.Repository.Sample
 
         Task<IEnumerable<FakeEntity>> FindByFirstNameAsync(string name);
         Task<IEnumerable<FakeEntity>> FindByFirstNameAsync(string name, CancellationToken cancellationToken);
+
+        FakeEntity FindByEmail(string email);
+        Task<FakeEntity> FindByEmailAsync(string email);
     }
 }

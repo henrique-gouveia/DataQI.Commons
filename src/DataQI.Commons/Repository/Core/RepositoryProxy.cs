@@ -19,18 +19,16 @@ namespace DataQI.Commons.Repository.Core
 
         protected readonly object defaultRepository;
         protected readonly Type defaultRepositoryType;
+        protected readonly Type entityType;
 
         protected readonly IDictionary<string, MethodInfo> defaultRepositoryMethods = new Dictionary<string, MethodInfo>();
         protected MethodInfo defaultFindByCriteriaMethod;
         protected MethodInfo defaultFindByCriteriaAsyncMethod;
+        protected MethodInfo defaultFindOneByCriteriaMethod;
+        protected MethodInfo defaultFindOneByCriteriaAsyncMethod;
 
         public static TRepository Create(Func<object> defaultRepositoryFactory)
         {
-            // DefaultRepositoryFactory is static (shared by every RepositoryProxy<TRepository>
-            // instance for this closed generic type), because DispatchProxy.Create<T, TProxy>()
-            // offers no way to pass constructor arguments. The lock keeps the write and the
-            // constructor's read of it atomic with respect to concurrent Create calls for the
-            // same TRepository, so one caller's factory can never leak into another caller's proxy.
             lock (createLock)
             {
                 DefaultRepositoryFactory = defaultRepositoryFactory;
@@ -45,30 +43,52 @@ namespace DataQI.Commons.Repository.Core
 
             Assert.NotNull(defaultRepository, "Repository must not be null");
 
+            entityType = new RepositoryMetadata(typeof(TRepository)).EntityType;
+
             RegisterDefaultRepositoryMethods();
             RegisterDefaultFindByCriteriaMethod();
             RegisterDefaultFindByCriteriaAsyncMethod();
+            RegisterDefaultFindOneByCriteriaMethod();
+            RegisterDefaultFindOneByCriteriaAsyncMethod();
         }
 
         protected override object Invoke(MethodInfo targetMethod, object[] args)
         {
-            if (TryGetDefaultMethod(targetMethod.UniqueName(), out var method))
-                return method.Invoke(defaultRepository, args);
-
-            if (targetMethod.ReturnType.TryGetAsyncResultType(out _) && defaultFindByCriteriaAsyncMethod != null)
-                return InvokeFindByCriteriaAsync(targetMethod, args);
-
-            if (defaultFindByCriteriaMethod != null)
-            {
-                var criteriaBuilder = CreateCriteriaBuilder(targetMethod, args);
-                return defaultFindByCriteriaMethod.Invoke(defaultRepository, new object[] { criteriaBuilder });
-            }
+            if (TryResolveInvocableMethod(targetMethod, args, out var method, out var invokeArgs))
+                return method.Invoke(defaultRepository, invokeArgs);
 
             throw new TargetInvocationException(
                 $"Unknown method {targetMethod.Name} returning type {targetMethod.ReturnType}", null);
         }
 
-        private object InvokeFindByCriteriaAsync(MethodInfo targetMethod, object[] args)
+        protected virtual bool TryResolveInvocableMethod(
+            MethodInfo targetMethod, object[] args, out MethodInfo method, out object[] invokeArgs)
+        {
+            if (TryGetDefaultMethod(targetMethod.UniqueName(), out method))
+            {
+                invokeArgs = args;
+                return true;
+            }
+
+            if (targetMethod.ReturnType.TryGetAsyncResultType(out var asyncResultType))
+            {
+                method = asyncResultType == entityType ? defaultFindOneByCriteriaAsyncMethod : defaultFindByCriteriaAsyncMethod;
+                if (method == null) { invokeArgs = null; return false; }
+
+                var (criteriaArgs, cancellationToken) = SplitCancellationToken(targetMethod, args);
+                invokeArgs = new object[] { CreateCriteriaBuilder(targetMethod, criteriaArgs), cancellationToken };
+                return true;
+            }
+
+            method = targetMethod.ReturnType == entityType ? defaultFindOneByCriteriaMethod : defaultFindByCriteriaMethod;
+            if (method == null) { invokeArgs = null; return false; }
+
+            invokeArgs = new object[] { CreateCriteriaBuilder(targetMethod, args) };
+            return true;
+        }
+
+        private static (object[] CriteriaArgs, CancellationToken CancellationToken) SplitCancellationToken(
+            MethodInfo targetMethod, object[] args)
         {
             var parameters = targetMethod.GetParameters();
             var hasCancellationToken = parameters.Length > 0 &&
@@ -81,9 +101,7 @@ namespace DataQI.Commons.Repository.Core
                 ? args.Take(args.Length - 1).ToArray()
                 : args;
 
-            var criteriaBuilder = CreateCriteriaBuilder(targetMethod, criteriaArgs);
-            return defaultFindByCriteriaAsyncMethod.Invoke(
-                defaultRepository, new object[] { criteriaBuilder, cancellationToken });
+            return (criteriaArgs, cancellationToken);
         }
 
         protected virtual Func<ICriteria, ICriteria> CreateCriteriaBuilder(MethodInfo targetMethod, object[] args)
@@ -119,6 +137,35 @@ namespace DataQI.Commons.Repository.Core
                 .GetMethods()
                 .FirstOrDefault(m =>
                     m.Name == "FindAsync" &&
+                    m.GetParameters().Length == 2 &&
+                    m.GetParameters()[0].ParameterType.IsGenericType &&
+                    m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
+                    m.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
+                    m.GetParameters()[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria) &&
+                    m.GetParameters()[1].ParameterType == typeof(CancellationToken)
+                );
+        }
+
+        private void RegisterDefaultFindOneByCriteriaMethod()
+        {
+            defaultFindOneByCriteriaMethod = defaultRepositoryType
+                .GetMethods()
+                .FirstOrDefault(m =>
+                    m.Name == "FindOne" &&
+                    m.GetParameters().Length == 1 &&
+                    m.GetParameters()[0].ParameterType.IsGenericType &&
+                    m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
+                    m.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
+                    m.GetParameters()[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria)
+                );
+        }
+
+        private void RegisterDefaultFindOneByCriteriaAsyncMethod()
+        {
+            defaultFindOneByCriteriaAsyncMethod = defaultRepositoryType
+                .GetMethods()
+                .FirstOrDefault(m =>
+                    m.Name == "FindOneAsync" &&
                     m.GetParameters().Length == 2 &&
                     m.GetParameters()[0].ParameterType.IsGenericType &&
                     m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
