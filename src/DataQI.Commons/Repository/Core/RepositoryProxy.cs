@@ -47,6 +47,51 @@ namespace DataQI.Commons.Repository.Core
             RegisterMethodDescriptors();
         }
 
+        private void RegisterMethodDescriptors()
+        {
+            var exactMatchMethods = ResolveExactMatchMethods();
+            var findMethod = ResolveCriteriaMethod("Find", 1);
+            var findAsyncMethod = ResolveCriteriaMethod("FindAsync", 2);
+            var findOneMethod = ResolveCriteriaMethod("FindOne", 1);
+            var findOneAsyncMethod = ResolveCriteriaMethod("FindOneAsync", 2);
+
+            methodDescriptorFactory = method => MethodDescriptor.Create(
+                method,
+                entityType,
+                exactMatchMethods,
+                findMethod,
+                findAsyncMethod,
+                findOneMethod,
+                findOneAsyncMethod);
+
+            foreach (var method in typeof(TRepository).GetAllInterfaceMethods())
+                methodDescriptors[method] = methodDescriptorFactory(method);
+        }
+
+        private MethodInfo ResolveCriteriaMethod(string name, int parameterCount)
+        {
+            return defaultRepositoryType
+                .GetMethods()
+                .FirstOrDefault(m =>
+                    m.Name == name &&
+                    m.GetParameters().Length == parameterCount &&
+                    m.GetParameters()[0].ParameterType.IsGenericType &&
+                    m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
+                    m.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
+                    m.GetParameters()[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria) &&
+                    (parameterCount == 1 || m.GetParameters()[1].ParameterType == typeof(CancellationToken))
+                );
+        }
+
+        private IDictionary<string, MethodInfo> ResolveExactMatchMethods()
+        {
+            var methods = new Dictionary<string, MethodInfo>();
+            foreach (var method in defaultRepositoryType.GetInstancePublicMethods())
+                if (method != null && !methods.ContainsKey(method.Name))
+                    methods.Add(method.UniqueName(), method);
+            return methods;
+        }
+
         protected override object Invoke(MethodInfo targetMethod, object[] args)
         {
             var descriptor = methodDescriptors.GetOrAdd(targetMethod, methodDescriptorFactory);
@@ -68,20 +113,16 @@ namespace DataQI.Commons.Repository.Core
 
                 case DispatchKind.SyncCollection:
                 case DispatchKind.SyncSingle:
+                {
+                    var criteriaBuilder = CreateCriteriaBuilder(targetMethod, args);
                     return descriptor.ResolvedMethod.Invoke(
-                        defaultRepository, new object[] { CreateCriteriaBuilder(targetMethod, args) });
+                        defaultRepository, new object[] { criteriaBuilder });
+                }
 
                 default:
                     throw new TargetInvocationException(
                         $"Unknown method {targetMethod.Name} returning type {targetMethod.ReturnType}", null);
             }
-        }
-
-        private static (object[] CriteriaArgs, CancellationToken CancellationToken) SplitCancellationToken(object[] args)
-        {
-            var cancellationToken = (CancellationToken)args[args.Length - 1];
-            var criteriaArgs = args.Take(args.Length - 1).ToArray();
-            return (criteriaArgs, cancellationToken);
         }
 
         protected virtual Func<ICriteria, ICriteria> CreateCriteriaBuilder(MethodInfo targetMethod, object[] args)
@@ -97,43 +138,11 @@ namespace DataQI.Commons.Repository.Core
             return CriteriaBuilder;
         }
 
-        private void RegisterMethodDescriptors()
+        private static (object[] CriteriaArgs, CancellationToken CancellationToken) SplitCancellationToken(object[] args)
         {
-            var exactMatchMethods = BuildExactMatchMethods();
-            var findMethod = ResolveCriteriaMethod("Find", 1);
-            var findAsyncMethod = ResolveCriteriaMethod("FindAsync", 2);
-            var findOneMethod = ResolveCriteriaMethod("FindOne", 1);
-            var findOneAsyncMethod = ResolveCriteriaMethod("FindOneAsync", 2);
-
-            methodDescriptorFactory = method => MethodDescriptor.Create(
-                method, entityType, exactMatchMethods, findMethod, findAsyncMethod, findOneMethod, findOneAsyncMethod);
-
-            foreach (var method in typeof(TRepository).GetAllInterfaceMethods())
-                methodDescriptors[method] = methodDescriptorFactory(method);
-        }
-
-        private MethodInfo ResolveCriteriaMethod(string name, int parameterCount)
-        {
-            return defaultRepositoryType
-                .GetMethods()
-                .FirstOrDefault(m =>
-                    m.Name == name &&
-                    m.GetParameters().Length == parameterCount &&
-                    m.GetParameters()[0].ParameterType.IsGenericType &&
-                    m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
-                    m.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
-                    m.GetParameters()[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria) &&
-                    (parameterCount == 1 || m.GetParameters()[1].ParameterType == typeof(CancellationToken))
-                );
-        }
-
-        private IDictionary<string, MethodInfo> BuildExactMatchMethods()
-        {
-            var methods = new Dictionary<string, MethodInfo>();
-            foreach (var method in defaultRepositoryType.GetInstancePublicMethods())
-                if (method != null && !methods.ContainsKey(method.Name))
-                    methods.Add(method.UniqueName(), method);
-            return methods;
+            var cancellationToken = (CancellationToken)args[args.Length - 1];
+            var criteriaArgs = args.Take(args.Length - 1).ToArray();
+            return (criteriaArgs, cancellationToken);
         }
     }
 }
