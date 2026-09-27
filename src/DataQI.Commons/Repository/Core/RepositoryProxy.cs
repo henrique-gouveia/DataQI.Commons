@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -21,11 +22,9 @@ namespace DataQI.Commons.Repository.Core
         protected readonly Type defaultRepositoryType;
         protected readonly Type entityType;
 
-        protected readonly IDictionary<string, MethodInfo> defaultRepositoryMethods = new Dictionary<string, MethodInfo>();
-        protected MethodInfo defaultFindByCriteriaMethod;
-        protected MethodInfo defaultFindByCriteriaAsyncMethod;
-        protected MethodInfo defaultFindOneByCriteriaMethod;
-        protected MethodInfo defaultFindOneByCriteriaAsyncMethod;
+        private readonly ConcurrentDictionary<MethodInfo, MethodDescriptor> methodDescriptors =
+            new ConcurrentDictionary<MethodInfo, MethodDescriptor>();
+        private Func<MethodInfo, MethodDescriptor> methodDescriptorFactory;
 
         public static TRepository Create(Func<object> defaultRepositoryFactory)
         {
@@ -45,62 +44,43 @@ namespace DataQI.Commons.Repository.Core
 
             entityType = new RepositoryMetadata(typeof(TRepository)).EntityType;
 
-            RegisterDefaultRepositoryMethods();
-            RegisterDefaultFindByCriteriaMethod();
-            RegisterDefaultFindByCriteriaAsyncMethod();
-            RegisterDefaultFindOneByCriteriaMethod();
-            RegisterDefaultFindOneByCriteriaAsyncMethod();
+            RegisterMethodDescriptors();
         }
 
         protected override object Invoke(MethodInfo targetMethod, object[] args)
         {
-            if (TryResolveInvocableMethod(targetMethod, args, out var method, out var invokeArgs))
-                return method.Invoke(defaultRepository, invokeArgs);
+            var descriptor = methodDescriptors.GetOrAdd(targetMethod, methodDescriptorFactory);
 
-            throw new TargetInvocationException(
-                $"Unknown method {targetMethod.Name} returning type {targetMethod.ReturnType}", null);
+            switch (descriptor.Kind)
+            {
+                case DispatchKind.ExactMatch:
+                    return descriptor.ResolvedMethod.Invoke(defaultRepository, args);
+
+                case DispatchKind.AsyncCollection:
+                case DispatchKind.AsyncSingle:
+                {
+                    var (criteriaArgs, cancellationToken) = descriptor.HasCancellationToken
+                        ? SplitCancellationToken(args)
+                        : (args, default);
+                    var criteriaBuilder = CreateCriteriaBuilder(targetMethod, criteriaArgs);
+                    return descriptor.ResolvedMethod.Invoke(defaultRepository, new object[] { criteriaBuilder, cancellationToken });
+                }
+
+                case DispatchKind.SyncCollection:
+                case DispatchKind.SyncSingle:
+                    return descriptor.ResolvedMethod.Invoke(
+                        defaultRepository, new object[] { CreateCriteriaBuilder(targetMethod, args) });
+
+                default:
+                    throw new TargetInvocationException(
+                        $"Unknown method {targetMethod.Name} returning type {targetMethod.ReturnType}", null);
+            }
         }
 
-        protected virtual bool TryResolveInvocableMethod(
-            MethodInfo targetMethod, object[] args, out MethodInfo method, out object[] invokeArgs)
+        private static (object[] CriteriaArgs, CancellationToken CancellationToken) SplitCancellationToken(object[] args)
         {
-            if (TryGetDefaultMethod(targetMethod.UniqueName(), out method))
-            {
-                invokeArgs = args;
-                return true;
-            }
-
-            if (targetMethod.ReturnType.TryGetAsyncResultType(out var asyncResultType))
-            {
-                method = asyncResultType == entityType ? defaultFindOneByCriteriaAsyncMethod : defaultFindByCriteriaAsyncMethod;
-                if (method == null) { invokeArgs = null; return false; }
-
-                var (criteriaArgs, cancellationToken) = SplitCancellationToken(targetMethod, args);
-                invokeArgs = new object[] { CreateCriteriaBuilder(targetMethod, criteriaArgs), cancellationToken };
-                return true;
-            }
-
-            method = targetMethod.ReturnType == entityType ? defaultFindOneByCriteriaMethod : defaultFindByCriteriaMethod;
-            if (method == null) { invokeArgs = null; return false; }
-
-            invokeArgs = new object[] { CreateCriteriaBuilder(targetMethod, args) };
-            return true;
-        }
-
-        private static (object[] CriteriaArgs, CancellationToken CancellationToken) SplitCancellationToken(
-            MethodInfo targetMethod, object[] args)
-        {
-            var parameters = targetMethod.GetParameters();
-            var hasCancellationToken = parameters.Length > 0 &&
-                parameters[parameters.Length - 1].ParameterType == typeof(CancellationToken);
-
-            var cancellationToken = hasCancellationToken
-                ? (CancellationToken)args[args.Length - 1]
-                : default;
-            var criteriaArgs = hasCancellationToken
-                ? args.Take(args.Length - 1).ToArray()
-                : args;
-
+            var cancellationToken = (CancellationToken)args[args.Length - 1];
+            var criteriaArgs = args.Take(args.Length - 1).ToArray();
             return (criteriaArgs, cancellationToken);
         }
 
@@ -116,79 +96,44 @@ namespace DataQI.Commons.Repository.Core
 
             return CriteriaBuilder;
         }
-        
-        private void RegisterDefaultFindByCriteriaMethod()
+
+        private void RegisterMethodDescriptors()
         {
-            defaultFindByCriteriaMethod = defaultRepositoryType
-                .GetMethods()
-                .FirstOrDefault(m => 
-                    m.Name == "Find" &&
-                    m.GetParameters().Length == 1 &&
-                    m.GetParameters()[0].ParameterType.IsGenericType &&
-                    m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
-                    m.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
-                    m.GetParameters()[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria)
-                );          
+            var exactMatchMethods = BuildExactMatchMethods();
+            var findMethod = ResolveCriteriaMethod("Find", 1);
+            var findAsyncMethod = ResolveCriteriaMethod("FindAsync", 2);
+            var findOneMethod = ResolveCriteriaMethod("FindOne", 1);
+            var findOneAsyncMethod = ResolveCriteriaMethod("FindOneAsync", 2);
+
+            methodDescriptorFactory = method => MethodDescriptor.Create(
+                method, entityType, exactMatchMethods, findMethod, findAsyncMethod, findOneMethod, findOneAsyncMethod);
+
+            foreach (var method in typeof(TRepository).GetAllInterfaceMethods())
+                methodDescriptors[method] = methodDescriptorFactory(method);
         }
 
-        private void RegisterDefaultFindByCriteriaAsyncMethod()
+        private MethodInfo ResolveCriteriaMethod(string name, int parameterCount)
         {
-            defaultFindByCriteriaAsyncMethod = defaultRepositoryType
+            return defaultRepositoryType
                 .GetMethods()
                 .FirstOrDefault(m =>
-                    m.Name == "FindAsync" &&
-                    m.GetParameters().Length == 2 &&
+                    m.Name == name &&
+                    m.GetParameters().Length == parameterCount &&
                     m.GetParameters()[0].ParameterType.IsGenericType &&
                     m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
                     m.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
                     m.GetParameters()[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria) &&
-                    m.GetParameters()[1].ParameterType == typeof(CancellationToken)
+                    (parameterCount == 1 || m.GetParameters()[1].ParameterType == typeof(CancellationToken))
                 );
         }
 
-        private void RegisterDefaultFindOneByCriteriaMethod()
+        private IDictionary<string, MethodInfo> BuildExactMatchMethods()
         {
-            defaultFindOneByCriteriaMethod = defaultRepositoryType
-                .GetMethods()
-                .FirstOrDefault(m =>
-                    m.Name == "FindOne" &&
-                    m.GetParameters().Length == 1 &&
-                    m.GetParameters()[0].ParameterType.IsGenericType &&
-                    m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
-                    m.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
-                    m.GetParameters()[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria)
-                );
+            var methods = new Dictionary<string, MethodInfo>();
+            foreach (var method in defaultRepositoryType.GetInstancePublicMethods())
+                if (method != null && !methods.ContainsKey(method.Name))
+                    methods.Add(method.UniqueName(), method);
+            return methods;
         }
-
-        private void RegisterDefaultFindOneByCriteriaAsyncMethod()
-        {
-            defaultFindOneByCriteriaAsyncMethod = defaultRepositoryType
-                .GetMethods()
-                .FirstOrDefault(m =>
-                    m.Name == "FindOneAsync" &&
-                    m.GetParameters().Length == 2 &&
-                    m.GetParameters()[0].ParameterType.IsGenericType &&
-                    m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
-                    m.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
-                    m.GetParameters()[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria) &&
-                    m.GetParameters()[1].ParameterType == typeof(CancellationToken)
-                );
-        }
-
-        private void RegisterDefaultRepositoryMethods()
-        {
-            MethodInfo[] methods = defaultRepositoryType.GetInstancePublicMethods();
-            foreach (var method in methods)
-                RegisterMethod(method);
-        }
-
-        protected virtual void RegisterMethod(MethodInfo method)
-        {
-            if (method != null && !defaultRepositoryMethods.ContainsKey(method.Name))
-                defaultRepositoryMethods.Add(method.UniqueName(), method);
-        }
-
-        protected virtual bool TryGetDefaultMethod(string name, out MethodInfo method)
-            => defaultRepositoryMethods.TryGetValue(name, out method);
     }
 }
