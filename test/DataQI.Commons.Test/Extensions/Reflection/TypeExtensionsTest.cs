@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Xunit;
 
 using DataQI.Commons.Extensions.Reflection;
+using DataQI.Commons.Test.Repository.Sample;
 
 namespace DataQI.Commons.Test.Extensions.Reflection
 {
@@ -28,6 +30,17 @@ namespace DataQI.Commons.Test.Extensions.Reflection
 
             Assert.False(recognized);
             Assert.Null(resultType);
+        }
+
+        [Fact]
+        public void TestGetAllInterfaceMethodsIncludesInheritedMethods()
+        {
+            var methodNames = typeof(IFakeRepository).GetAllInterfaceMethods().Select(m => m.Name);
+
+            Assert.Contains(nameof(IFakeRepository.NotImplementedMethod), methodNames);
+            Assert.Contains("Insert", methodNames);
+            Assert.Contains("FindOne", methodNames);
+            Assert.Contains("Find", methodNames);
         }
     }
 }
