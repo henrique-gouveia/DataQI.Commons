@@ -12,6 +12,9 @@ namespace DataQI.Commons.Test.Repository.Sample
         IQueryable<FakeEntity> Query();
 
         IEnumerable<FakeEntity> FindByFirstName(string name);
+        IEnumerable<FakeEntity> FindByFirstNameOrderByLastName(string firstName);
+        IEnumerable<FakeEntity> FindByFirstNameOrderByLastNameDesc(string firstName);
+        IEnumerable<FakeEntity> FindByFirstNameOrderByLastNameAscBirthDateDesc(string firstName);
         IEnumerable<FakeEntity> FindByLastNameNot(string name);
 
         IEnumerable<FakeEntity> FindByBirthDateBetween(DateTime start, DateTime end);
