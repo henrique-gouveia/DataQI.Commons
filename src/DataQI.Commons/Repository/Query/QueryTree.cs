@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
+using DataQI.Commons.Query.Support;
 using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Query
@@ -10,8 +11,15 @@ namespace DataQI.Commons.Repository.Query
     {
         private static readonly string PrefixPattern = @"\w+By";
         private static readonly string AsyncSuffixPattern = "Async$";
+        private static readonly string UppercaseOrEndPattern = "(?=[A-Z]|$)";
+        private static readonly string OrderByPattern = $"OrderBy{UppercaseOrEndPattern}";
+        private static readonly string DirectionPattern = $"(Asc|Desc){UppercaseOrEndPattern}";
+
+        private static readonly Regex OrderByMatcher = new Regex(OrderByPattern);
+        private static readonly Regex DirectionMatcher = new Regex(DirectionPattern);
 
         private readonly Predicate predicate;
+        private readonly List<OrderMember> orderMembers = new List<OrderMember>();
 
         public QueryTree(string source)
         {
@@ -19,8 +27,33 @@ namespace DataQI.Commons.Repository.Query
 
             source = Regex.Replace(source, AsyncSuffixPattern, "");
 
+            var orderByMatch = OrderByMatcher.Match(source);
+            if (orderByMatch.Success)
+            {
+                ParseOrderMembers(source.Substring(orderByMatch.Index + orderByMatch.Length));
+                source = source.Substring(0, orderByMatch.Index);
+            }
+
             var match = Regex.Match(source, PrefixPattern);
             predicate = new Predicate(source.Substring(match.Length));
+        }
+
+        private void ParseOrderMembers(string orderSource)
+        {
+            var currentIndex = 0;
+            foreach (Match directionMatch in DirectionMatcher.Matches(orderSource))
+            {
+                var propertyName = orderSource.Substring(currentIndex, directionMatch.Index - currentIndex);
+                var direction = directionMatch.Value == "Asc" ? OrderDirection.Asc : OrderDirection.Desc;
+                orderMembers.Add(new OrderMember(propertyName, direction));
+                currentIndex = directionMatch.Index + directionMatch.Length;
+            }
+
+            if (currentIndex < orderSource.Length)
+            {
+                var propertyName = orderSource.Substring(currentIndex);
+                orderMembers.Add(new OrderMember(propertyName, OrderDirection.Asc));
+            }
         }
 
         private static string[] Split(string input, string pattern)
@@ -30,6 +63,8 @@ namespace DataQI.Commons.Repository.Query
 
         public IEnumerator<Node> GetEnumerator() => predicate.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public IReadOnlyList<OrderMember> OrderMembers => orderMembers;
 
         private class Predicate: IEnumerable<Node>
         {
@@ -55,6 +90,18 @@ namespace DataQI.Commons.Repository.Query
             private readonly List<QueryMember> members = new List<QueryMember>();
             public IEnumerator<QueryMember> GetEnumerator() => members.GetEnumerator();
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        public class OrderMember
+        {
+            public OrderMember(string propertyName, OrderDirection direction)
+            {
+                PropertyName = propertyName;
+                Direction = direction;
+            }
+
+            public string PropertyName { get; }
+            public OrderDirection Direction { get; }
         }
     }
 }

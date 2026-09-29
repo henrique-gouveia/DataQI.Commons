@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+using DataQI.Commons.Query.Support;
 using DataQI.Commons.Repository.Query;
 using static DataQI.Commons.Repository.Query.QueryTree;
 
@@ -67,6 +68,74 @@ namespace DataQI.Commons.Test.Repository.Query
             AssertTree(queryTree, Members("FirstName", "LastName"));
         }
 
+        [Fact]
+        public void TestParsesOrderByWithDefaultDirectionCorrectly()
+        {
+            var queryTree = new QueryTree("FindByActiveOrderByName");
+            AssertTree(queryTree, Members("Active"));
+            AssertOrderMembers(queryTree, ("Name", OrderDirection.Asc));
+        }
+
+        [Fact]
+        public void TestParsesOrderByWithExplicitDirectionCorrectly()
+        {
+            var queryTree = new QueryTree("FindByActiveOrderByNameDesc");
+            AssertTree(queryTree, Members("Active"));
+            AssertOrderMembers(queryTree, ("Name", OrderDirection.Desc));
+        }
+
+        [Fact]
+        public void TestParsesOrderByWithMultiplePropertiesCorrectly()
+        {
+            var queryTree = new QueryTree("FindByActiveOrderByNameAscStockDesc");
+            AssertTree(queryTree, Members("Active"));
+            AssertOrderMembers(queryTree,
+                ("Name", OrderDirection.Asc),
+                ("Stock", OrderDirection.Desc));
+        }
+
+        [Fact]
+        public void TestParsesOrderByWithTrailingDefaultDirectionCorrectly()
+        {
+            var queryTree = new QueryTree("FindByActiveOrderByNameAscStock");
+            AssertTree(queryTree, Members("Active"));
+            AssertOrderMembers(queryTree,
+                ("Name", OrderDirection.Asc),
+                ("Stock", OrderDirection.Asc));
+        }
+
+        [Fact]
+        public void TestParsesAmbiguousTrailingPropertyAsSinglePropertyCorrectly()
+        {
+            var queryTree = new QueryTree("FindByActiveOrderByNameStockDesc");
+            AssertTree(queryTree, Members("Active"));
+            AssertOrderMembers(queryTree, ("NameStock", OrderDirection.Desc));
+        }
+
+        [Fact]
+        public void TestTreatsDirectionFollowedByDigitAsPartOfPropertyCorrectly()
+        {
+            var queryTree = new QueryTree("FindByActiveOrderByNameAsc2Factor");
+            AssertTree(queryTree, Members("Active"));
+            AssertOrderMembers(queryTree, ("NameAsc2Factor", OrderDirection.Asc));
+        }
+
+        [Fact]
+        public void TestParsesMethodWithoutOrderByHasNoOrderMembers()
+        {
+            var queryTree = new QueryTree("FindByActive");
+            AssertTree(queryTree, Members("Active"));
+            Assert.Empty(queryTree.OrderMembers);
+        }
+
+        [Fact]
+        public void TestStripsAsyncSuffixBeforeParsingOrderByCorrectly()
+        {
+            var queryTree = new QueryTree("FindByActiveOrderByNameDescAsync");
+            AssertTree(queryTree, Members("Active"));
+            AssertOrderMembers(queryTree, ("Name", OrderDirection.Desc));
+        }
+
         private static QueryMember[] Members(params string[] sources)
         {
             var members = new List<QueryMember>();
@@ -96,6 +165,16 @@ namespace DataQI.Commons.Test.Repository.Query
                 expectedCriterion.ToExpectedObject().ShouldMatch(members.Current);
             }
             Assert.False(members.MoveNext());
+        }
+
+        private static void AssertOrderMembers(QueryTree queryTree, params (string PropertyName, OrderDirection Direction)[] expected)
+        {
+            Assert.Equal(expected.Length, queryTree.OrderMembers.Count);
+            for (var i = 0; i < expected.Length; i++)
+            {
+                Assert.Equal(expected[i].PropertyName, queryTree.OrderMembers[i].PropertyName);
+                Assert.Equal(expected[i].Direction, queryTree.OrderMembers[i].Direction);
+            }
         }
     }
 }
