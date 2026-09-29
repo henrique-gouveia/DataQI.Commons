@@ -438,6 +438,20 @@ namespace DataQI.Commons.Test.Repository.Core
         }
 
         [Fact]
+        public void TestInvokeCustomizedGenericFindOneMethodCorrectly()
+        {
+            var entityExpected = CreateTestFakeEntity();
+
+            defaultImplementationMock
+                .Setup(r => r.FindOne(It.IsAny<Func<ICriteria, ICriteria>>()))
+                .Returns(entityExpected);
+
+            var entity = fakeRepository.FindByEmail<FakeEntity>(entityExpected.Name);
+
+            AssertExpectedObject(entityExpected, entity);
+        }
+
+        [Fact]
         public void TestInvokeCustomizedAsyncFindOneMethodCorrectly()
         {
             var entityExpected = CreateTestFakeEntity();
@@ -447,6 +461,23 @@ namespace DataQI.Commons.Test.Repository.Core
                 .Returns(Task.FromResult(entityExpected));
 
             var entity = fakeRepository.FindByEmailAsync(entityExpected.Name).Result;
+
+            AssertExpectedObject(entityExpected, entity);
+        }
+
+        [Fact]
+        public void TestInvokeCustomizedAsyncGenericFindOneMethodForwardsCancellationToken()
+        {
+            var entityExpected = CreateTestFakeEntity();
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            defaultImplementationMock
+                .Setup(r => r.FindOneAsync(It.IsAny<Func<ICriteria, ICriteria>>(), cancellationTokenSource.Token))
+                .Returns(Task.FromResult(entityExpected));
+
+            var entity = fakeRepository
+                .FindByEmailAsync<FakeEntity>(entityExpected.Name, cancellationTokenSource.Token)
+                .Result;
 
             AssertExpectedObject(entityExpected, entity);
         }

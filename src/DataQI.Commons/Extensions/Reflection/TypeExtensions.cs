@@ -40,5 +40,8 @@ namespace DataQI.Commons.Extensions.Reflection
             resultType = type.GetGenericArguments()[0];
             return true;
         }
+
+        public static MethodInfo[] GetAllInterfaceMethods(this Type type)
+            => new[] { type }.Concat(type.GetInterfaces()).SelectMany(i => i.GetMethods()).ToArray();
     }
 }
