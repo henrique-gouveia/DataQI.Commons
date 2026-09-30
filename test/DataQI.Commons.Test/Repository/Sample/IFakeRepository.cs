@@ -16,6 +16,13 @@ namespace DataQI.Commons.Test.Repository.Sample
         IEnumerable<FakeEntity> FindByFirstNameOrderByLastNameDesc(string firstName);
         IEnumerable<FakeEntity> FindByFirstNameOrderByLastNameAscBirthDateDesc(string firstName);
         IEnumerable<FakeEntity> FindByLastNameNot(string name);
+        IEnumerable<FakeEntity> FindByNameStartingWithAndStockGreaterThanOrDepartmentIn(string name, decimal stock, string[] department);
+        IEnumerable<FakeEntity> FindByNameNotLike(string name);
+        IEnumerable<FakeEntity> FindByNameIsNotNull();
+        IEnumerable<FakeEntity> FindByOrderDate(DateTime date);
+        IEnumerable<FakeEntity> FindByAndroidVersion(string version);
+        IEnumerable<FakeEntity> FindByCategoryInStock(string[] category);
+        IEnumerable<FakeEntity> FindByNameEquals(string name);
 
         IEnumerable<FakeEntity> FindByBirthDateBetween(DateTime start, DateTime end);
         IEnumerable<FakeEntity> FindByHireDateNotBetween(DateTime start, DateTime end);
