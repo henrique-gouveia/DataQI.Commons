@@ -87,7 +87,7 @@ namespace DataQI.Commons.Repository.Core
         {
             var methods = new Dictionary<string, MethodInfo>();
             foreach (var method in defaultRepositoryType.GetInstancePublicMethods())
-                if (method != null && !methods.ContainsKey(method.Name))
+                if (method != null && !methods.ContainsKey(method.UniqueName()))
                     methods.Add(method.UniqueName(), method);
             return methods;
         }
