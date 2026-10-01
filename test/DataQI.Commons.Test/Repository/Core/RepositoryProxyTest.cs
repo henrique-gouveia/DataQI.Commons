@@ -12,7 +12,6 @@ using Xunit;
 
 using DataQI.Commons.Query;
 using DataQI.Commons.Query.Support;
-using AstRestrictions = DataQI.Commons.Query.Ast.Restrictions;
 using DataQI.Commons.Repository.Core;
 using DataQI.Commons.Test.Repository.Sample;
 
@@ -296,7 +295,7 @@ namespace DataQI.Commons.Test.Repository.Core
         [InlineData(true)]
         public void TestInvokeFindCorrectly(bool useAsyncMethod)
         {
-            Func<ICriteria, ICriteria> criteriaBuilder = criteria => criteria.Add(AstRestrictions.Equal("Name", "Name"));
+            Func<ICriteria, ICriteria> criteriaBuilder = criteria => criteria.Add(Restrictions.Equal("Name", "Name"));
             var entitiesExpected = CreateTestFakeEntities();
             SetupFakeRepositoryFindMethod(criteriaBuilder, entitiesExpected, useAsyncMethod);
 

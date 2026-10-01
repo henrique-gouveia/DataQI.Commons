@@ -1,7 +1,9 @@
 using System;
 
-using DataQI.Commons.Query.Ast;
 
+using DataQI.Commons.Query;
+using DataQI.Commons.Query.Ast;
+using DataQI.Commons.Query.Support;
 namespace DataQI.Commons.Test.Repository.Query
 {
     public static class QueryRedesignedContractExpectations

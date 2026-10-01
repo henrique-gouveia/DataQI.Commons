@@ -1,5 +1,3 @@
-using DataQI.Commons.Query.Ast.Support;
-
 namespace DataQI.Commons.Query.Ast
 {
     public class TextMatch : ICriterion

@@ -2,11 +2,11 @@ using System;
 using System.Linq;
 
 using DataQI.Commons.Query;
+using DataQI.Commons.Query.Ast;
 using DataQI.Commons.Query.Support;
 using DataQI.Commons.Repository.Query;
 
 using Xunit;
-using Ast = DataQI.Commons.Query.Ast;
 
 namespace DataQI.Commons.Test.Repository.Query
 {
@@ -31,7 +31,7 @@ namespace DataQI.Commons.Test.Repository.Query
             plan.ApplyTo(criteria, new object[] { "Adams" });
 
             var predicate = Assert.Single(criteria.Criterions);
-            Assert.IsType<Ast.Junction>(predicate);
+            Assert.IsType<Junction>(predicate);
             Assert.Equal(2, criteria.Orders.Count);
             Assert.Equal("LastName", criteria.Orders.ElementAt(0).GetPropertyName());
             Assert.Equal(OrderDirection.Desc, criteria.Orders.ElementAt(1).GetDirection());

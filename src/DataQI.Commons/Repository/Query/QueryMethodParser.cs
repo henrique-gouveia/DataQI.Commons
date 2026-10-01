@@ -4,11 +4,10 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 
 using DataQI.Commons.Query;
+using DataQI.Commons.Query.Ast;
 using DataQI.Commons.Query.Support;
-using DataQI.Commons.Query.Ast.Support;
 using DataQI.Commons.Util;
 
-using Ast = DataQI.Commons.Query.Ast;
 
 namespace DataQI.Commons.Repository.Query
 {
@@ -137,14 +136,14 @@ namespace DataQI.Commons.Repository.Query
             return PredicateKind.SimpleProperty;
         }
 
-        private static Ast.ICriterion BuildPredicate(List<List<PredicateMember>> groups, object[] values)
+        private static ICriterion BuildPredicate(List<List<PredicateMember>> groups, object[] values)
         {
             var index = 0;
-            var or = new Ast.Junction(LogicalKind.Or);
+            var or = new Junction(LogicalKind.Or);
 
             foreach (var group in groups)
             {
-                var and = new Ast.Junction(LogicalKind.And);
+                var and = new Junction(LogicalKind.And);
                 foreach (var member in group)
                     and.Add(BuildCriterion(member, values, ref index));
                 or.Add(and);
@@ -153,53 +152,53 @@ namespace DataQI.Commons.Repository.Query
             return or;
         }
 
-        private static Ast.ICriterion BuildCriterion(PredicateMember member, object[] values, ref int index)
+        private static ICriterion BuildCriterion(PredicateMember member, object[] values, ref int index)
         {
-            Ast.ICriterion criterion;
+            ICriterion criterion;
 
             switch (member.Kind)
             {
                 case PredicateKind.Between:
-                    criterion = new Ast.Between(member.PropertyName, Next(values, ref index), Next(values, ref index));
+                    criterion = new Between(member.PropertyName, Next(values, ref index), Next(values, ref index));
                     break;
                 case PredicateKind.In:
-                    criterion = new Ast.In(member.PropertyName, (object[])Next(values, ref index));
+                    criterion = new In(member.PropertyName, (object[])Next(values, ref index));
                     break;
                 case PredicateKind.Null:
-                    criterion = new Ast.IsNull(member.PropertyName);
+                    criterion = new IsNull(member.PropertyName);
                     break;
                 case PredicateKind.Containing:
-                    criterion = new Ast.TextMatch(member.PropertyName, TextMatchKind.Containing, (string)Next(values, ref index));
+                    criterion = new TextMatch(member.PropertyName, TextMatchKind.Containing, (string)Next(values, ref index));
                     break;
                 case PredicateKind.EndingWith:
-                    criterion = new Ast.TextMatch(member.PropertyName, TextMatchKind.EndingWith, (string)Next(values, ref index));
+                    criterion = new TextMatch(member.PropertyName, TextMatchKind.EndingWith, (string)Next(values, ref index));
                     break;
                 case PredicateKind.Like:
-                    criterion = new Ast.TextMatch(member.PropertyName, TextMatchKind.Like, (string)Next(values, ref index));
+                    criterion = new TextMatch(member.PropertyName, TextMatchKind.Like, (string)Next(values, ref index));
                     break;
                 case PredicateKind.StartingWith:
-                    criterion = new Ast.TextMatch(member.PropertyName, TextMatchKind.StartingWith, (string)Next(values, ref index));
+                    criterion = new TextMatch(member.PropertyName, TextMatchKind.StartingWith, (string)Next(values, ref index));
                     break;
                 case PredicateKind.GreaterThan:
-                    criterion = new Ast.Comparison(member.PropertyName, ComparisonKind.GreaterThan, Next(values, ref index));
+                    criterion = new Comparison(member.PropertyName, ComparisonKind.GreaterThan, Next(values, ref index));
                     break;
                 case PredicateKind.GreaterThanEqual:
-                    criterion = new Ast.Comparison(member.PropertyName, ComparisonKind.GreaterThanEqual, Next(values, ref index));
+                    criterion = new Comparison(member.PropertyName, ComparisonKind.GreaterThanEqual, Next(values, ref index));
                     break;
                 case PredicateKind.LessThan:
-                    criterion = new Ast.Comparison(member.PropertyName, ComparisonKind.LessThan, Next(values, ref index));
+                    criterion = new Comparison(member.PropertyName, ComparisonKind.LessThan, Next(values, ref index));
                     break;
                 case PredicateKind.LessThanEqual:
-                    criterion = new Ast.Comparison(member.PropertyName, ComparisonKind.LessThanEqual, Next(values, ref index));
+                    criterion = new Comparison(member.PropertyName, ComparisonKind.LessThanEqual, Next(values, ref index));
                     break;
                 case PredicateKind.Equal:
                 case PredicateKind.SimpleProperty:
                 default:
-                    criterion = new Ast.Comparison(member.PropertyName, ComparisonKind.Equal, Next(values, ref index));
+                    criterion = new Comparison(member.PropertyName, ComparisonKind.Equal, Next(values, ref index));
                     break;
             }
 
-            return member.HasNot ? new Ast.Not(criterion) : criterion;
+            return member.HasNot ? new Not(criterion) : criterion;
         }
 
         private static object Next(object[] values, ref int index)

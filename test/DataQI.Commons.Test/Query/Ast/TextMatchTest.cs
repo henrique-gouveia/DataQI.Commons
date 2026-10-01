@@ -1,5 +1,6 @@
+using DataQI.Commons.Query;
 using DataQI.Commons.Query.Ast;
-using TextMatchKind = DataQI.Commons.Query.Ast.Support.TextMatchKind;
+
 using Moq;
 using Xunit;
 

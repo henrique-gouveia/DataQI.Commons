@@ -1,4 +1,4 @@
-namespace DataQI.Commons.Query.Ast
+namespace DataQI.Commons.Query
 {
     public interface ICriterion
     {

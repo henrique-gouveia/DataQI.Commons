@@ -3,7 +3,6 @@ using System.Linq;
 
 using DataQI.Commons.Query;
 using DataQI.Commons.Query.Support;
-using AstRestrictions = DataQI.Commons.Query.Ast.Restrictions;
 
 using Xunit;
 
@@ -22,8 +21,8 @@ namespace DataQI.Commons.Test.Query.Support
         [Fact]
         public void TestAddAppendsCriterionsInCallSequence()
         {
-            var first = AstRestrictions.Null("Email");
-            var second = AstRestrictions.Null("Phone");
+            var first = Restrictions.Null("Email");
+            var second = Restrictions.Null("Phone");
 
             var criteria = new Criteria().Add(first).Add(second);
 
@@ -45,8 +44,8 @@ namespace DataQI.Commons.Test.Query.Support
         public void TestAddAppendsToCriterionsInCallSequence()
         {
             var criteria = new Criteria();
-            var first = AstRestrictions.Null("Email");
-            var second = AstRestrictions.Null("Phone");
+            var first = Restrictions.Null("Email");
+            var second = Restrictions.Null("Phone");
 
             criteria.Add(first).Add(second);
 
@@ -59,7 +58,7 @@ namespace DataQI.Commons.Test.Query.Support
         public void TestAddReturnsSameCriteriaInstanceForChaining()
         {
             var criteria = new Criteria();
-            var result = criteria.Add(AstRestrictions.Null("Email"));
+            var result = criteria.Add(Restrictions.Null("Email"));
             Assert.Same(criteria, result);
         }
 
@@ -77,7 +76,7 @@ namespace DataQI.Commons.Test.Query.Support
         public void TestCriterionsAndOrdersAreExposedByTheInterface()
         {
             ICriteria criteria = new Criteria()
-                .Add(AstRestrictions.Null("Email"))
+                .Add(Restrictions.Null("Email"))
                 .AddOrder(Order.Asc("Name"));
 
             Assert.Single(criteria.Criterions);

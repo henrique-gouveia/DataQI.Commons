@@ -1,11 +1,10 @@
-using DataQI.Commons.Query.Ast;
-using ComparisonKind = DataQI.Commons.Query.Ast.Support.ComparisonKind;
-using LogicalKind = DataQI.Commons.Query.Ast.Support.LogicalKind;
-using TextMatchKind = DataQI.Commons.Query.Ast.Support.TextMatchKind;
 
+using DataQI.Commons.Query;
+using DataQI.Commons.Query.Ast;
+using DataQI.Commons.Query.Support;
 using Xunit;
 
-namespace DataQI.Commons.Test.Query.Ast
+namespace DataQI.Commons.Test.Query.Support
 {
     public class RestrictionsTest
     {

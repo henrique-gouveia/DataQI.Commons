@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
 
-using DataQI.Commons.Query.Ast;
-using LogicalKind = DataQI.Commons.Query.Ast.Support.LogicalKind;
 
+using DataQI.Commons.Query;
+using DataQI.Commons.Query.Ast;
 using Moq;
 using Xunit;
 

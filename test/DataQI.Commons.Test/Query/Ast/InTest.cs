@@ -1,4 +1,6 @@
+using DataQI.Commons.Query;
 using DataQI.Commons.Query.Ast;
+
 using Moq;
 using Xunit;
 

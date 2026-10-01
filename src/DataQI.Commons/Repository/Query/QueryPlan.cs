@@ -4,15 +4,14 @@ using System.Collections.Generic;
 using DataQI.Commons.Query;
 using DataQI.Commons.Util;
 
-using Ast = DataQI.Commons.Query.Ast;
 
 namespace DataQI.Commons.Repository.Query
 {
     public sealed class QueryPlan
     {
-        private readonly Func<object[], Ast.ICriterion> predicateFactory;
+        private readonly Func<object[], ICriterion> predicateFactory;
 
-        internal QueryPlan(Func<object[], Ast.ICriterion> predicateFactory, IReadOnlyList<IOrderCriterion> orders)
+        internal QueryPlan(Func<object[], ICriterion> predicateFactory, IReadOnlyList<IOrderCriterion> orders)
         {
             this.predicateFactory = predicateFactory;
             Orders = orders;
@@ -29,7 +28,7 @@ namespace DataQI.Commons.Repository.Query
                 criteria.AddOrder(order);
         }
 
-        public Ast.ICriterion BuildPredicate(object[] values)
+        public ICriterion BuildPredicate(object[] values)
         {
             Assert.NotNull(values, "Query Values must not be null");
             return predicateFactory(values);

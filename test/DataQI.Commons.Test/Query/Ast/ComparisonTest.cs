@@ -1,5 +1,6 @@
+using DataQI.Commons.Query;
 using DataQI.Commons.Query.Ast;
-using ComparisonKind = DataQI.Commons.Query.Ast.Support.ComparisonKind;
+
 using Moq;
 using Xunit;
 

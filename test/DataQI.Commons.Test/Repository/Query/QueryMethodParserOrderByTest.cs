@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using DataQI.Commons.Query.Ast;
 using DataQI.Commons.Query.Support;
 using DataQI.Commons.Repository.Query;
 
@@ -39,9 +40,9 @@ namespace DataQI.Commons.Test.Repository.Query
 
             var predicate = plan.BuildPredicate(new object[] { true });
 
-            var or = Assert.IsType<DataQI.Commons.Query.Ast.Junction>(predicate);
-            var and = Assert.IsType<DataQI.Commons.Query.Ast.Junction>(Assert.Single(or.Members));
-            var comparison = Assert.IsType<DataQI.Commons.Query.Ast.Comparison>(Assert.Single(and.Members));
+            var or = Assert.IsType<Junction>(predicate);
+            var and = Assert.IsType<Junction>(Assert.Single(or.Members));
+            var comparison = Assert.IsType<Comparison>(Assert.Single(and.Members));
             Assert.Equal("Active", comparison.PropertyName);
         }
 

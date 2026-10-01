@@ -1,6 +1,6 @@
-using DataQI.Commons.Query.Ast.Support;
+using DataQI.Commons.Query.Ast;
 
-namespace DataQI.Commons.Query.Ast
+namespace DataQI.Commons.Query.Support
 {
     public static class Restrictions
     {

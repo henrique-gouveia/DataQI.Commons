@@ -7,10 +7,10 @@ namespace DataQI.Commons.Query.Support
 {
     public class Criteria : ICriteria
     {
-        protected readonly IList<Ast.ICriterion> criterions = new List<Ast.ICriterion>();
+        protected readonly IList<ICriterion> criterions = new List<ICriterion>();
         protected readonly IList<IOrderCriterion> orders = new List<IOrderCriterion>();
 
-        public ICriteria Add(Ast.ICriterion criterion)
+        public ICriteria Add(ICriterion criterion)
         {
             Assert.NotNull(criterion, "Criterion must not be null");
             criterions.Add(criterion);
@@ -24,7 +24,7 @@ namespace DataQI.Commons.Query.Support
             return this;
         }
 
-        public IReadOnlyCollection<Ast.ICriterion> Criterions => new ReadOnlyCollection<Ast.ICriterion>(criterions);
+        public IReadOnlyCollection<ICriterion> Criterions => new ReadOnlyCollection<ICriterion>(criterions);
         public IReadOnlyCollection<IOrderCriterion> Orders => new ReadOnlyCollection<IOrderCriterion>(orders);
     }
 }

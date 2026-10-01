@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-using DataQI.Commons.Query.Ast.Support;
 using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Query.Ast
