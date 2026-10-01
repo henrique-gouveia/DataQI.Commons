@@ -1,4 +1,4 @@
-using DataQI.Commons.Query.Support;
+using DataQI.Commons.Query.Ast.Support;
 
 namespace DataQI.Commons.Query.Ast
 {

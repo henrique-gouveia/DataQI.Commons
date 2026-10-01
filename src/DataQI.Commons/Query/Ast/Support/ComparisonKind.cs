@@ -1,4 +1,4 @@
-namespace DataQI.Commons.Query.Support
+namespace DataQI.Commons.Query.Ast.Support
 {
     public enum ComparisonKind
     {
