@@ -11,6 +11,7 @@ namespace DataQI.Commons.Test.Repository.Sample
         FakeEntity NotImplementedMethod();
         IQueryable<FakeEntity> Query();
 
+        IEnumerable<FakeEntity> FindBy();
         IEnumerable<FakeEntity> FindByFirstName(string name);
         IEnumerable<FakeEntity> FindByFirstNameOrderByLastName(string firstName);
         IEnumerable<FakeEntity> FindByFirstNameOrderByLastNameDesc(string firstName);

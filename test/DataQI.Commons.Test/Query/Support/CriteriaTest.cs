@@ -3,6 +3,7 @@ using System.Linq;
 
 using DataQI.Commons.Query;
 using DataQI.Commons.Query.Support;
+using AstRestrictions = DataQI.Commons.Query.Ast.Restrictions;
 
 using Xunit;
 
@@ -10,6 +11,26 @@ namespace DataQI.Commons.Test.Query.Support
 {
     public class CriteriaTest
     {
+        [Fact]
+        public void TestAddRejectsNullCriterion()
+        {
+            var exception = Assert.Throws<ArgumentException>(() => new Criteria().Add(null));
+
+            Assert.Equal("Criterion must not be null", exception.GetBaseException().Message);
+        }
+
+        [Fact]
+        public void TestAddAppendsCriterionsInCallSequence()
+        {
+            var first = AstRestrictions.Null("Email");
+            var second = AstRestrictions.Null("Phone");
+
+            var criteria = new Criteria().Add(first).Add(second);
+
+            Assert.Same(first, criteria.Criterions.ElementAt(0));
+            Assert.Same(second, criteria.Criterions.ElementAt(1));
+        }
+
         [Fact]
         public void TestAddRejectsNull()
         {
@@ -24,8 +45,8 @@ namespace DataQI.Commons.Test.Query.Support
         public void TestAddAppendsToCriterionsInCallSequence()
         {
             var criteria = new Criteria();
-            var first = Restrictions.Null("Email");
-            var second = Restrictions.Null("Phone");
+            var first = AstRestrictions.Null("Email");
+            var second = AstRestrictions.Null("Phone");
 
             criteria.Add(first).Add(second);
 
@@ -38,7 +59,7 @@ namespace DataQI.Commons.Test.Query.Support
         public void TestAddReturnsSameCriteriaInstanceForChaining()
         {
             var criteria = new Criteria();
-            var result = criteria.Add(Restrictions.Null("Email"));
+            var result = criteria.Add(AstRestrictions.Null("Email"));
             Assert.Same(criteria, result);
         }
 
@@ -56,7 +77,7 @@ namespace DataQI.Commons.Test.Query.Support
         public void TestCriterionsAndOrdersAreExposedByTheInterface()
         {
             ICriteria criteria = new Criteria()
-                .Add(Restrictions.Null("Email"))
+                .Add(AstRestrictions.Null("Email"))
                 .AddOrder(Order.Asc("Name"));
 
             Assert.Single(criteria.Criterions);

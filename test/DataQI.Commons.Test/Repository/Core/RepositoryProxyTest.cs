@@ -12,6 +12,7 @@ using Xunit;
 
 using DataQI.Commons.Query;
 using DataQI.Commons.Query.Support;
+using AstRestrictions = DataQI.Commons.Query.Ast.Restrictions;
 using DataQI.Commons.Repository.Core;
 using DataQI.Commons.Test.Repository.Sample;
 
@@ -28,6 +29,28 @@ namespace DataQI.Commons.Test.Repository.Core
         {
             defaultImplementationMock = new Mock<IEntityRepository<FakeEntity>>();
             fakeRepository = RepositoryProxy<IFakeRepository>.Create(() => defaultImplementationMock.Object);
+        }
+
+        [Fact]
+        public void TestAnUnparsableQueryMethodDoesNotBreakProxyCreation()
+        {
+            var exception = Assert.ThrowsAny<Exception>(() => fakeRepository.FindBy());
+
+            Assert.Equal("Source must not be null or empty", exception.GetBaseException().Message);
+        }
+
+        [Fact]
+        public void TestTheSameQueryMethodCanBeInvokedRepeatedly()
+        {
+            defaultImplementationMock
+                .Setup(r => r.Find(It.IsAny<Func<ICriteria, ICriteria>>()))
+                .Returns(new List<FakeEntity>());
+
+            fakeRepository.FindByFirstName("Adams");
+            fakeRepository.FindByFirstName("Barnes");
+
+            defaultImplementationMock.Verify(
+                r => r.Find(It.IsAny<Func<ICriteria, ICriteria>>()), Times.Exactly(2));
         }
 
         [Fact]
@@ -273,7 +296,7 @@ namespace DataQI.Commons.Test.Repository.Core
         [InlineData(true)]
         public void TestInvokeFindCorrectly(bool useAsyncMethod)
         {
-            Func<ICriteria, ICriteria> criteriaBuilder = criteria => criteria.Add(Restrictions.Equal("Name", "Name"));
+            Func<ICriteria, ICriteria> criteriaBuilder = criteria => criteria.Add(AstRestrictions.Equal("Name", "Name"));
             var entitiesExpected = CreateTestFakeEntities();
             SetupFakeRepositoryFindMethod(criteriaBuilder, entitiesExpected, useAsyncMethod);
 

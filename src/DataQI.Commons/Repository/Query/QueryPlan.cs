@@ -20,6 +20,15 @@ namespace DataQI.Commons.Repository.Query
 
         public IReadOnlyList<IOrderCriterion> Orders { get; }
 
+        public void ApplyTo(ICriteria criteria, object[] values)
+        {
+            Assert.NotNull(criteria, "Criteria must be not null");
+
+            criteria.Add(BuildPredicate(values));
+            foreach (var order in Orders)
+                criteria.AddOrder(order);
+        }
+
         public Ast.ICriterion BuildPredicate(object[] values)
         {
             Assert.NotNull(values, "Query Values must not be null");

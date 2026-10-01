@@ -4,11 +4,16 @@ using System.Reflection;
 using System.Threading;
 
 using DataQI.Commons.Extensions.Reflection;
+using DataQI.Commons.Repository.Query;
 
 namespace DataQI.Commons.Repository.Core
 {
     public sealed class MethodDescriptor
     {
+        private readonly Lazy<QueryPlan> plan;
+
+        public QueryPlan Plan => plan?.Value;
+
         public MethodInfo Method { get; }
         public string UniqueName { get; }
         public DispatchKind Kind { get; }
@@ -22,8 +27,10 @@ namespace DataQI.Commons.Repository.Core
             DispatchKind kind,
             MethodInfo resolvedMethod,
             Type resultType,
-            bool hasCancellationToken)
+            bool hasCancellationToken,
+            Lazy<QueryPlan> plan)
         {
+            this.plan = plan;
             Method = method;
             UniqueName = uniqueName;
             Kind = kind;
@@ -92,7 +99,8 @@ namespace DataQI.Commons.Repository.Core
                 DispatchKind.ExactMatch,
                 exactMatch,
                 method.ReturnType,
-                hasCancellationToken);
+                hasCancellationToken,
+                null);
             return true;
         }
 
@@ -125,7 +133,8 @@ namespace DataQI.Commons.Repository.Core
                 kind,
                 resolvedMethod,
                 asyncResultType,
-                hasCancellationToken);
+                hasCancellationToken,
+                kind == DispatchKind.Unresolvable ? null : new Lazy<QueryPlan>(() => QueryMethodParser.Parse(method)));
             return true;
         }
 
@@ -153,7 +162,8 @@ namespace DataQI.Commons.Repository.Core
                 syncKind,
                 syncResolvedMethod,
                 method.ReturnType,
-                hasCancellationToken);
+                hasCancellationToken,
+                syncKind == DispatchKind.Unresolvable ? null : new Lazy<QueryPlan>(() => QueryMethodParser.Parse(method)));
         }
     }
 }
