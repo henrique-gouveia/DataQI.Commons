@@ -2,5 +2,6 @@ namespace DataQI.Commons.Query.Ast
 {
     public interface ICriterionVisitor<out T>
     {
+        T Visit(Comparison comparison);
     }
 }
