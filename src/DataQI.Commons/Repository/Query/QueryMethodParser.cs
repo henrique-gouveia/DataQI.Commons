@@ -19,6 +19,10 @@ namespace DataQI.Commons.Repository.Query
         private const string OrSeparatorPattern = "Or(?=[A-Z])";
         private const string AndSeparatorPattern = "And(?=[A-Z])";
 
+        private static readonly string UppercaseOrEndPattern = "(?=[A-Z]|$)";
+        private static readonly Regex OrderByMatcher = new Regex($"OrderBy{UppercaseOrEndPattern}");
+        private static readonly Regex DirectionMatcher = new Regex($"(Asc|Desc){UppercaseOrEndPattern}");
+
         private static readonly string IsNotSmallLettersPattern = "(?!([a-z]))";
         private static readonly string LessOrGreaterGroupPattern = "(Less|Greater)+Than(Equal)?";
         private static readonly string LikeGroupPattern = "Contain(s|ing)|Like|((End|Start)+(s|ing)With)";
@@ -58,10 +62,38 @@ namespace DataQI.Commons.Repository.Query
 
             var source = Regex.Replace(methodName, AsyncSuffixPattern, "");
 
+            var orderSource = "";
+            var orderByMatch = OrderByMatcher.Match(source);
+            if (orderByMatch.Success)
+            {
+                orderSource = source.Substring(orderByMatch.Index + orderByMatch.Length);
+                source = source.Substring(0, orderByMatch.Index);
+            }
+
+            var orders = ParseOrders(orderSource);
+
             var prefix = Regex.Match(source, PrefixPattern);
             var groups = ParsePredicate(source.Substring(prefix.Length));
 
-            return new QueryPlan(values => BuildPredicate(groups, values), new List<IOrderCriterion>());
+            return new QueryPlan(values => BuildPredicate(groups, values), orders);
+        }
+
+        private static IReadOnlyList<IOrderCriterion> ParseOrders(string orderSource)
+        {
+            var orders = new List<IOrderCriterion>();
+
+            var currentIndex = 0;
+            foreach (Match directionMatch in DirectionMatcher.Matches(orderSource))
+            {
+                var propertyName = orderSource.Substring(currentIndex, directionMatch.Index - currentIndex);
+                orders.Add(directionMatch.Value == "Asc" ? Order.Asc(propertyName) : Order.Desc(propertyName));
+                currentIndex = directionMatch.Index + directionMatch.Length;
+            }
+
+            if (currentIndex < orderSource.Length)
+                orders.Add(Order.Asc(orderSource.Substring(currentIndex)));
+
+            return orders;
         }
 
         private static List<List<PredicateMember>> ParsePredicate(string predicate)
