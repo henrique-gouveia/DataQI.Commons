@@ -13,20 +13,19 @@ namespace DataQI.Commons.Test.Repository.Query
     {
         [Theory]
         [MemberData(nameof(QueryContractCases.All), MemberType = typeof(QueryContractCases))]
-        public void TestContractCase(QueryContractCase testCase)
+        public void TestLegacyParserContract(QueryContractCase testCase)
         {
             var method = QueryMethod(testCase.MethodName);
-            var values = QueryValues(method);
 
             if (testCase.ExpectsException)
             {
                 var exception = Assert.Throws<ArgumentException>(() =>
-                    new QueryFactory(method, values).CreateCriteria());
+                    new QueryFactory(method, testCase.Arguments).CreateCriteria());
                 Assert.Equal(testCase.ExpectedExceptionMessage, exception.GetBaseException().Message);
             }
             else
             {
-                var criteria = new QueryFactory(method, values).CreateCriteria();
+                var criteria = new QueryFactory(method, testCase.Arguments).CreateCriteria();
                 Assert.NotNull(criteria);
             }
         }
@@ -35,31 +34,6 @@ namespace DataQI.Commons.Test.Repository.Query
         {
             var fakeRepository = new Mock<IFakeRepository>().Object;
             return fakeRepository.GetType().GetMethod(name);
-        }
-
-        private object[] QueryValues(MethodInfo method)
-        {
-            var parameters = method.GetParameters();
-            var values = new object[parameters.Length];
-
-            for (var i = 0; i < parameters.Length; i++)
-            {
-                var parameterType = parameters[i].ParameterType;
-                if (parameterType == typeof(string))
-                {
-                    values[i] = string.Empty;
-                }
-                else if (parameterType.IsArray)
-                {
-                    values[i] = Array.CreateInstance(parameterType.GetElementType(), 0);
-                }
-                else if (parameterType.IsValueType)
-                {
-                    values[i] = Activator.CreateInstance(parameterType);
-                }
-            }
-
-            return values;
         }
     }
 }
