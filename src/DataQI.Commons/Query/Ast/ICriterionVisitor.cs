@@ -4,5 +4,6 @@ namespace DataQI.Commons.Query.Ast
     {
         T Visit(Comparison comparison);
         T Visit(Between between);
+        T Visit(In inCriterion);
     }
 }
