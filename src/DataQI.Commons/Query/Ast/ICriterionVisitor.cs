@@ -8,5 +8,6 @@ namespace DataQI.Commons.Query.Ast
         T Visit(IsNull isNull);
         T Visit(TextMatch textMatch);
         T Visit(Not not);
+        T Visit(Junction junction);
     }
 }
