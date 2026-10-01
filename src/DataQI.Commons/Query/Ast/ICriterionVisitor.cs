@@ -6,5 +6,6 @@ namespace DataQI.Commons.Query.Ast
         T Visit(Between between);
         T Visit(In inCriterion);
         T Visit(IsNull isNull);
+        T Visit(TextMatch textMatch);
     }
 }
