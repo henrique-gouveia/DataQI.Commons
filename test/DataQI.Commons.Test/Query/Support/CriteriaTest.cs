@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 
+using DataQI.Commons.Query;
 using DataQI.Commons.Query.Support;
 
 using Xunit;
@@ -10,6 +11,38 @@ namespace DataQI.Commons.Test.Query.Support
     public class CriteriaTest
     {
         [Fact]
+        public void TestAddRejectsNull()
+        {
+            var criteria = new Criteria();
+
+            var exception = Assert.Throws<ArgumentException>(() => criteria.Add(null));
+
+            Assert.Equal("Criterion must not be null", exception.Message);
+        }
+
+        [Fact]
+        public void TestAddAppendsToCriterionsInCallSequence()
+        {
+            var criteria = new Criteria();
+            var first = Restrictions.Null("Email");
+            var second = Restrictions.Null("Phone");
+
+            criteria.Add(first).Add(second);
+
+            Assert.Equal(2, criteria.Criterions.Count);
+            Assert.Same(first, criteria.Criterions.ElementAt(0));
+            Assert.Same(second, criteria.Criterions.ElementAt(1));
+        }
+
+        [Fact]
+        public void TestAddReturnsSameCriteriaInstanceForChaining()
+        {
+            var criteria = new Criteria();
+            var result = criteria.Add(Restrictions.Null("Email"));
+            Assert.Same(criteria, result);
+        }
+
+        [Fact]
         public void TestAddOrderRejectsNull()
         {
             var criteria = new Criteria();
@@ -17,6 +50,17 @@ namespace DataQI.Commons.Test.Query.Support
             var exception = Assert.Throws<ArgumentException>(() => criteria.AddOrder(null));
 
             Assert.Equal("Order must not be null", exception.Message);
+        }
+
+        [Fact]
+        public void TestCriterionsAndOrdersAreExposedByTheInterface()
+        {
+            ICriteria criteria = new Criteria()
+                .Add(Restrictions.Null("Email"))
+                .AddOrder(Order.Asc("Name"));
+
+            Assert.Single(criteria.Criterions);
+            Assert.Single(criteria.Orders);
         }
 
         [Fact]
