@@ -7,5 +7,6 @@ namespace DataQI.Commons.Query.Ast
         T Visit(In inCriterion);
         T Visit(IsNull isNull);
         T Visit(TextMatch textMatch);
+        T Visit(Not not);
     }
 }
