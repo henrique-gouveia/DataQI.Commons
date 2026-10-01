@@ -4,7 +4,7 @@ namespace DataQI.Commons.Query
 {
     public interface IOrderCriterion
     {
-        string GetPropertyName();
-        OrderDirection GetDirection();
+        string PropertyName { get; }
+        OrderDirection Direction { get; }
     }
 }

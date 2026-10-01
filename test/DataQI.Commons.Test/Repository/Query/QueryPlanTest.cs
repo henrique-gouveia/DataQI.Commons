@@ -41,8 +41,8 @@ namespace DataQI.Commons.Test.Repository.Query
             var plan = new QueryPlan(values => Restrictions.Null("Email"), orders);
 
             Assert.Equal(2, plan.Orders.Count);
-            Assert.Equal("Name", plan.Orders[0].GetPropertyName());
-            Assert.Equal("Stock", plan.Orders[1].GetPropertyName());
+            Assert.Equal("Name", plan.Orders[0].PropertyName);
+            Assert.Equal("Stock", plan.Orders[1].PropertyName);
         }
     }
 }

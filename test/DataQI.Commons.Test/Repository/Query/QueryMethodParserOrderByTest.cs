@@ -28,7 +28,7 @@ namespace DataQI.Commons.Test.Repository.Query
         {
             var plan = QueryMethodParser.Parse(methodName);
 
-            var actual = string.Join(",", plan.Orders.Select(o => $"{o.GetPropertyName()}:{o.GetDirection()}"));
+            var actual = string.Join(",", plan.Orders.Select(o => $"{o.PropertyName}:{o.Direction}"));
 
             Assert.Equal(expected, actual);
         }
@@ -51,8 +51,8 @@ namespace DataQI.Commons.Test.Repository.Query
         {
             var plan = QueryMethodParser.Parse("FindByActiveOrderByNameAscStockDesc");
 
-            Assert.Equal(OrderDirection.Asc, plan.Orders[0].GetDirection());
-            Assert.Equal(OrderDirection.Desc, plan.Orders[1].GetDirection());
+            Assert.Equal(OrderDirection.Asc, plan.Orders[0].Direction);
+            Assert.Equal(OrderDirection.Desc, plan.Orders[1].Direction);
         }
     }
 }

@@ -91,10 +91,10 @@ namespace DataQI.Commons.Test.Query.Support
             criteria.AddOrder(Order.Asc("Name")).AddOrder(Order.Desc("Stock"));
 
             Assert.Equal(2, criteria.Orders.Count);
-            Assert.Equal("Name", criteria.Orders.ElementAt(0).GetPropertyName());
-            Assert.Equal(OrderDirection.Asc, criteria.Orders.ElementAt(0).GetDirection());
-            Assert.Equal("Stock", criteria.Orders.ElementAt(1).GetPropertyName());
-            Assert.Equal(OrderDirection.Desc, criteria.Orders.ElementAt(1).GetDirection());
+            Assert.Equal("Name", criteria.Orders.ElementAt(0).PropertyName);
+            Assert.Equal(OrderDirection.Asc, criteria.Orders.ElementAt(0).Direction);
+            Assert.Equal("Stock", criteria.Orders.ElementAt(1).PropertyName);
+            Assert.Equal(OrderDirection.Desc, criteria.Orders.ElementAt(1).Direction);
         }
 
         [Fact]

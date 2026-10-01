@@ -33,8 +33,8 @@ namespace DataQI.Commons.Test.Repository.Query
             var predicate = Assert.Single(criteria.Criterions);
             Assert.IsType<Junction>(predicate);
             Assert.Equal(2, criteria.Orders.Count);
-            Assert.Equal("LastName", criteria.Orders.ElementAt(0).GetPropertyName());
-            Assert.Equal(OrderDirection.Desc, criteria.Orders.ElementAt(1).GetDirection());
+            Assert.Equal("LastName", criteria.Orders.ElementAt(0).PropertyName);
+            Assert.Equal(OrderDirection.Desc, criteria.Orders.ElementAt(1).Direction);
         }
     }
 }
