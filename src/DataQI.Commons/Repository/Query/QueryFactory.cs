@@ -38,6 +38,7 @@ namespace DataQI.Commons.Repository.Query
         {
             Assert.NotNull(criteria, "Criteria must be not null");
             BuildOr(criteria, queryTree, queryValues);
+            BuildOrder(criteria, queryTree.OrderMembers);
         }
 
         private static void BuildOr(ICriteria criteria, IEnumerable<Node> nodes, IEnumerator values)
@@ -46,6 +47,17 @@ namespace DataQI.Commons.Repository.Query
             foreach (var node in nodes)
                 BuildAnd(or, node, values);
             criteria.Add(or);
+        }
+
+        private static void BuildOrder(ICriteria criteria, IEnumerable<OrderMember> orderMembers)
+        {
+            foreach (var orderMember in orderMembers)
+            {
+                var order = orderMember.Direction == OrderDirection.Asc
+                    ? Order.Asc(orderMember.PropertyName)
+                    : Order.Desc(orderMember.PropertyName);
+                criteria.AddOrder(order);
+            }
         }
 
         private static void BuildAnd(IJunction or, IEnumerable<QueryMember> members, IEnumerator values)

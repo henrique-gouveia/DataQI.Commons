@@ -196,6 +196,52 @@ namespace DataQI.Commons.Test.Repository.Query
         }
 
         [Fact]
+        public void TestCreateCriteriaWithDefaultOrderByCorrectly()
+        {
+            var firstName = "Adams";
+
+            var method = QueryMethod("FindByFirstNameOrderByLastName");
+            var values = QueryValues(firstName);
+
+            ICriteria expected = Criteria(Restrictions.Equal("FirstName", firstName))
+                .AddOrder(Order.Asc("LastName"));
+            ICriteria actual = new QueryFactory(method, values).CreateCriteria();
+
+            AssertCriteria(expected, actual);
+        }
+
+        [Fact]
+        public void TestCreateCriteriaWithExplicitDescendingOrderByCorrectly()
+        {
+            var firstName = "Adams";
+
+            var method = QueryMethod("FindByFirstNameOrderByLastNameDesc");
+            var values = QueryValues(firstName);
+
+            ICriteria expected = Criteria(Restrictions.Equal("FirstName", firstName))
+                .AddOrder(Order.Desc("LastName"));
+            ICriteria actual = new QueryFactory(method, values).CreateCriteria();
+
+            AssertCriteria(expected, actual);
+        }
+
+        [Fact]
+        public void TestCreateCriteriaWithMultiplePropertyOrderByCorrectly()
+        {
+            var firstName = "Adams";
+
+            var method = QueryMethod("FindByFirstNameOrderByLastNameAscBirthDateDesc");
+            var values = QueryValues(firstName);
+
+            ICriteria expected = Criteria(Restrictions.Equal("FirstName", firstName))
+                .AddOrder(Order.Asc("LastName"))
+                .AddOrder(Order.Desc("BirthDate"));
+            ICriteria actual = new QueryFactory(method, values).CreateCriteria();
+
+            AssertCriteria(expected, actual);
+        }
+
+        [Fact]
         public void TestCreateCriteriaSimplePropertyGreaterThanCorrectly()
         {
             var age = 30;

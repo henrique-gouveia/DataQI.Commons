@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DataQI.Commons.Test.Repository.Sample
 {
@@ -10,6 +12,9 @@ namespace DataQI.Commons.Test.Repository.Sample
         IQueryable<FakeEntity> Query();
 
         IEnumerable<FakeEntity> FindByFirstName(string name);
+        IEnumerable<FakeEntity> FindByFirstNameOrderByLastName(string firstName);
+        IEnumerable<FakeEntity> FindByFirstNameOrderByLastNameDesc(string firstName);
+        IEnumerable<FakeEntity> FindByFirstNameOrderByLastNameAscBirthDateDesc(string firstName);
         IEnumerable<FakeEntity> FindByLastNameNot(string name);
 
         IEnumerable<FakeEntity> FindByBirthDateBetween(DateTime start, DateTime end);
@@ -39,5 +44,14 @@ namespace DataQI.Commons.Test.Repository.Sample
         IEnumerable<FakeEntity> FindByFirstNameOrLastName(string firstName, string lastName);
         IEnumerable<FakeEntity> FindByFirstNameAndLastName(string firstName, string lastName);
         IEnumerable<FakeEntity> FindByStateAndHireDateGreaterThanEqualOrCityInAndEmailEndingWith(string state, DateTime hireDate, string[] cities, string email);
+
+        Task<IEnumerable<FakeEntity>> FindByFirstNameAsync(string name);
+        Task<IEnumerable<FakeEntity>> FindByFirstNameAsync(string name, CancellationToken cancellationToken);
+
+        FakeEntity FindByEmail(string email);
+        TResult FindByEmail<TResult>(string email);
+        Task<FakeEntity> FindByEmailAsync(string email);
+        Task<FakeEntity> FindByEmailAsync(string email, CancellationToken cancellationToken);
+        Task<TResult> FindByEmailAsync<TResult>(string email, CancellationToken cancellationToken = default);
     }
 }
