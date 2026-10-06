@@ -26,6 +26,15 @@ See [Nuget](https://www.nuget.org/packages/DataQI.Commons) for other options.
 
 ## News
 
+**v3.0.0 - 2026/10**
+
+* New! Added support for async query methods
+* New! Added single-entity query methods and criteria-based `FindOne`/`FindOneAsync` methods
+* New! Added ordering through criteria and the `OrderBy` suffix in query method names
+* Change! Added `AddOrder` to `ICriteria` and criteria-based `FindOne`/`FindOneAsync` overloads to `ICrudRepository`; custom implementations must implement the new members
+* Change! Cache repository method dispatch metadata
+* Fix! Make `RepositoryProxy.Create` thread-safe with locking
+
 **v2.0.0 - 2024/12**
 
 * Change! Add cancellation token parameter for async methods
