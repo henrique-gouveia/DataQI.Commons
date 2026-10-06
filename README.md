@@ -14,6 +14,27 @@ Data Query Interface Commons is written in C# and built around essential feature
 * Dynamic query generation from query method names
 * Simple Criteria API
 
+## Criteria AST (4.0 and later)
+
+Query criteria are now an AST walked through `ICriterionVisitor<T>`, replacing the `WhereOperator`-driven class hierarchy. Where the types live:
+
+| Namespace | Types |
+|---|---|
+| `DataQI.Commons.Query` | `ICriteria`, `ICriterion`, `ICriterionVisitor<T>`, `IOrderCriterion` |
+| `DataQI.Commons.Query.Ast` | `Comparison`, `Between`, `In`, `IsNull`, `TextMatch`, `Not`, `Junction`, `ComparisonKind`, `TextMatchKind`, `LogicalKind` |
+| `DataQI.Commons.Query.Support` | `Criteria`, `Restrictions`, `Order`, `OrderCriterion`, `OrderDirection` |
+
+`Restrictions` keeps its method names and `Func<ICriteria, ICriteria>` is still the way to build criteria, so code that only composes criteria with `Restrictions` keeps working.
+
+Breaking changes:
+
+- `ICriterion` no longer has `GetPropertyName()`/`GetWhereOperator()`; it has `T Accept<T>(ICriterionVisitor<T> visitor)`. `WhereOperator`, `SimpleExpression`, `BetweenExpression`, `InExpression`, `NullExpression`, `NotExpression`, `Conjunction`, `Disjunction` and `IJunction` were removed. `Restrictions.Conjunction()`/`Disjunction()` return the single `Junction` node, whose `Kind` is `And` or `Or`.
+- `IOrderCriterion.GetPropertyName()` and `GetDirection()` were replaced by the read-only properties `PropertyName` and `Direction`. `Order.Asc`/`Order.Desc` are unchanged.
+- `Restrictions.StartingWith` takes `string` instead of `object`, like `EndingWith` and `Like`.
+- `ICriteria` now exposes `Criterions` and `Orders`.
+
+Parser fixes: method names whose property contains `Or`/`And` as a substring (`FindByOrderDate`, `FindByAndroidVersion`) no longer throw, and `Equals` is accepted as a synonym for `Equal` (`FindByNameEquals`).
+
 ## Getting Started
 
 ### Installing
