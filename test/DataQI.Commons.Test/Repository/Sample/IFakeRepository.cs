@@ -13,10 +13,6 @@ namespace DataQI.Commons.Test.Repository.Sample
 
         IEnumerable<FakeEntity> FindBy();
         IEnumerable<FakeEntity> FindByFirstName(string name);
-        IEnumerable<FakeEntity> FindByFirstNameOrderByLastName(string firstName);
-        IEnumerable<FakeEntity> FindByFirstNameOrderByLastNameDesc(string firstName);
-        IEnumerable<FakeEntity> FindByFirstNameOrderByLastNameAscBirthDateDesc(string firstName);
-        IEnumerable<FakeEntity> FindByLastNameNot(string name);
         IEnumerable<FakeEntity> FindByNameStartingWithAndStockGreaterThanOrDepartmentIn(string name, decimal stock, string[] department);
         IEnumerable<FakeEntity> FindByNameNotLike(string name);
         IEnumerable<FakeEntity> FindByNameIsNotNull();
@@ -24,34 +20,6 @@ namespace DataQI.Commons.Test.Repository.Sample
         IEnumerable<FakeEntity> FindByAndroidVersion(string version);
         IEnumerable<FakeEntity> FindByCategoryInStock(string[] category);
         IEnumerable<FakeEntity> FindByNameEquals(string name);
-
-        IEnumerable<FakeEntity> FindByBirthDateBetween(DateTime start, DateTime end);
-        IEnumerable<FakeEntity> FindByHireDateNotBetween(DateTime start, DateTime end);
-
-        IEnumerable<FakeEntity> FindByTitleContaining(string name);
-        IEnumerable<FakeEntity> FindByTitleNotContaining(string name);
-        IEnumerable<FakeEntity> FindByTitleEndingWith(string name);
-        IEnumerable<FakeEntity> FindByTitleNotEndingWith(string name);
-        IEnumerable<FakeEntity> FindByTitleStartingWith(string name);
-        IEnumerable<FakeEntity> FindByTitleNotStartingWith(string name);
-        IEnumerable<FakeEntity> FindByTitleLike(string name);
-        IEnumerable<FakeEntity> FindByTitleNotLike(string name);
-
-        IEnumerable<FakeEntity> FindByAgeGreaterThan(int age);
-        IEnumerable<FakeEntity> FindByAgeGreaterThanEqual(int age);
-
-        IEnumerable<FakeEntity> FindByAgeLessThan(int age);
-        IEnumerable<FakeEntity> FindByAgeLessThanEqual(int age);
-
-        IEnumerable<FakeEntity> FindByCityIn(string[] status);
-        IEnumerable<FakeEntity> FindByCountryNotIn(string[] status);
-
-        IEnumerable<FakeEntity> FindByEmailNull();
-        IEnumerable<FakeEntity> FindByPhoneNotNull();
-
-        IEnumerable<FakeEntity> FindByFirstNameOrLastName(string firstName, string lastName);
-        IEnumerable<FakeEntity> FindByFirstNameAndLastName(string firstName, string lastName);
-        IEnumerable<FakeEntity> FindByStateAndHireDateGreaterThanEqualOrCityInAndEmailEndingWith(string state, DateTime hireDate, string[] cities, string email);
 
         Task<IEnumerable<FakeEntity>> FindByFirstNameAsync(string name);
         Task<IEnumerable<FakeEntity>> FindByFirstNameAsync(string name, CancellationToken cancellationToken);

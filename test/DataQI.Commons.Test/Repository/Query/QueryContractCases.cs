@@ -27,10 +27,7 @@ namespace DataQI.Commons.Test.Repository.Query
                 "Adams");
         }
 
-        // A lone string[] argument must be cast to object at the call site: otherwise C# treats it as the
-        // params array itself and the method receives "Tools" instead of { string[] }.
         private static object[] Case(string methodName, string description, params object[] arguments)
             => new object[] { new QueryContractCase(methodName, description, arguments) };
-
     }
 }
