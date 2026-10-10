@@ -13,7 +13,7 @@ namespace DataQI.Commons.Test.Repository.Query
     public class QueryMethodParserKeywordTest
     {
         [Theory]
-        [InlineData("firstName", "firstName", "SimpleProperty", false)]
+        [InlineData("FirstName", "FirstName", "SimpleProperty", false)]
         [InlineData("DateOfBirthBetween", "DateOfBirth", "Between", false)]
         [InlineData("DateOfBirthIsBetween", "DateOfBirth", "Between", false)]
         [InlineData("DateOfBirthNotBetween", "DateOfBirth", "Between", true)]
@@ -30,16 +30,22 @@ namespace DataQI.Commons.Test.Repository.Query
         [InlineData("LastNameIsNotEndingWith", "LastName", "EndingWith", true)]
         [InlineData("LastNameNotEndingWith", "LastName", "EndingWith", true)]
         [InlineData("LastNameNotEndsWith", "LastName", "EndingWith", true)]
-        [InlineData("firstNameIsEqual", "firstName", "Equal", false)]
-        [InlineData("firstNameEqual", "firstName", "Equal", false)]
+        [InlineData("FirstNameIsEqual", "FirstName", "Equal", false)]
+        [InlineData("FirstNameEqual", "FirstName", "Equal", false)]
         [InlineData("NameEquals", "Name", "Equal", false)]
         [InlineData("NameIsEquals", "Name", "Equal", false)]
         [InlineData("AgeIsNotEqual", "Age", "Equal", true)]
         [InlineData("AgeNotEqual", "Age", "Equal", true)]
+        [InlineData("NameNotEquals", "Name", "Equal", true)]
+        [InlineData("NameIsNotEquals", "Name", "Equal", true)]
         [InlineData("DateOfBirthIsGreaterThan", "DateOfBirth", "GreaterThan", false)]
         [InlineData("DateOfBirthGreaterThan", "DateOfBirth", "GreaterThan", false)]
         [InlineData("DateOfBirthIsGreaterThanEqual", "DateOfBirth", "GreaterThanEqual", false)]
         [InlineData("DateOfBirthGreaterThanEqual", "DateOfBirth", "GreaterThanEqual", false)]
+        [InlineData("AgeNotGreaterThan", "Age", "GreaterThan", true)]
+        [InlineData("AgeIsNotGreaterThan", "Age", "GreaterThan", true)]
+        [InlineData("AgeNotGreaterThanEqual", "Age", "GreaterThanEqual", true)]
+        [InlineData("AgeIsNotGreaterThanEqual", "Age", "GreaterThanEqual", true)]
         [InlineData("InvoiceIdIn", "InvoiceId", "In", false)]
         [InlineData("InvoiceIdIsIn", "InvoiceId", "In", false)]
         [InlineData("InvoiceIdIsNotIn", "InvoiceId", "In", true)]
@@ -52,6 +58,10 @@ namespace DataQI.Commons.Test.Repository.Query
         [InlineData("DateOfBirthLessThan", "DateOfBirth", "LessThan", false)]
         [InlineData("DateOfBirthIsLessThanEqual", "DateOfBirth", "LessThanEqual", false)]
         [InlineData("DateOfBirthLessThanEqual", "DateOfBirth", "LessThanEqual", false)]
+        [InlineData("AgeNotLessThan", "Age", "LessThan", true)]
+        [InlineData("AgeIsNotLessThan", "Age", "LessThan", true)]
+        [InlineData("AgeNotLessThanEqual", "Age", "LessThanEqual", true)]
+        [InlineData("AgeIsNotLessThanEqual", "Age", "LessThanEqual", true)]
         [InlineData("LastNameIsLike", "LastName", "Like", false)]
         [InlineData("LastNameLike", "LastName", "Like", false)]
         [InlineData("LastNameIsNotLike", "LastName", "Like", true)]
@@ -74,6 +84,23 @@ namespace DataQI.Commons.Test.Repository.Query
 
             Restrictions.Disjunction()
                 .Add(Restrictions.Conjunction().Add(expected))
+                .ToExpectedObject().ShouldEqual(actual);
+        }
+
+        [Theory]
+        [InlineData("NameIsContains")]
+        [InlineData("NameIsEndsWith")]
+        [InlineData("NameIsStartsWith")]
+        [InlineData("Namecontains")]
+        [InlineData("NamegreaterThan")]
+        [InlineData("Namein")]
+        public void TestUnmappedOrLowercaseKeywordsRemainSimpleProperties(string propertyName)
+        {
+            var actual = QueryMethodParser.Parse($"FindBy{propertyName}")
+                .BuildPredicate(new object[] { "v" });
+
+            Restrictions.Disjunction()
+                .Add(Restrictions.Conjunction().Add(Restrictions.Equal(propertyName, "v")))
                 .ToExpectedObject().ShouldEqual(actual);
         }
 

@@ -13,7 +13,8 @@ namespace DataQI.Commons.Repository.Query
 {
     public static class QueryMethodParser
     {
-        private const string PrefixPattern = @"\w+By";
+        private const string PrefixPattern = @"^\w+?By(?=[A-Z])";
+        private const string EmptyPredicatePattern = @"^\w+By$";
         private const string AsyncSuffixPattern = "Async$";
         private const string OrSeparatorPattern = "Or(?=[A-Z])";
         private const string AndSeparatorPattern = "And(?=[A-Z])";
@@ -32,21 +33,38 @@ namespace DataQI.Commons.Repository.Query
         private static readonly Regex NotMatcher = new Regex($"{NotPattern}{IsNotSmallLettersPattern}");
         private static readonly Regex TypeMatcher = new Regex(TypePattern);
 
-        private static readonly IReadOnlyDictionary<PredicateKind, HashSet<string>> Keywords =
-            new Dictionary<PredicateKind, HashSet<string>>
+        private static readonly IReadOnlyDictionary<string, PredicateKind> Keywords =
+            new Dictionary<string, PredicateKind>
             {
-                { PredicateKind.Between, new HashSet<string> { "IsBetween", "Between" } },
-                { PredicateKind.Containing, new HashSet<string> { "IsContaining", "Containing", "Contains" } },
-                { PredicateKind.EndingWith, new HashSet<string> { "IsEndingWith", "EndingWith", "EndsWith" } },
-                { PredicateKind.Equal, new HashSet<string> { "IsEqual", "Equal", "IsEquals", "Equals" } },
-                { PredicateKind.GreaterThan, new HashSet<string> { "IsGreaterThan", "GreaterThan" } },
-                { PredicateKind.GreaterThanEqual, new HashSet<string> { "IsGreaterThanEqual", "GreaterThanEqual" } },
-                { PredicateKind.In, new HashSet<string> { "IsIn", "In" } },
-                { PredicateKind.LessThan, new HashSet<string> { "IsLessThan", "LessThan" } },
-                { PredicateKind.LessThanEqual, new HashSet<string> { "IsLessThanEqual", "LessThanEqual" } },
-                { PredicateKind.Like, new HashSet<string> { "IsLike", "Like" } },
-                { PredicateKind.Null, new HashSet<string> { "IsNull", "Null" } },
-                { PredicateKind.StartingWith, new HashSet<string> { "IsStartingWith", "StartingWith", "StartsWith" } },
+                { "IsBetween", PredicateKind.Between },
+                { "Between", PredicateKind.Between },
+                { "IsContaining", PredicateKind.Containing },
+                { "Containing", PredicateKind.Containing },
+                { "Contains", PredicateKind.Containing },
+                { "IsEndingWith", PredicateKind.EndingWith },
+                { "EndingWith", PredicateKind.EndingWith },
+                { "EndsWith", PredicateKind.EndingWith },
+                { "IsEqual", PredicateKind.Equal },
+                { "Equal", PredicateKind.Equal },
+                { "IsEquals", PredicateKind.Equal },
+                { "Equals", PredicateKind.Equal },
+                { "IsGreaterThan", PredicateKind.GreaterThan },
+                { "GreaterThan", PredicateKind.GreaterThan },
+                { "IsGreaterThanEqual", PredicateKind.GreaterThanEqual },
+                { "GreaterThanEqual", PredicateKind.GreaterThanEqual },
+                { "IsIn", PredicateKind.In },
+                { "In", PredicateKind.In },
+                { "IsLessThan", PredicateKind.LessThan },
+                { "LessThan", PredicateKind.LessThan },
+                { "IsLessThanEqual", PredicateKind.LessThanEqual },
+                { "LessThanEqual", PredicateKind.LessThanEqual },
+                { "IsLike", PredicateKind.Like },
+                { "Like", PredicateKind.Like },
+                { "IsNull", PredicateKind.Null },
+                { "Null", PredicateKind.Null },
+                { "IsStartingWith", PredicateKind.StartingWith },
+                { "StartingWith", PredicateKind.StartingWith },
+                { "StartsWith", PredicateKind.StartingWith },
             };
 
         public static QueryPlan Parse(MethodInfo method)
@@ -72,6 +90,9 @@ namespace DataQI.Commons.Repository.Query
             var orders = ParseOrders(orderSource);
 
             var prefix = Regex.Match(source, PrefixPattern);
+            if (!prefix.Success && Regex.IsMatch(source, EmptyPredicatePattern))
+                throw new ArgumentException("Source must not be null or empty");
+
             var groups = ParsePredicate(source.Substring(prefix.Length));
 
             return new QueryPlan(values => BuildPredicate(groups, values), orders);
@@ -127,14 +148,9 @@ namespace DataQI.Commons.Repository.Query
         }
 
         private static PredicateKind KindOf(Match typeMatch)
-        {
-            if (typeMatch.Success)
-                foreach (var entry in Keywords)
-                    if (entry.Value.Contains(typeMatch.Value))
-                        return entry.Key;
-
-            return PredicateKind.SimpleProperty;
-        }
+            => typeMatch.Success && Keywords.TryGetValue(typeMatch.Value, out var kind)
+                ? kind
+                : PredicateKind.SimpleProperty;
 
         private static ICriterion BuildPredicate(List<List<PredicateMember>> groups, object[] values)
         {
@@ -168,16 +184,16 @@ namespace DataQI.Commons.Repository.Query
                     criterion = new IsNull(member.PropertyName);
                     break;
                 case PredicateKind.Containing:
-                    criterion = new TextMatch(member.PropertyName, TextMatchKind.Containing, (string)Next(values, ref index));
+                    criterion = new TextMatch(member.PropertyName, TextMatchKind.Containing, NextTextValue(member.PropertyName, values, ref index));
                     break;
                 case PredicateKind.EndingWith:
-                    criterion = new TextMatch(member.PropertyName, TextMatchKind.EndingWith, (string)Next(values, ref index));
+                    criterion = new TextMatch(member.PropertyName, TextMatchKind.EndingWith, NextTextValue(member.PropertyName, values, ref index));
                     break;
                 case PredicateKind.Like:
-                    criterion = new TextMatch(member.PropertyName, TextMatchKind.Like, (string)Next(values, ref index));
+                    criterion = new TextMatch(member.PropertyName, TextMatchKind.Like, NextTextValue(member.PropertyName, values, ref index));
                     break;
                 case PredicateKind.StartingWith:
-                    criterion = new TextMatch(member.PropertyName, TextMatchKind.StartingWith, (string)Next(values, ref index));
+                    criterion = new TextMatch(member.PropertyName, TextMatchKind.StartingWith, NextTextValue(member.PropertyName, values, ref index));
                     break;
                 case PredicateKind.GreaterThan:
                     criterion = new Comparison(member.PropertyName, ComparisonKind.GreaterThan, Next(values, ref index));
@@ -199,6 +215,15 @@ namespace DataQI.Commons.Repository.Query
             }
 
             return member.HasNot ? new Not(criterion) : criterion;
+        }
+
+        private static string NextTextValue(string propertyName, object[] values, ref int index)
+        {
+            var value = Next(values, ref index);
+            if (value != null && !(value is string))
+                throw new ArgumentException($"Value for text criterion on property '{propertyName}' must be a string.", nameof(values));
+
+            return (string)value;
         }
 
         private static object Next(object[] values, ref int index)

@@ -118,6 +118,129 @@ namespace DataQI.Commons.Test.Repository.Query
             Single(Restrictions.Equal("FirstName", "Adams")).ToExpectedObject().ShouldEqual(actual);
         }
 
+        [Theory]
+        [InlineData("GetByFirstName")]
+        [InlineData("ReadByFirstName")]
+        [InlineData("QueryByFirstName")]
+        [InlineData("SearchByFirstName")]
+        [InlineData("FindOneByFirstName")]
+        [InlineData("FindAllByFirstNameAsync")]
+        [InlineData("FindBypassByFirstName")]
+        [InlineData("GetBypassByFirstName")]
+        public void TestDetectsPreviouslyAcceptedQueryPrefixes(string methodName)
+        {
+            var actual = QueryMethodParser.Parse(methodName).BuildPredicate(new object[] { "Adams" });
+
+            Single(Restrictions.Equal("FirstName", "Adams")).ToExpectedObject().ShouldEqual(actual);
+        }
+
+        [Fact]
+        public void TestParsesPreviouslyAcceptedReadmeMethodName()
+        {
+            var actual = QueryMethodParser.Parse("FindFindByFirstNameAndLastNameOrBirthDateGreaterThan")
+                .BuildPredicate(new object[] { "First", "Last", Start });
+            var expected = Restrictions.Disjunction()
+                .Add(Restrictions.Conjunction()
+                    .Add(Restrictions.Equal("FirstName", "First"))
+                    .Add(Restrictions.Equal("LastName", "Last")))
+                .Add(Restrictions.Conjunction()
+                    .Add(Restrictions.GreaterThan("BirthDate", Start)));
+
+            expected.ToExpectedObject().ShouldEqual(actual);
+        }
+
+        [Theory]
+        [InlineData("FindByUpdatedBy", "UpdatedBy")]
+        [InlineData("FindByUpdatedByAsync", "UpdatedBy")]
+        [InlineData("FindByUpdatedByEqual", "UpdatedBy")]
+        [InlineData("FindByUpdatedByName", "UpdatedByName")]
+        [InlineData("FindByUpdatedByOrderByFirstName", "UpdatedBy")]
+        [InlineData("FindByUpdatedByOrderByFirstNameAsync", "UpdatedBy")]
+        [InlineData("GetByUpdatedBy", "UpdatedBy")]
+        [InlineData("ReadByUpdatedByName", "UpdatedByName")]
+        [InlineData("SearchByUpdatedByOrderByFirstNameAsync", "UpdatedBy")]
+        [InlineData("FindFindByUpdatedBy", "UpdatedBy")]
+        public void TestPreservesByInsidePropertyName(string methodName, string propertyName)
+        {
+            var plan = QueryMethodParser.Parse(methodName);
+            var actual = plan.BuildPredicate(new object[] { "Adams" });
+
+            Single(Restrictions.Equal(propertyName, "Adams")).ToExpectedObject().ShouldEqual(actual);
+        }
+
+        [Theory]
+        [MemberData(nameof(NonStringTextMatchCases))]
+        public void TestTextMatchRejectsNonStringValueClearly(string methodName, object value)
+        {
+            var plan = QueryMethodParser.Parse(methodName);
+
+            var exception = Assert.Throws<ArgumentException>(() =>
+                plan.BuildPredicate(new object[] { value }));
+
+            Assert.Equal("values", exception.ParamName);
+            Assert.StartsWith("Value for text criterion on property 'Title' must be a string.", exception.Message);
+        }
+
+        public static IEnumerable<object[]> NonStringTextMatchCases()
+        {
+            var methods = new[]
+            {
+                "FindByTitleContaining", "FindByTitleEndingWith", "FindByTitleLike", "FindByTitleStartingWith"
+            };
+            var values = new object[] { 123, true, 1.5m, new[] { "Adams" } };
+
+            foreach (var method in methods)
+                foreach (var value in values)
+                    yield return new object[] { method, value };
+        }
+
+        [Theory]
+        [InlineData("FindByTitleContaining", TextMatchKind.Containing, "Ad")]
+        [InlineData("FindByTitleContaining", TextMatchKind.Containing, null)]
+        [InlineData("FindByTitleEndingWith", TextMatchKind.EndingWith, "Ad")]
+        [InlineData("FindByTitleEndingWith", TextMatchKind.EndingWith, null)]
+        [InlineData("FindByTitleLike", TextMatchKind.Like, "Ad")]
+        [InlineData("FindByTitleLike", TextMatchKind.Like, null)]
+        [InlineData("FindByTitleStartingWith", TextMatchKind.StartingWith, "Ad")]
+        [InlineData("FindByTitleStartingWith", TextMatchKind.StartingWith, null)]
+        public void TestTextMatchPreservesStringAndNullValues(string methodName, TextMatchKind kind, string value)
+        {
+            var actual = QueryMethodParser.Parse(methodName).BuildPredicate(new object[] { value });
+
+            Single(new TextMatch("Title", kind, value)).ToExpectedObject().ShouldEqual(actual);
+        }
+
+        [Theory]
+        [InlineData("Containing", TextMatchKind.Containing)]
+        [InlineData("EndingWith", TextMatchKind.EndingWith)]
+        [InlineData("Like", TextMatchKind.Like)]
+        [InlineData("StartingWith", TextMatchKind.StartingWith)]
+        public void TestTextMatchConsumesOnlyItsOwnValue(string keyword, TextMatchKind kind)
+        {
+            var actual = QueryMethodParser.Parse($"FindByFirstNameAndTitle{keyword}AndAge")
+                .BuildPredicate(new object[] { "Adams", "Manager", 30 });
+            var expected = Restrictions.Disjunction().Add(Restrictions.Conjunction()
+                .Add(Restrictions.Equal("FirstName", "Adams"))
+                .Add(new TextMatch("Title", kind, "Manager"))
+                .Add(Restrictions.Equal("Age", 30)));
+
+            expected.ToExpectedObject().ShouldEqual(actual);
+        }
+
+        [Theory]
+        [InlineData("FindByTitleContaining")]
+        [InlineData("FindByTitleEndingWith")]
+        [InlineData("FindByTitleLike")]
+        [InlineData("FindByTitleStartingWith")]
+        public void TestTextMatchRejectsMissingValue(string methodName)
+        {
+            var plan = QueryMethodParser.Parse(methodName);
+
+            var exception = Assert.Throws<ArgumentException>(() => plan.BuildPredicate(new object[0]));
+
+            Assert.Equal("The query method needs more values than were supplied", exception.Message);
+        }
+
         [Fact]
         public void TestParsesANameWithoutAPrefixAsASimpleProperty()
         {
@@ -138,6 +261,9 @@ namespace DataQI.Commons.Test.Repository.Query
         [InlineData(null)]
         [InlineData("")]
         [InlineData("FindBy")]
+        [InlineData("GetBy")]
+        [InlineData("ReadBy")]
+        [InlineData("SearchBy")]
         public void TestRejectsAnEmptyPredicate(string methodName)
         {
             var exception = Assert.Throws<ArgumentException>(() => QueryMethodParser.Parse(methodName));

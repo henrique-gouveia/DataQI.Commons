@@ -14,6 +14,16 @@ Data Query Interface Commons is written in C# and built around essential feature
 * Dynamic query generation from query method names
 * Simple Criteria API
 
+## Getting Started
+
+### Installing
+
+This library can add to the project by the way:
+
+    dotnet add package DataQI.Commons
+
+See [Nuget](https://www.nuget.org/packages/DataQI.Commons) for other options.
+
 ## Criteria AST (4.0 and later)
 
 Query criteria are now an AST walked through `ICriterionVisitor<T>`, replacing the `WhereOperator`-driven class hierarchy. Where the types live:
@@ -24,26 +34,16 @@ Query criteria are now an AST walked through `ICriterionVisitor<T>`, replacing t
 | `DataQI.Commons.Query.Ast` | `Comparison`, `Between`, `In`, `IsNull`, `TextMatch`, `Not`, `Junction`, `ComparisonKind`, `TextMatchKind`, `LogicalKind` |
 | `DataQI.Commons.Query.Support` | `Criteria`, `Restrictions`, `Order`, `OrderCriterion`, `OrderDirection` |
 
-`Restrictions` keeps its method names and `Func<ICriteria, ICriteria>` is still the way to build criteria, so code that only composes criteria with `Restrictions` keeps working.
+`Restrictions` keeps its method names, and `Func<ICriteria, ICriteria>` remains the way to build criteria.
 
 Breaking changes:
 
 - `ICriterion` no longer has `GetPropertyName()`/`GetWhereOperator()`; it has `T Accept<T>(ICriterionVisitor<T> visitor)`. `WhereOperator`, `SimpleExpression`, `BetweenExpression`, `InExpression`, `NullExpression`, `NotExpression`, `Conjunction`, `Disjunction` and `IJunction` were removed. `Restrictions.Conjunction()`/`Disjunction()` return the single `Junction` node, whose `Kind` is `And` or `Or`.
 - `IOrderCriterion.GetPropertyName()` and `GetDirection()` were replaced by the read-only properties `PropertyName` and `Direction`. `Order.Asc`/`Order.Desc` are unchanged.
-- `Restrictions.StartingWith` takes `string` instead of `object`, like `EndingWith` and `Like`.
+- `Restrictions.Containing` and `Restrictions.StartingWith` take `string` instead of `object`, like `EndingWith` and `Like`. Calls whose value is typed as `object` must pass a `string`.
 - `ICriteria` now exposes `Criterions` and `Orders`.
 
 Parser fixes: method names whose property contains `Or`/`And` as a substring (`FindByOrderDate`, `FindByAndroidVersion`) no longer throw, and `Equals` is accepted as a synonym for `Equal` (`FindByNameEquals`).
-
-## Getting Started
-
-### Installing
-
-This library can add to the project by the way:
-
-    dotnet add package DataQI.Commons
-
-See [Nuget](https://www.nuget.org/packages/DataQI.Commons) for other options.
 
 ## News
 
