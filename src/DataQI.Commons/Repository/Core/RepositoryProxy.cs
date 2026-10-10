@@ -12,20 +12,35 @@ using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Core
 {
+    /// <summary>Implements a repository interface by forwarding calls to a provider implementation.</summary>
+    /// <typeparam name="TRepository">The repository interface.</typeparam>
+    /// <remarks>
+    /// Calls that match a public method of the implementation are forwarded unchanged. Other calls are treated as
+    /// query methods: the method name is parsed by <see cref="DataQI.Commons.Repository.Query.QueryMethodParser"/> and the resulting criteria
+    /// are passed to the implementation's <c>Find</c>, <c>FindAsync</c>, <c>FindOne</c> or <c>FindOneAsync</c>.
+    /// A call that cannot be routed throws <see cref="System.Reflection.TargetInvocationException"/>.
+    /// </remarks>
     public class RepositoryProxy<TRepository> : DispatchProxy where TRepository : class
     {
         private static readonly object createLock = new object();
 
+        /// <summary>Stores the factory for the proxy being constructed, set by <see cref="Create(Func{object})"/>.</summary>
         protected static Func<object> DefaultRepositoryFactory;
 
+        /// <summary>Stores the implementation the proxy forwards to.</summary>
         protected readonly object defaultRepository;
+        /// <summary>Stores the runtime type of <see cref="defaultRepository"/>.</summary>
         protected readonly Type defaultRepositoryType;
+        /// <summary>Stores the entity type of <typeparamref name="TRepository"/>.</summary>
         protected readonly Type entityType;
 
         private readonly ConcurrentDictionary<MethodInfo, MethodDescriptor> methodDescriptors =
             new ConcurrentDictionary<MethodInfo, MethodDescriptor>();
         private Func<MethodInfo, MethodDescriptor> methodDescriptorFactory;
 
+        /// <summary>Creates a proxy that implements <typeparamref name="TRepository"/>.</summary>
+        /// <param name="defaultRepositoryFactory">A function that returns the implementation the proxy forwards to.</param>
+        /// <returns>The proxy instance.</returns>
         public static TRepository Create(Func<object> defaultRepositoryFactory)
         {
             lock (createLock)
@@ -35,6 +50,8 @@ namespace DataQI.Commons.Repository.Core
             }
         }
 
+        /// <summary>Initializes the proxy when called by <see cref="DispatchProxy"/>, with construction initiated through <see cref="Create(Func{object})"/>.</summary>
+        /// <exception cref="System.ArgumentException">The factory returned <c>null</c>.</exception>
         public RepositoryProxy()
         {
             defaultRepository = DefaultRepositoryFactory();
@@ -92,6 +109,11 @@ namespace DataQI.Commons.Repository.Core
             return methods;
         }
 
+        /// <summary>Routes a call made on the repository interface.</summary>
+        /// <param name="targetMethod">The interface method that was called.</param>
+        /// <param name="args">The call arguments.</param>
+        /// <returns>The value returned by the implementation.</returns>
+        /// <exception cref="System.Reflection.TargetInvocationException">The method cannot be routed (<see cref="DispatchKind.Unresolvable"/>).</exception>
         protected override object Invoke(MethodInfo targetMethod, object[] args)
         {
             var descriptor = methodDescriptors.GetOrAdd(targetMethod, methodDescriptorFactory);
@@ -125,6 +147,10 @@ namespace DataQI.Commons.Repository.Core
             }
         }
 
+        /// <summary>Creates the criteria builder that applies a query method's plan to its arguments.</summary>
+        /// <param name="targetMethod">The query method that was called.</param>
+        /// <param name="args">The call arguments, without the cancellation token.</param>
+        /// <returns>A function that fills the given <see cref="DataQI.Commons.Query.ICriteria"/>.</returns>
         protected virtual Func<ICriteria, ICriteria> CreateCriteriaBuilder(MethodInfo targetMethod, object[] args)
         {
             var plan = methodDescriptors.GetOrAdd(targetMethod, methodDescriptorFactory).Plan;

@@ -8,17 +8,25 @@ using DataQI.Commons.Repository.Query;
 
 namespace DataQI.Commons.Repository.Core
 {
+    /// <summary>Describes how a method of a repository interface is dispatched.</summary>
     public sealed class MethodDescriptor
     {
         private readonly Lazy<QueryPlan> plan;
 
+        /// <summary>Gets the query plan parsed on first access, or <c>null</c> when the method is forwarded unchanged or cannot be resolved.</summary>
         public QueryPlan Plan => plan?.Value;
 
+        /// <summary>Gets the interface method being dispatched.</summary>
         public MethodInfo Method { get; }
+        /// <summary>Gets a key made of the method name, return type and parameter types.</summary>
         public string UniqueName { get; }
+        /// <summary>Gets how the call is routed.</summary>
         public DispatchKind Kind { get; }
+        /// <summary>Gets the repository implementation method the call is forwarded to, or <c>null</c> when <see cref="Kind"/> is <see cref="DispatchKind.Unresolvable"/>.</summary>
         public MethodInfo ResolvedMethod { get; }
+        /// <summary>Gets the result type of the call: the return type, or the type wrapped by <c>Task</c> for parsed asynchronous query methods.</summary>
         public Type ResultType { get; }
+        /// <summary>Gets a value indicating whether the last parameter of the method is a <see cref="System.Threading.CancellationToken"/>.</summary>
         public bool HasCancellationToken { get; }
 
         private MethodDescriptor(
@@ -39,6 +47,15 @@ namespace DataQI.Commons.Repository.Core
             HasCancellationToken = hasCancellationToken;
         }
 
+        /// <summary>Creates the descriptor of an interface method.</summary>
+        /// <param name="method">The interface method to describe.</param>
+        /// <param name="entityType">The entity type of the repository.</param>
+        /// <param name="exactMatchMethods">The public methods of the repository implementation, keyed by <see cref="UniqueName"/>.</param>
+        /// <param name="findMethod">The implementation's <c>Find(Func&lt;ICriteria, ICriteria&gt;)</c>, or <c>null</c>.</param>
+        /// <param name="findAsyncMethod">The implementation's <c>FindAsync</c> taking criteria and a token, or <c>null</c>.</param>
+        /// <param name="findOneMethod">The implementation's <c>FindOne(Func&lt;ICriteria, ICriteria&gt;)</c>, or <c>null</c>.</param>
+        /// <param name="findOneAsyncMethod">The implementation's <c>FindOneAsync</c> taking criteria and a token, or <c>null</c>.</param>
+        /// <returns>The descriptor; an exact signature match wins over query method parsing.</returns>
         public static MethodDescriptor Create(
             MethodInfo method,
             Type entityType,

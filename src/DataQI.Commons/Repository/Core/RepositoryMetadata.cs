@@ -6,16 +6,28 @@ using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Core
 {
+    /// <summary>Describes the entity and identifier types of a repository interface.</summary>
+    /// <remarks>
+    /// The types are read from the interface's own generic arguments (first the entity, then the identifier; with a
+    /// single argument the identifier type is the entity type) or, for a non generic interface, from the
+    /// <c>ICrudRepository</c> interface it implements.
+    /// </remarks>
     public class RepositoryMetadata
     {
         private const string RepositoryInterfaceBaseName = "ICrudRepository";
 
         private readonly Type repositoryInterface;
 
+        /// <summary>Gets the entity type.</summary>
         public Type EntityType { get; private set; }
 
+        /// <summary>Gets the identifier type.</summary>
         public Type IdType { get; private set; }
 
+        /// <summary>Initializes a new instance of the <see cref="RepositoryMetadata"/> class.</summary>
+        /// <param name="repositoryInterface">The repository interface to inspect.</param>
+        /// <exception cref="System.ArgumentException"><paramref name="repositoryInterface"/> is not an interface, or the entity or identifier type cannot be resolved.</exception>
+        /// <exception cref="InvalidOperationException">The interface implements no other interface to read the types from.</exception>
         public RepositoryMetadata(Type repositoryInterface)
         {
             Assert.True(repositoryInterface.IsInterface, "The parameter should be an interface");
