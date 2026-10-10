@@ -21,7 +21,8 @@ namespace DataQI.Commons.Repository.Query
     /// The predicate is split on <c>Or</c>, then on <c>And</c> (each only when followed by an uppercase letter), so
     /// <c>FindByFirstNameAndLastNameOrAge</c> means <c>(FirstName AND LastName) OR Age</c>. Each part is a property
     /// name optionally followed by a keyword; without a keyword the part is an equality test. Putting <c>Not</c> in a
-    /// part negates it (<c>NameNotLike</c>), and the keywords also accept an <c>Is</c> prefix (<c>AgeIsGreaterThan</c>).
+    /// part negates it (<c>NameNotLike</c>); keywords other than the aliases <c>Contains</c>, <c>StartsWith</c>
+    /// and <c>EndsWith</c> also accept an <c>Is</c> prefix (<c>AgeIsGreaterThan</c>).
     /// </para>
     /// <list type="table">
     /// <listheader><term>Keyword</term><description>Criterion and number of arguments consumed</description></listheader>
