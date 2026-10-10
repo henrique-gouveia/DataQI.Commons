@@ -8,7 +8,7 @@ using DataQI.Commons.Util;
 namespace DataQI.Commons.Repository.Query
 {
     /// <summary>Represents a parsed query method name, ready to be applied to argument values.</summary>
-    /// <remarks>Instances are created by <see cref="QueryMethodParser.Parse(System.Reflection.MethodInfo)"/> and are immutable.</remarks>
+    /// <remarks>Instances are created by <see cref="QueryMethodParser.Parse(System.Reflection.MethodInfo)"/> and can be reused with different argument values.</remarks>
     public sealed class QueryPlan
     {
         private readonly Func<object[], ICriterion> predicateFactory;
