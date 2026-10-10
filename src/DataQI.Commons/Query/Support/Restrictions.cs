@@ -1,50 +1,52 @@
+using DataQI.Commons.Query.Ast;
+
 namespace DataQI.Commons.Query.Support
 {
     public static class Restrictions
     {
         public static ICriterion Between(string propertyName, object starts, object ends)
-            => new BetweenExpression(propertyName, starts, ends);
+            => new Between(propertyName, starts, ends);
 
-        public static ICriterion Containing(string propertyName, object value)
-            => new SimpleExpression(propertyName, WhereOperator.Containing, value);
+        public static ICriterion Containing(string propertyName, string value)
+            => new TextMatch(propertyName, TextMatchKind.Containing, value);
 
         public static ICriterion EndingWith(string propertyName, string value)
-            => new SimpleExpression(propertyName, WhereOperator.EndingWith, value);
+            => new TextMatch(propertyName, TextMatchKind.EndingWith, value);
 
         public static ICriterion Equal(string propertyName, object value)
-            => new SimpleExpression(propertyName, WhereOperator.Equal, value);
+            => new Comparison(propertyName, ComparisonKind.Equal, value);
 
         public static ICriterion GreaterThan(string propertyName, object value)
-            => new SimpleExpression(propertyName, WhereOperator.GreaterThan, value);
+            => new Comparison(propertyName, ComparisonKind.GreaterThan, value);
 
         public static ICriterion GreaterThanEqual(string propertyName, object value)
-            => new SimpleExpression(propertyName, WhereOperator.GreaterThanEqual, value);
+            => new Comparison(propertyName, ComparisonKind.GreaterThanEqual, value);
 
         public static ICriterion In(string propertyName, object[] values)
-            => new InExpression(propertyName, values);
+            => new In(propertyName, values);
 
         public static ICriterion LessThan(string propertyName, object value)
-            => new SimpleExpression(propertyName, WhereOperator.LessThan, value);
+            => new Comparison(propertyName, ComparisonKind.LessThan, value);
 
         public static ICriterion LessThanEqual(string propertyName, object value)
-            => new SimpleExpression(propertyName, WhereOperator.LessThanEqual, value);
+            => new Comparison(propertyName, ComparisonKind.LessThanEqual, value);
 
         public static ICriterion Like(string propertyName, string value)
-            => new SimpleExpression(propertyName, WhereOperator.Like, value);
+            => new TextMatch(propertyName, TextMatchKind.Like, value);
 
         public static ICriterion Not(ICriterion criterion)
-            => new NotExpression(criterion);
+            => new Not(criterion);
 
         public static ICriterion Null(string propertyName)
-            => new NullExpression(propertyName);
+            => new IsNull(propertyName);
 
-        public static ICriterion StartingWith(string propertyName, object value)
-            => new SimpleExpression(propertyName, WhereOperator.StartingWith, value);
+        public static ICriterion StartingWith(string propertyName, string value)
+            => new TextMatch(propertyName, TextMatchKind.StartingWith, value);
 
-        public static IJunction Conjunction()
-            => new Conjunction();
+        public static Junction Conjunction()
+            => new Junction(LogicalKind.And);
 
-        public static IJunction Disjunction()
-            => new Disjunction();
+        public static Junction Disjunction()
+            => new Junction(LogicalKind.Or);
     }
 }

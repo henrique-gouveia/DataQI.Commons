@@ -24,6 +24,27 @@ This library can add to the project by the way:
 
 See [Nuget](https://www.nuget.org/packages/DataQI.Commons) for other options.
 
+## Criteria AST (4.0 and later)
+
+Query criteria are now an AST walked through `ICriterionVisitor<T>`, replacing the `WhereOperator`-driven class hierarchy. Where the types live:
+
+| Namespace | Types |
+|---|---|
+| `DataQI.Commons.Query` | `ICriteria`, `ICriterion`, `ICriterionVisitor<T>`, `IOrderCriterion` |
+| `DataQI.Commons.Query.Ast` | `Comparison`, `Between`, `In`, `IsNull`, `TextMatch`, `Not`, `Junction`, `ComparisonKind`, `TextMatchKind`, `LogicalKind` |
+| `DataQI.Commons.Query.Support` | `Criteria`, `Restrictions`, `Order`, `OrderCriterion`, `OrderDirection` |
+
+`Restrictions` keeps its method names, and `Func<ICriteria, ICriteria>` remains the way to build criteria.
+
+Breaking changes:
+
+- `ICriterion` no longer has `GetPropertyName()`/`GetWhereOperator()`; it has `T Accept<T>(ICriterionVisitor<T> visitor)`. `WhereOperator`, `SimpleExpression`, `BetweenExpression`, `InExpression`, `NullExpression`, `NotExpression`, `Conjunction`, `Disjunction` and `IJunction` were removed. `Restrictions.Conjunction()`/`Disjunction()` return the single `Junction` node, whose `Kind` is `And` or `Or`.
+- `IOrderCriterion.GetPropertyName()` and `GetDirection()` were replaced by the read-only properties `PropertyName` and `Direction`. `Order.Asc`/`Order.Desc` are unchanged.
+- `Restrictions.Containing` and `Restrictions.StartingWith` take `string` instead of `object`, like `EndingWith` and `Like`. Calls whose value is typed as `object` must pass a `string`.
+- `ICriteria` now exposes `Criterions` and `Orders`.
+
+Parser fixes: method names whose property contains `Or`/`And` as a substring (`FindByOrderDate`, `FindByAndroidVersion`) no longer throw, and `Equals` is accepted as a synonym for `Equal` (`FindByNameEquals`).
+
 ## News
 
 **v3.0.0 - 2026/10**

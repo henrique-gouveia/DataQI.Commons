@@ -87,7 +87,7 @@ namespace DataQI.Commons.Repository.Core
         {
             var methods = new Dictionary<string, MethodInfo>();
             foreach (var method in defaultRepositoryType.GetInstancePublicMethods())
-                if (method != null && !methods.ContainsKey(method.Name))
+                if (method != null && !methods.ContainsKey(method.UniqueName()))
                     methods.Add(method.UniqueName(), method);
             return methods;
         }
@@ -127,11 +127,11 @@ namespace DataQI.Commons.Repository.Core
 
         protected virtual Func<ICriteria, ICriteria> CreateCriteriaBuilder(MethodInfo targetMethod, object[] args)
         {
+            var plan = methodDescriptors.GetOrAdd(targetMethod, methodDescriptorFactory).Plan;
+
             ICriteria CriteriaBuilder(ICriteria criteria)
             {
-                var factory = new QueryFactory(targetMethod, args);
-                factory.BuildCriteria(criteria);
-
+                plan.ApplyTo(criteria, args);
                 return criteria;
             }
 

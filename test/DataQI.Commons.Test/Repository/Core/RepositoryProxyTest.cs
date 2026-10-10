@@ -31,6 +31,28 @@ namespace DataQI.Commons.Test.Repository.Core
         }
 
         [Fact]
+        public void TestAnUnparsableQueryMethodDoesNotBreakProxyCreation()
+        {
+            var exception = Assert.ThrowsAny<Exception>(() => fakeRepository.FindBy());
+
+            Assert.Equal("Source must not be null or empty", exception.GetBaseException().Message);
+        }
+
+        [Fact]
+        public void TestTheSameQueryMethodCanBeInvokedRepeatedly()
+        {
+            defaultImplementationMock
+                .Setup(r => r.Find(It.IsAny<Func<ICriteria, ICriteria>>()))
+                .Returns(new List<FakeEntity>());
+
+            fakeRepository.FindByFirstName("Adams");
+            fakeRepository.FindByFirstName("Barnes");
+
+            defaultImplementationMock.Verify(
+                r => r.Find(It.IsAny<Func<ICriteria, ICriteria>>()), Times.Exactly(2));
+        }
+
+        [Fact]
         public void TestRejectsNullRepository()
         {
             var exception = Assert.Throws<TargetInvocationException>(() =>
