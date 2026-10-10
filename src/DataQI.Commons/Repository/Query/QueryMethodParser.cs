@@ -11,6 +11,36 @@ using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Query
 {
+    /// <summary>Parses the name of a repository query method into a <see cref="QueryPlan"/>.</summary>
+    /// <remarks>
+    /// <para>
+    /// A name has the form <c>&lt;Prefix&gt;By&lt;Predicate&gt;[OrderBy&lt;Orders&gt;][Async]</c>. The prefix is any word
+    /// followed by <c>By</c> and an uppercase letter, conventionally <c>Find</c>. A trailing <c>Async</c> is ignored.
+    /// </para>
+    /// <para>
+    /// The predicate is split on <c>Or</c>, then on <c>And</c> (each only when followed by an uppercase letter), so
+    /// <c>FindByFirstNameAndLastNameOrAge</c> means <c>(FirstName AND LastName) OR Age</c>. Each part is a property
+    /// name optionally followed by a keyword; without a keyword the part is an equality test. Putting <c>Not</c> in a
+    /// part negates it (<c>NameNotLike</c>), and the keywords also accept an <c>Is</c> prefix (<c>AgeIsGreaterThan</c>).
+    /// </para>
+    /// <list type="table">
+    /// <listheader><term>Keyword</term><description>Criterion and number of arguments consumed</description></listheader>
+    /// <item><term><c>Between</c></term><description><see cref="DataQI.Commons.Query.Ast.Between"/>, two arguments (inclusive bounds).</description></item>
+    /// <item><term><c>Containing</c>, <c>Contains</c></term><description><see cref="DataQI.Commons.Query.Ast.TextMatch"/> with <see cref="DataQI.Commons.Query.Ast.TextMatchKind.Containing"/>, one <see cref="string"/>.</description></item>
+    /// <item><term><c>StartingWith</c>, <c>StartsWith</c></term><description><see cref="DataQI.Commons.Query.Ast.TextMatch"/> with <see cref="DataQI.Commons.Query.Ast.TextMatchKind.StartingWith"/>, one <see cref="string"/>.</description></item>
+    /// <item><term><c>EndingWith</c>, <c>EndsWith</c></term><description><see cref="DataQI.Commons.Query.Ast.TextMatch"/> with <see cref="DataQI.Commons.Query.Ast.TextMatchKind.EndingWith"/>, one <see cref="string"/>.</description></item>
+    /// <item><term><c>Like</c></term><description><see cref="DataQI.Commons.Query.Ast.TextMatch"/> with <see cref="DataQI.Commons.Query.Ast.TextMatchKind.Like"/>, one <see cref="string"/>.</description></item>
+    /// <item><term><c>Equal</c>, <c>Equals</c></term><description><see cref="DataQI.Commons.Query.Ast.Comparison"/> with <see cref="DataQI.Commons.Query.Ast.ComparisonKind.Equal"/>, one argument.</description></item>
+    /// <item><term><c>GreaterThan</c>, <c>GreaterThanEqual</c>, <c>LessThan</c>, <c>LessThanEqual</c></term><description><see cref="DataQI.Commons.Query.Ast.Comparison"/> with the matching <see cref="DataQI.Commons.Query.Ast.ComparisonKind"/>, one argument.</description></item>
+    /// <item><term><c>In</c></term><description><see cref="DataQI.Commons.Query.Ast.In"/>, one <c>object[]</c> argument.</description></item>
+    /// <item><term><c>Null</c></term><description><see cref="DataQI.Commons.Query.Ast.IsNull"/>, no argument.</description></item>
+    /// </list>
+    /// <para>
+    /// Arguments are consumed from left to right in the order the keywords appear. After <c>OrderBy</c>, each
+    /// property may be followed by <c>Asc</c> or <c>Desc</c> (default <c>Asc</c>), for example
+    /// <c>FindByLastNameOrderByFirstNameDescAgeAsc</c>.
+    /// </para>
+    /// </remarks>
     public static class QueryMethodParser
     {
         private const string PrefixPattern = @"^\w+?By(?=[A-Z])";
@@ -67,6 +97,10 @@ namespace DataQI.Commons.Repository.Query
                 { "StartsWith", PredicateKind.StartingWith },
             };
 
+        /// <summary>Parses the name of a query method.</summary>
+        /// <param name="method">The query method whose name is parsed; must not be <c>null</c>.</param>
+        /// <returns>A reusable plan that builds the criterion and orders for any argument list.</returns>
+        /// <exception cref="System.ArgumentException"><paramref name="method"/> is <c>null</c>, or its name has no predicate after the <c>By</c> prefix.</exception>
         public static QueryPlan Parse(MethodInfo method)
         {
             Assert.NotNull(method, "Query Method must not be null");
