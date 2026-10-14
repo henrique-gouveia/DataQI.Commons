@@ -14,6 +14,12 @@ Data Query Interface Commons is written in C# and built around essential feature
 * Dynamic query generation from query method names
 * Simple Criteria API
 
+## Framework Compatibility
+
+The library targets only `netstandard2.0`.
+
+Tests target only `net10.0`. Development requires the .NET 10 SDK.
+
 ## Getting Started
 
 ### Installing
