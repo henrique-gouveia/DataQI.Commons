@@ -24,6 +24,18 @@ This library can add to the project by the way:
 
 See [Nuget](https://www.nuget.org/packages/DataQI.Commons) for other options.
 
+### Query-method completion
+
+Starting with `DataQI.Commons 4.0.0-preview.2`, the package brings `DataQI.Analyzers 0.1.0-preview.2` as a transitive dependency. A reference to Commons alone enables `FindBy...` completion in repository interfaces:
+
+```xml
+<ItemGroup>
+  <PackageReference Include="DataQI.Commons" Version="4.0.0-preview.2" />
+</ItemGroup>
+```
+
+The completion provider requires an IDE host with Roslyn 4.8 or newer. In Rider 2025.2+, enable **Always Prefer Roslyn Completions** under `Editor → Inspection Settings → Roslyn`. See [DataQI.Analyzers](https://github.com/henrique-gouveia/DataQI.Analyzers) for the completion flow and supported property names.
+
 ## Criteria AST (4.0 and later)
 
 Query criteria are now an AST walked through `ICriterionVisitor<T>`, replacing the `WhereOperator`-driven class hierarchy. Where the types live:
