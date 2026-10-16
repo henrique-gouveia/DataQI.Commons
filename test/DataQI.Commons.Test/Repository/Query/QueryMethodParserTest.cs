@@ -18,60 +18,60 @@ namespace DataQI.Commons.Test.Repository.Query
     {
         private static readonly DateTime Start = new DateTime(2019, 5, 1);
         private static readonly DateTime End = new DateTime(2021, 5, 1);
-        private static readonly object[] Cities = ["Fortaleza", "Barcelona", "Manchester"];
+        private static readonly object[] Cities = { "Fortaleza", "Barcelona", "Manchester" };
 
         private static ICriterion Single(ICriterion criterion)
             => Restrictions.Disjunction().Add(Restrictions.Conjunction().Add(criterion));
 
         public static IEnumerable<object[]> CriteriaCases()
         {
-            yield return Row("FindByBirthDateBetween", [Start, End],
+            yield return Row("FindByBirthDateBetween", new object[] { Start, End },
                 Single(Restrictions.Between("BirthDate", Start, End)));
-            yield return Row("FindByHireDateNotBetween", [Start, End],
+            yield return Row("FindByHireDateNotBetween", new object[] { Start, End },
                 Single(Restrictions.Not(Restrictions.Between("HireDate", Start, End))));
-            yield return Row("FindByTitleContaining", ["Adams"],
+            yield return Row("FindByTitleContaining", new object[] { "Adams" },
                 Single(Restrictions.Containing("Title", "Adams")));
-            yield return Row("FindByTitleNotContaining", ["Manager"],
+            yield return Row("FindByTitleNotContaining", new object[] { "Manager" },
                 Single(Restrictions.Not(Restrictions.Containing("Title", "Manager"))));
-            yield return Row("FindByTitleEndingWith", ["IT"],
+            yield return Row("FindByTitleEndingWith", new object[] { "IT" },
                 Single(Restrictions.EndingWith("Title", "IT")));
-            yield return Row("FindByTitleNotEndingWith", ["Support Agent"],
+            yield return Row("FindByTitleNotEndingWith", new object[] { "Support Agent" },
                 Single(Restrictions.Not(Restrictions.EndingWith("Title", "Support Agent"))));
-            yield return Row("FindByTitleLike", ["General"],
+            yield return Row("FindByTitleLike", new object[] { "General" },
                 Single(Restrictions.Like("Title", "General")));
-            yield return Row("FindByTitleNotLike", ["Sales"],
+            yield return Row("FindByTitleNotLike", new object[] { "Sales" },
                 Single(Restrictions.Not(Restrictions.Like("Title", "Sales"))));
-            yield return Row("FindByFirstName", ["Adams"],
+            yield return Row("FindByFirstName", new object[] { "Adams" },
                 Single(Restrictions.Equal("FirstName", "Adams")));
             // The legacy test expected the property "ByLastName"; it was never compared. The real property is "LastName".
-            yield return Row("FindByLastNameNot", ["Andrew"],
+            yield return Row("FindByLastNameNot", new object[] { "Andrew" },
                 Single(Restrictions.Not(Restrictions.Equal("LastName", "Andrew"))));
-            yield return Row("FindByAgeGreaterThan", [30],
+            yield return Row("FindByAgeGreaterThan", new object[] { 30 },
                 Single(Restrictions.GreaterThan("Age", 30)));
-            yield return Row("FindByAgeGreaterThanEqual", [30],
+            yield return Row("FindByAgeGreaterThanEqual", new object[] { 30 },
                 Single(Restrictions.GreaterThanEqual("Age", 30)));
-            yield return Row("FindByAgeLessThan", [30],
+            yield return Row("FindByAgeLessThan", new object[] { 30 },
                 Single(Restrictions.LessThan("Age", 30)));
-            yield return Row("FindByAgeLessThanEqual", [30],
+            yield return Row("FindByAgeLessThanEqual", new object[] { 30 },
                 Single(Restrictions.LessThanEqual("Age", 30)));
-            yield return Row("FindByCityIn", [Cities],
+            yield return Row("FindByCityIn", new object[] { Cities },
                 Single(Restrictions.In("City", Cities)));
-            yield return Row("FindByCountryNotIn", [Cities],
+            yield return Row("FindByCountryNotIn", new object[] { Cities },
                 Single(Restrictions.Not(Restrictions.In("Country", Cities))));
-            yield return Row("FindByEmailNull", [],
+            yield return Row("FindByEmailNull", new object[0],
                 Single(Restrictions.Null("Email")));
-            yield return Row("FindByPhoneNotNull", [],
+            yield return Row("FindByPhoneNotNull", new object[0],
                 Single(Restrictions.Not(Restrictions.Null("Phone"))));
-            yield return Row("FindByFirstNameOrLastName", ["First", "Last"],
+            yield return Row("FindByFirstNameOrLastName", new object[] { "First", "Last" },
                 Restrictions.Disjunction()
                     .Add(Restrictions.Conjunction().Add(Restrictions.Equal("FirstName", "First")))
                     .Add(Restrictions.Conjunction().Add(Restrictions.Equal("LastName", "Last"))));
-            yield return Row("FindByFirstNameAndLastName", ["First", "Last"],
+            yield return Row("FindByFirstNameAndLastName", new object[] { "First", "Last" },
                 Restrictions.Disjunction().Add(Restrictions.Conjunction()
                     .Add(Restrictions.Equal("FirstName", "First"))
                     .Add(Restrictions.Equal("LastName", "Last"))));
             yield return Row("FindByStateAndHireDateGreaterThanEqualOrCityInAndEmailEndingWith",
-                ["CE", Start, Cities, "email.com"],
+                new object[] { "CE", Start, Cities, "email.com" },
                 Restrictions.Disjunction()
                     .Add(Restrictions.Conjunction()
                         .Add(Restrictions.Equal("State", "CE"))
@@ -80,18 +80,18 @@ namespace DataQI.Commons.Test.Repository.Query
                         .Add(Restrictions.In("City", Cities))
                         .Add(Restrictions.EndingWith("Email", "email.com"))));
             // Property names that merely contain "Or"/"And" are not split (legacy threw here).
-            yield return Row("FindByOrderDate", [Start],
+            yield return Row("FindByOrderDate", new object[] { Start },
                 Single(Restrictions.Equal("OrderDate", Start)));
-            yield return Row("FindByAndroidVersion", ["13"],
+            yield return Row("FindByAndroidVersion", new object[] { "13" },
                 Single(Restrictions.Equal("AndroidVersion", "13")));
-            yield return Row("FindByNameAndOrderDate", ["Ad", Start],
+            yield return Row("FindByNameAndOrderDate", new object[] { "Ad", Start },
                 Restrictions.Disjunction().Add(Restrictions.Conjunction()
                     .Add(Restrictions.Equal("Name", "Ad"))
                     .Add(Restrictions.Equal("OrderDate", Start))));
         }
 
         private static object[] Row(string methodName, object[] values, ICriterion expected)
-            => [methodName, values, expected];
+            => new object[] { methodName, values, expected };
 
         [Theory]
         [MemberData(nameof(CriteriaCases))]
@@ -105,7 +105,7 @@ namespace DataQI.Commons.Test.Repository.Query
         [Fact]
         public void TestStripsTheAsyncSuffix()
         {
-            var actual = QueryMethodParser.Parse("FindByFirstNameAsync").BuildPredicate(["Adams"]);
+            var actual = QueryMethodParser.Parse("FindByFirstNameAsync").BuildPredicate(new object[] { "Adams" });
 
             Single(Restrictions.Equal("FirstName", "Adams")).ToExpectedObject().ShouldEqual(actual);
         }
@@ -113,7 +113,7 @@ namespace DataQI.Commons.Test.Repository.Query
         [Fact]
         public void TestDetectsTheFindByPrefix()
         {
-            var actual = QueryMethodParser.Parse("FindByFirstName").BuildPredicate(["Adams"]);
+            var actual = QueryMethodParser.Parse("FindByFirstName").BuildPredicate(new object[] { "Adams" });
 
             Single(Restrictions.Equal("FirstName", "Adams")).ToExpectedObject().ShouldEqual(actual);
         }
@@ -129,7 +129,7 @@ namespace DataQI.Commons.Test.Repository.Query
         [InlineData("GetBypassByFirstName")]
         public void TestDetectsPreviouslyAcceptedQueryPrefixes(string methodName)
         {
-            var actual = QueryMethodParser.Parse(methodName).BuildPredicate(["Adams"]);
+            var actual = QueryMethodParser.Parse(methodName).BuildPredicate(new object[] { "Adams" });
 
             Single(Restrictions.Equal("FirstName", "Adams")).ToExpectedObject().ShouldEqual(actual);
         }
@@ -138,7 +138,7 @@ namespace DataQI.Commons.Test.Repository.Query
         public void TestParsesPreviouslyAcceptedReadmeMethodName()
         {
             var actual = QueryMethodParser.Parse("FindFindByFirstNameAndLastNameOrBirthDateGreaterThan")
-                .BuildPredicate(["First", "Last", Start]);
+                .BuildPredicate(new object[] { "First", "Last", Start });
             var expected = Restrictions.Disjunction()
                 .Add(Restrictions.Conjunction()
                     .Add(Restrictions.Equal("FirstName", "First"))
@@ -163,7 +163,7 @@ namespace DataQI.Commons.Test.Repository.Query
         public void TestPreservesByInsidePropertyName(string methodName, string propertyName)
         {
             var plan = QueryMethodParser.Parse(methodName);
-            var actual = plan.BuildPredicate(["Adams"]);
+            var actual = plan.BuildPredicate(new object[] { "Adams" });
 
             Single(Restrictions.Equal(propertyName, "Adams")).ToExpectedObject().ShouldEqual(actual);
         }
@@ -175,7 +175,7 @@ namespace DataQI.Commons.Test.Repository.Query
             var plan = QueryMethodParser.Parse(methodName);
 
             var exception = Assert.Throws<ArgumentException>(() =>
-                plan.BuildPredicate([value]));
+                plan.BuildPredicate(new object[] { value }));
 
             Assert.Equal("values", exception.ParamName);
             Assert.StartsWith("Value for text criterion on property 'Title' must be a string.", exception.Message);
@@ -187,7 +187,7 @@ namespace DataQI.Commons.Test.Repository.Query
             {
                 "FindByTitleContaining", "FindByTitleEndingWith", "FindByTitleLike", "FindByTitleStartingWith"
             };
-            object[] values = [123, true, 1.5m, new[] { "Adams" }];
+            var values = new object[] { 123, true, 1.5m, new[] { "Adams" } };
 
             foreach (var method in methods)
                 foreach (var value in values)
@@ -205,7 +205,7 @@ namespace DataQI.Commons.Test.Repository.Query
         [InlineData("FindByTitleStartingWith", TextMatchKind.StartingWith, null)]
         public void TestTextMatchPreservesStringAndNullValues(string methodName, TextMatchKind kind, string value)
         {
-            var actual = QueryMethodParser.Parse(methodName).BuildPredicate([value]);
+            var actual = QueryMethodParser.Parse(methodName).BuildPredicate(new object[] { value });
 
             Single(new TextMatch("Title", kind, value)).ToExpectedObject().ShouldEqual(actual);
         }
@@ -218,7 +218,7 @@ namespace DataQI.Commons.Test.Repository.Query
         public void TestTextMatchConsumesOnlyItsOwnValue(string keyword, TextMatchKind kind)
         {
             var actual = QueryMethodParser.Parse($"FindByFirstNameAndTitle{keyword}AndAge")
-                .BuildPredicate(["Adams", "Manager", 30]);
+                .BuildPredicate(new object[] { "Adams", "Manager", 30 });
             var expected = Restrictions.Disjunction().Add(Restrictions.Conjunction()
                 .Add(Restrictions.Equal("FirstName", "Adams"))
                 .Add(new TextMatch("Title", kind, "Manager"))
@@ -236,7 +236,7 @@ namespace DataQI.Commons.Test.Repository.Query
         {
             var plan = QueryMethodParser.Parse(methodName);
 
-            var exception = Assert.Throws<ArgumentException>(() => plan.BuildPredicate([]));
+            var exception = Assert.Throws<ArgumentException>(() => plan.BuildPredicate(new object[0]));
 
             Assert.Equal("The query method needs more values than were supplied", exception.Message);
         }
@@ -244,7 +244,7 @@ namespace DataQI.Commons.Test.Repository.Query
         [Fact]
         public void TestParsesANameWithoutAPrefixAsASimpleProperty()
         {
-            var actual = QueryMethodParser.Parse("FirstName").BuildPredicate(["Adams"]);
+            var actual = QueryMethodParser.Parse("FirstName").BuildPredicate(new object[] { "Adams" });
 
             Single(Restrictions.Equal("FirstName", "Adams")).ToExpectedObject().ShouldEqual(actual);
         }
@@ -276,7 +276,7 @@ namespace DataQI.Commons.Test.Repository.Query
         {
             MethodInfo method = new Mock<IFakeRepository>().Object.GetType().GetMethod("FindByFirstName");
 
-            var actual = QueryMethodParser.Parse(method).BuildPredicate(["Adams"]);
+            var actual = QueryMethodParser.Parse(method).BuildPredicate(new object[] { "Adams" });
 
             Single(Restrictions.Equal("FirstName", "Adams")).ToExpectedObject().ShouldEqual(actual);
         }
@@ -286,7 +286,7 @@ namespace DataQI.Commons.Test.Repository.Query
         {
             var plan = QueryMethodParser.Parse("FindByBirthDateBetween");
 
-            var exception = Assert.Throws<ArgumentException>(() => plan.BuildPredicate([Start]));
+            var exception = Assert.Throws<ArgumentException>(() => plan.BuildPredicate(new object[] { Start }));
 
             Assert.Contains("more values", exception.GetBaseException().Message);
         }

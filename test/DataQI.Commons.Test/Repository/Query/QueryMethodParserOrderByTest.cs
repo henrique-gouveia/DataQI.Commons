@@ -38,7 +38,7 @@ namespace DataQI.Commons.Test.Repository.Query
         {
             var plan = QueryMethodParser.Parse("FindByActiveOrderByNameDesc");
 
-            var predicate = plan.BuildPredicate([true]);
+            var predicate = plan.BuildPredicate(new object[] { true });
 
             var or = Assert.IsType<Junction>(predicate);
             var and = Assert.IsType<Junction>(Assert.Single(or.Members));

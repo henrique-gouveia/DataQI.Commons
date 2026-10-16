@@ -57,7 +57,7 @@ namespace DataQI.Commons.Test.Query.Support
         [Fact]
         public void TestInReturnsInNode()
         {
-            object[] cities = ["Fortaleza", "Barcelona"];
+            var cities = new object[] { "Fortaleza", "Barcelona" };
 
             var inCriterion = Assert.IsType<In>(Restrictions.In("City", cities));
 

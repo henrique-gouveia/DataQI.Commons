@@ -17,7 +17,7 @@ namespace DataQI.Commons.Test.Repository.Query
         {
             var plan = QueryMethodParser.Parse("FindByFirstName");
 
-            var exception = Assert.Throws<ArgumentException>(() => plan.ApplyTo(null, ["Adams"]));
+            var exception = Assert.Throws<ArgumentException>(() => plan.ApplyTo(null, new object[] { "Adams" }));
 
             Assert.Equal("Criteria must be not null", exception.GetBaseException().Message);
         }
@@ -28,7 +28,7 @@ namespace DataQI.Commons.Test.Repository.Query
             var plan = QueryMethodParser.Parse("FindByFirstNameOrderByLastNameAscBirthDateDesc");
             var criteria = new Criteria();
 
-            plan.ApplyTo(criteria, ["Adams"]);
+            plan.ApplyTo(criteria, new object[] { "Adams" });
 
             var predicate = Assert.Single(criteria.Criterions);
             Assert.IsType<Junction>(predicate);

@@ -11,7 +11,7 @@ namespace DataQI.Commons.Test.Query.Ast
         [Fact]
         public void TestPropertiesReturnConstructorValues()
         {
-            object[] values = ["Fortaleza", "Barcelona"];
+            var values = new object[] { "Fortaleza", "Barcelona" };
             var inCriterion = new In("City", values);
 
             Assert.Equal("City", inCriterion.PropertyName);
@@ -21,7 +21,7 @@ namespace DataQI.Commons.Test.Query.Ast
         [Fact]
         public void TestAcceptCallsVisitorWithSelf()
         {
-            var inCriterion = new In("City", ["Fortaleza"]);
+            var inCriterion = new In("City", new object[] { "Fortaleza" });
             var visitor = new Mock<ICriterionVisitor<string>>();
             visitor.Setup(v => v.Visit(inCriterion)).Returns("visited");
 

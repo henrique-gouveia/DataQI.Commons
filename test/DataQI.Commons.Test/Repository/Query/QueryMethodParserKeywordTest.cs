@@ -97,7 +97,7 @@ namespace DataQI.Commons.Test.Repository.Query
         public void TestUnmappedOrLowercaseKeywordsRemainSimpleProperties(string propertyName)
         {
             var actual = QueryMethodParser.Parse($"FindBy{propertyName}")
-                .BuildPredicate(["v"]);
+                .BuildPredicate(new object[] { "v" });
 
             Restrictions.Disjunction()
                 .Add(Restrictions.Conjunction().Add(Restrictions.Equal(propertyName, "v")))
@@ -108,10 +108,10 @@ namespace DataQI.Commons.Test.Repository.Query
         {
             switch (kind)
             {
-                case "Between": return [1, 2];
-                case "In": return [new object[] { "a", "b" }];
-                case "Null": return [];
-                default: return ["v"];
+                case "Between": return new object[] { 1, 2 };
+                case "In": return new object[] { new object[] { "a", "b" } };
+                case "Null": return new object[0];
+                default: return new object[] { "v" };
             }
         }
 

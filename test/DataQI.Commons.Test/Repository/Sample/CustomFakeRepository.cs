@@ -7,7 +7,7 @@ namespace DataQI.Commons.Test.Repository.Sample
     {
         private readonly IEnumerable<FakeEntity> fakeEntities;
 
-        public CustomFakeRepository() : this([])
+        public CustomFakeRepository() : this(Enumerable.Empty<FakeEntity>())
         { }
 
         public CustomFakeRepository(IEnumerable<FakeEntity> fakeEntities)

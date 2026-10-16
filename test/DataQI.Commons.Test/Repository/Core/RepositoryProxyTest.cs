@@ -419,7 +419,7 @@ namespace DataQI.Commons.Test.Repository.Core
         public void TestInvokeCustomizedFindMethodCorrectly()
         {
             var entityExpected = CreateTestFakeEntity();
-            List<FakeEntity> entitiesExpected = [entityExpected];
+            var entitiesExpected = new List<FakeEntity>() { entityExpected };
 
             defaultImplementationMock
                 .Setup(r => r.Find(It.IsAny<Func<ICriteria, ICriteria>>()))
@@ -434,7 +434,7 @@ namespace DataQI.Commons.Test.Repository.Core
         public void TestInvokeCustomizedAsyncFindMethodCorrectly()
         {
             var entityExpected = CreateTestFakeEntity();
-            List<FakeEntity> entitiesExpected = [entityExpected];
+            var entitiesExpected = new List<FakeEntity>() { entityExpected };
 
             defaultImplementationMock
                 .Setup(r => r.FindAsync(It.IsAny<Func<ICriteria, ICriteria>>(), It.IsAny<CancellationToken>()))
@@ -553,7 +553,7 @@ namespace DataQI.Commons.Test.Repository.Core
         public void TestInvokeCustomizedAsyncFindMethodForwardsCancellationToken()
         {
             var entityExpected = CreateTestFakeEntity();
-            List<FakeEntity> entitiesExpected = [entityExpected];
+            var entitiesExpected = new List<FakeEntity>() { entityExpected };
             var cancellationTokenSource = new CancellationTokenSource();
 
             defaultImplementationMock
@@ -584,14 +584,14 @@ namespace DataQI.Commons.Test.Repository.Core
 
         private IList<FakeEntity> CreateTestFakeEntities()
         {
-            return
-            [
+            return new List<FakeEntity>()
+            {
                 CreateTestFakeEntity(),
                 CreateTestFakeEntity(),
                 CreateTestFakeEntity(),
                 CreateTestFakeEntity(),
                 CreateTestFakeEntity()
-            ];
+            };
         }
 
         private FakeEntity CreateTestFakeEntity(int? fakeEntityId = null, string fakeEntityName = null)
