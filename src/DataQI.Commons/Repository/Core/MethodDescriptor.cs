@@ -79,7 +79,7 @@ namespace DataQI.Commons.Repository.Core
                 out var exactDescriptor))
                 return exactDescriptor;
 
-            var isPaged = TryGetPagedShape(method.ReturnType, entityType, out var isAsync, out var isPage);
+            var isPaged = TryGetPagedShape(method, entityType, out var isAsync, out var isPage);
             var resolved = isPaged ? (isPage
                 ? (isAsync ? findMethods.FindPageAsync : findMethods.FindPage)
                 : (isAsync ? findMethods.FindSliceAsync : findMethods.FindSlice)) : null;
@@ -148,21 +148,23 @@ namespace DataQI.Commons.Repository.Core
                 throw new InvalidOperationException(Fail("the repository does not implement IPagedRepository"));
         }
 
-        private static bool TryGetPagedShape(Type returnType, Type entityType, out bool isAsync, out bool isPage)
+        private static bool TryGetPagedShape(MethodInfo method, Type entityType, out bool isAsync, out bool isPage)
         {
-            var type = returnType;
+            var type = method.ReturnType;
             isAsync = type.TryGetAsyncResultType(out var inner);
             if (isAsync)
                 type = inner;
             isPage = false;
-            if (!type.IsGenericType || type.GetGenericArguments()[0] != entityType)
+            if (!type.IsGenericType)
                 return false;
             var definition = type.GetGenericTypeDefinition();
-            if (definition == typeof(ISlice<>))
-                return true;
-            if (definition != typeof(IPage<>))
+            if (definition != typeof(ISlice<>) && definition != typeof(IPage<>))
                 return false;
-            isPage = true;
+            var itemType = type.GetGenericArguments()[0];
+            if (itemType != entityType)
+                throw new InvalidOperationException(
+                    $"{method.DeclaringType?.Name}.{method.Name}: paging result T must be the repository entity {entityType.FullName}, but was {itemType.FullName}");
+            isPage = definition == typeof(IPage<>);
             return true;
         }
 

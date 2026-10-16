@@ -30,8 +30,7 @@ namespace DataQI.Commons.Test.Repository.Core
         [InlineData(typeof(IPagedWithoutRequestRepository), "FindByName", "IPageRequest")]
         [InlineData(typeof(IRequestWithPlainReturnRepository), "FindByName", "IPageRequest")]
         [InlineData(typeof(IDuplicatedRequestRepository), "FindByName", "one IPageRequest")]
-        [InlineData(typeof(IWrongEntityPagedRepository), "FindByName", "IPageRequest")]
-        [InlineData(typeof(INonTrailingTokenPagedRepository), "FindByNameAsync", "CancellationToken")]
+                [InlineData(typeof(INonTrailingTokenPagedRepository), "FindByNameAsync", "CancellationToken")]
         [InlineData(typeof(IDuplicatedTokenPagedRepository), "FindByNameAsync", "CancellationToken")]
         [InlineData(typeof(IRequestNotLastRepository), "FindByName", "last")]
         public void TestRejectsInvalidSignatures(System.Type repository, string name, string messagePart)
@@ -41,6 +40,21 @@ namespace DataQI.Commons.Test.Repository.Core
             Assert.Contains(repository.Name, exception.Message);
             Assert.Contains(name, exception.Message);
             Assert.Contains(messagePart, exception.Message);
+        }
+
+        [Theory]
+        [InlineData(typeof(IWrongEntityPagedRepository))]
+        [InlineData(typeof(IWrongEntityPageRepository))]
+        [InlineData(typeof(IWrongEntityAsyncSliceRepository))]
+        [InlineData(typeof(IWrongEntityAsyncPageRepository))]
+        public void TestPagedResultMustUseTheRepositoryEntity(Type repository)
+        {
+            var exception = Assert.Throws<InvalidOperationException>(() => Describe(repository, "FindByName", AllPaged()));
+
+            Assert.Contains(repository.Name, exception.Message);
+            Assert.Contains("repository entity", exception.Message);
+            Assert.Contains(typeof(FakeEntity).FullName, exception.Message);
+            Assert.Contains(typeof(string).FullName, exception.Message);
         }
 
         [Fact]

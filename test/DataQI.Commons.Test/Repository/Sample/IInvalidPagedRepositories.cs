@@ -45,4 +45,18 @@ namespace DataQI.Commons.Test.Repository.Sample
     {
         Task<ISlice<FakeEntity>> FindByNameAsync(CancellationToken first, string name, IPageRequest page, CancellationToken last);
     }
+    public interface IWrongEntityPageRepository : IPagedRepository<FakeEntity, int>
+    {
+        IPage<string> FindByName(string name, IPageRequest page);
+    }
+
+    public interface IWrongEntityAsyncSliceRepository : IPagedRepository<FakeEntity, int>
+    {
+        Task<ISlice<string>> FindByName(string name, IPageRequest page);
+    }
+
+    public interface IWrongEntityAsyncPageRepository : IPagedRepository<FakeEntity, int>
+    {
+        Task<IPage<string>> FindByName(string name, IPageRequest page);
+    }
 }
