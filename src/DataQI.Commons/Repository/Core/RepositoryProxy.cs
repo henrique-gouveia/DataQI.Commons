@@ -68,7 +68,7 @@ namespace DataQI.Commons.Repository.Core
         private void RegisterMethodDescriptors()
         {
             var exactMatchMethods = ResolveExactMatchMethods();
-            var findMethods = new RepositoryFindMethods(
+            var findMethods = new FindMethods(
                 ResolveCriteriaMethod("Find"),
                 ResolveCriteriaMethod("FindAsync", typeof(CancellationToken)),
                 ResolveCriteriaMethod("FindOne"),

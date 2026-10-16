@@ -5,6 +5,7 @@ using System.Linq;
 
 using DataQI.Commons.Query;
 using DataQI.Commons.Query.Support;
+using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Paging.Support
 {
@@ -34,16 +35,12 @@ namespace DataQI.Commons.Repository.Paging.Support
         /// <exception cref="ArgumentException">An argument is out of range.</exception>
         public static PageRequest Of(int pageIndex, int pageSize, params IOrderCriterion[] orders)
         {
-            if (pageIndex < 0)
-                throw new ArgumentException("Page index must not be negative", nameof(pageIndex));
-            if (pageSize < 1)
-                throw new ArgumentException("Page size must be at least 1", nameof(pageSize));
-            if (pageSize == int.MaxValue)
-                throw new ArgumentException("Page size must be less than int.MaxValue", nameof(pageSize));
+            Assert.True(pageIndex >= 0, "Page index must not be negative");
+            Assert.True(pageSize >= 1, "Page size must be at least 1");
+            Assert.True(pageSize < int.MaxValue, "Page size must be less than int.MaxValue");
 
             var source = orders ?? Array.Empty<IOrderCriterion>();
-            if (source.Any(o => o == null))
-                throw new ArgumentException("Orders must not contain null", nameof(orders));
+            Assert.True(source.All(o => o != null), "Orders must not contain null");
 
             var copy = source
                 .Select(o => (IOrderCriterion)new OrderCriterion(o.PropertyName, o.Direction))

@@ -3,7 +3,7 @@ using System.Reflection;
 namespace DataQI.Commons.Repository.Core
 {
     /// <summary>Groups the <c>Find*</c> methods of the default repository that query methods are dispatched to.</summary>
-    public sealed class RepositoryFindMethods
+    public sealed class FindMethods
     {
         /// <summary>Creates a group of repository find methods; any of them may be <c>null</c> when the repository does not implement it.</summary>
         /// <param name="find">The <c>Find(Func&lt;ICriteria, ICriteria&gt;)</c> method.</param>
@@ -14,7 +14,7 @@ namespace DataQI.Commons.Repository.Core
         /// <param name="findSliceAsync">The <c>FindSliceAsync</c> method.</param>
         /// <param name="findPage">The <c>FindPage</c> method.</param>
         /// <param name="findPageAsync">The <c>FindPageAsync</c> method.</param>
-        public RepositoryFindMethods(
+        public FindMethods(
             MethodInfo find,
             MethodInfo findAsync,
             MethodInfo findOne,
@@ -35,7 +35,7 @@ namespace DataQI.Commons.Repository.Core
         }
 
         /// <summary>Gets a group with no methods.</summary>
-        public static RepositoryFindMethods None { get; } = new RepositoryFindMethods(null, null, null, null);
+        public static FindMethods None { get; } = new FindMethods(null, null, null, null);
         /// <summary>Gets the synchronous collection method.</summary>
         public MethodInfo Find { get; }
         /// <summary>Gets the asynchronous collection method.</summary>

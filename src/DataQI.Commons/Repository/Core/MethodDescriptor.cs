@@ -64,7 +64,7 @@ namespace DataQI.Commons.Repository.Core
             MethodInfo method,
             Type entityType,
             IDictionary<string, MethodInfo> exactMatchMethods,
-            RepositoryFindMethods findMethods)
+            FindMethods findMethods)
         {
             var uniqueName = method.UniqueName();
             var parameters = method.GetParameters();

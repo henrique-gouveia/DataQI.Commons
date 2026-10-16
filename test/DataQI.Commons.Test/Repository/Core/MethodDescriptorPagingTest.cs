@@ -21,10 +21,10 @@ namespace DataQI.Commons.Test.Repository.Core
                 m.Name == name && m.GetParameters().Length == parameterCount &&
                 m.ReturnType.ToString().Contains(returnContains));
 
-        private static RepositoryFindMethods AllPaged() => new RepositoryFindMethods(
+        private static FindMethods AllPaged() => new FindMethods(
             null, null, null, null, Repo("FindSlice"), Repo("FindSliceAsync"), Repo("FindPage"), Repo("FindPageAsync"));
 
-        private static MethodDescriptor Describe(MethodInfo method, RepositoryFindMethods paged = null)
+        private static MethodDescriptor Describe(MethodInfo method, FindMethods paged = null)
             => MethodDescriptor.Create(method, typeof(FakeEntity), new Dictionary<string, MethodInfo>(),
                 paged ?? AllPaged());
 
@@ -89,7 +89,7 @@ namespace DataQI.Commons.Test.Repository.Core
                 .First(m => m.Name == "Find" && m.GetParameters().Length == 1);
 
             var descriptor = MethodDescriptor.Create(findByFirstName, typeof(FakeEntity),
-                new Dictionary<string, MethodInfo>(), new RepositoryFindMethods(find, null, null, null));
+                new Dictionary<string, MethodInfo>(), new FindMethods(find, null, null, null));
 
             Assert.Equal(DispatchKind.SyncCollection, descriptor.Kind);
             Assert.Equal(-1, descriptor.PageRequestIndex);
