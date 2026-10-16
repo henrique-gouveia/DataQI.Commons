@@ -3,8 +3,9 @@ using System;
 using Xunit;
 
 using DataQI.Commons.Repository.Paging;
+using DataQI.Commons.Repository.Paging.Support;
 
-namespace DataQI.Commons.Test.Repository.Paging
+namespace DataQI.Commons.Test.Repository.Paging.Support
 {
     public class SliceTest
     {
@@ -23,7 +24,7 @@ namespace DataQI.Commons.Test.Repository.Paging
         [Fact]
         public void TestFirstPageHasNoPrevious()
         {
-            var slice = new Slice<string>(new string[0], 0, 10, false);
+            var slice = new Slice<string>([], 0, 10, false);
 
             Assert.False(slice.HasPrevious);
         }
@@ -46,7 +47,7 @@ namespace DataQI.Commons.Test.Repository.Paging
         [InlineData(0, 0)]
         public void TestRejectsInvalidIndexOrSize(int pageIndex, int pageSize)
         {
-            Assert.Throws<ArgumentException>(() => new Slice<int>(new int[0], pageIndex, pageSize, false));
+            Assert.Throws<ArgumentException>(() => new Slice<int>([], pageIndex, pageSize, false));
         }
 
         [Fact]

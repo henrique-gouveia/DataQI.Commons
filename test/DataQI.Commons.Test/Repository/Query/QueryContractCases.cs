@@ -28,6 +28,6 @@ namespace DataQI.Commons.Test.Repository.Query
         }
 
         private static object[] Case(string methodName, string description, params object[] arguments)
-            => new object[] { new QueryContractCase(methodName, description, arguments) };
+            => [new QueryContractCase(methodName, description, arguments)];
     }
 }

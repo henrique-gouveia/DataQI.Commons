@@ -6,7 +6,7 @@ using System.Linq;
 using DataQI.Commons.Query;
 using DataQI.Commons.Query.Support;
 
-namespace DataQI.Commons.Repository.Paging
+namespace DataQI.Commons.Repository.Paging.Support
 {
     /// <summary>Immutable <see cref="IPageRequest"/>; it keeps immutable copies of the orderings it receives.</summary>
     public sealed class PageRequest : IPageRequest
@@ -41,7 +41,7 @@ namespace DataQI.Commons.Repository.Paging
             if (pageSize == int.MaxValue)
                 throw new ArgumentException("Page size must be less than int.MaxValue", nameof(pageSize));
 
-            var source = orders ?? new IOrderCriterion[0];
+            var source = orders ?? Array.Empty<IOrderCriterion>();
             if (source.Any(o => o == null))
                 throw new ArgumentException("Orders must not contain null", nameof(orders));
 

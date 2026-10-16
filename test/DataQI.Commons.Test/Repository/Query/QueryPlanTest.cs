@@ -19,7 +19,7 @@ namespace DataQI.Commons.Test.Repository.Query
                 values => Restrictions.Equal("FirstName", values[0]),
                 new List<IOrderCriterion>());
 
-            var comparison = Assert.IsType<Comparison>(plan.BuildPredicate(new object[] { "Adams" }));
+            var comparison = Assert.IsType<Comparison>(plan.BuildPredicate(["Adams"]));
 
             Assert.Equal("Adams", comparison.Value);
         }
@@ -37,7 +37,7 @@ namespace DataQI.Commons.Test.Repository.Query
         [Fact]
         public void TestOrdersAreExposedInTheirGivenSequence()
         {
-            var orders = new List<IOrderCriterion> { Order.Asc("Name"), Order.Desc("Stock") };
+            List<IOrderCriterion> orders = [Order.Asc("Name"), Order.Desc("Stock")];
             var plan = new QueryPlan(values => Restrictions.Null("Email"), orders);
 
             Assert.Equal(2, plan.Orders.Count);

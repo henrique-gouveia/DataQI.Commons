@@ -6,8 +6,9 @@ using Xunit;
 using DataQI.Commons.Query;
 using DataQI.Commons.Query.Support;
 using DataQI.Commons.Repository.Paging;
+using DataQI.Commons.Repository.Paging.Support;
 
-namespace DataQI.Commons.Test.Repository.Paging
+namespace DataQI.Commons.Test.Repository.Paging.Support
 {
     public class PageRequestTest
     {
@@ -43,7 +44,7 @@ namespace DataQI.Commons.Test.Repository.Paging
         [Fact]
         public void TestOfRejectsNullOrder()
         {
-            Assert.Throws<ArgumentException>(() => PageRequest.Of(0, 10, new IOrderCriterion[] { null }));
+            Assert.Throws<ArgumentException>(() => PageRequest.Of(0, 10, [null]));
         }
 
         [Fact]

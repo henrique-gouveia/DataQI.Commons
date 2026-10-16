@@ -3,8 +3,9 @@ using System;
 using Xunit;
 
 using DataQI.Commons.Repository.Paging;
+using DataQI.Commons.Repository.Paging.Support;
 
-namespace DataQI.Commons.Test.Repository.Paging
+namespace DataQI.Commons.Test.Repository.Paging.Support
 {
     public class PageTest
     {

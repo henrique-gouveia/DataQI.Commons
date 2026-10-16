@@ -21,7 +21,7 @@ namespace DataQI.Commons.Test.Repository.Query
                             .Add(Restrictions.StartingWith("Name", "Ad"))
                             .Add(Restrictions.GreaterThan("Stock", 10m)))
                         .Add(Restrictions.Conjunction()
-                            .Add(Restrictions.In("Department", new object[] { "Sales", "Support" })));
+                            .Add(Restrictions.In("Department", ["Sales", "Support"])));
                 case "FindByNameNotLike":
                     return Single(Restrictions.Not(Restrictions.Like("Name", "%Ad%")));
                 case "FindByNameIsNotNull":
@@ -33,7 +33,7 @@ namespace DataQI.Commons.Test.Repository.Query
                 case "FindByCategoryInStock":
                     // A stricter parser could recognize operators only at the end of a member,
                     // interpreting "CategoryInStock" as a property with an equality comparison.
-                    return Single(Restrictions.In("Category", new object[] { "Tools" }));
+                    return Single(Restrictions.In("Category", ["Tools"]));
                 case "FindByNameEquals":
                     return Single(Restrictions.Equal("Name", "Adams"));
                 default:

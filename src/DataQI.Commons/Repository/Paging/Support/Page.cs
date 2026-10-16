@@ -5,7 +5,7 @@ using System.Linq;
 
 using DataQI.Commons.Util;
 
-namespace DataQI.Commons.Repository.Paging
+namespace DataQI.Commons.Repository.Paging.Support
 {
     /// <summary>Immutable <see cref="IPage{T}"/>; it keeps a read-only copy of the items it receives.</summary>
     /// <typeparam name="T">The item type.</typeparam>
