@@ -35,7 +35,7 @@ namespace DataQI.Commons.Test.Repository.Core
 
             Assert.Equal(DispatchKind.SyncSlice, descriptor.Kind);
             Assert.Equal("FindSlice", descriptor.ResolvedMethod.Name);
-            Assert.Equal(1, descriptor.PageRequestIndex);
+            Assert.True(descriptor.HasPageRequest);
             Assert.False(descriptor.HasCancellationToken);
         }
 
@@ -65,7 +65,7 @@ namespace DataQI.Commons.Test.Repository.Core
 
             Assert.Equal(DispatchKind.AsyncPage, descriptor.Kind);
             Assert.True(descriptor.HasCancellationToken);
-            Assert.Equal(1, descriptor.PageRequestIndex);
+            Assert.True(descriptor.HasPageRequest);
         }
 
         [Fact]
@@ -78,11 +78,11 @@ namespace DataQI.Commons.Test.Repository.Core
                 AllPaged());
 
             Assert.Equal(DispatchKind.ExactMatch, descriptor.Kind);
-            Assert.Equal(-1, descriptor.PageRequestIndex);
+            Assert.False(descriptor.HasPageRequest);
         }
 
         [Fact]
-        public void TestMethodsWithoutPagingKeepNegativePageRequestIndex()
+        public void TestMethodsWithoutPagingHaveNoPageRequest()
         {
             var findByFirstName = typeof(IFakeRepository).GetMethods().First(m => m.Name == "FindByFirstName");
             var find = typeof(IFakeRepository).GetAllInterfaceMethods()
@@ -92,7 +92,7 @@ namespace DataQI.Commons.Test.Repository.Core
                 new Dictionary<string, MethodInfo>(), new FindMethods(find, null, null, null));
 
             Assert.Equal(DispatchKind.SyncCollection, descriptor.Kind);
-            Assert.Equal(-1, descriptor.PageRequestIndex);
+            Assert.False(descriptor.HasPageRequest);
         }
     }
 }

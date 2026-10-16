@@ -147,7 +147,10 @@ namespace DataQI.Commons.Repository.Core
                 case DispatchKind.SyncSlice:
                 case DispatchKind.SyncPage:
                 {
-                    var (criteriaArgs, page) = SplitPageRequest(args, descriptor.PageRequestIndex);
+                    var withoutToken = descriptor.HasCancellationToken
+                        ? SplitCancellationToken(args).Item1
+                        : args;
+                    var (criteriaArgs, page) = SplitPageRequest(withoutToken);
                     var criteriaBuilder = CreateCriteriaBuilder(targetMethod, criteriaArgs);
                     return descriptor.ResolvedMethod.Invoke(defaultRepository, new object[] { criteriaBuilder, page });
                 }
@@ -158,7 +161,7 @@ namespace DataQI.Commons.Repository.Core
                     var (withoutToken, cancellationToken) = descriptor.HasCancellationToken
                         ? SplitCancellationToken(args)
                         : (args, default);
-                    var (criteriaArgs, page) = SplitPageRequest(withoutToken, descriptor.PageRequestIndex);
+                    var (criteriaArgs, page) = SplitPageRequest(withoutToken);
                     var criteriaBuilder = CreateCriteriaBuilder(targetMethod, criteriaArgs);
                     return descriptor.ResolvedMethod.Invoke(
                         defaultRepository, new object[] { criteriaBuilder, page, cancellationToken });
@@ -187,8 +190,8 @@ namespace DataQI.Commons.Repository.Core
             return CriteriaBuilder;
         }
 
-        private static (object[] CriteriaArgs, IPageRequest Page) SplitPageRequest(object[] args, int pageRequestIndex)
-            => (args.Take(pageRequestIndex).ToArray(), (IPageRequest)args[pageRequestIndex]);
+        private static (object[] CriteriaArgs, IPageRequest Page) SplitPageRequest(object[] args)
+            => (args.Take(args.Length - 1).ToArray(), (IPageRequest)args[args.Length - 1]);
 
         private static (object[] CriteriaArgs, CancellationToken CancellationToken) SplitCancellationToken(object[] args)
         {

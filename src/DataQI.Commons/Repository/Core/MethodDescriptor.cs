@@ -31,8 +31,8 @@ namespace DataQI.Commons.Repository.Core
         /// <summary>Gets a value indicating whether the last parameter of the method is a <see cref="System.Threading.CancellationToken"/>.</summary>
         public bool HasCancellationToken { get; }
 
-        /// <summary>Gets the page request parameter index, or -1 when absent.</summary>
-        public int PageRequestIndex { get; }
+        /// <summary>Gets a value indicating whether the method has an <see cref="IPageRequest"/> parameter, always followed at most by a <see cref="CancellationToken"/>.</summary>
+        public bool HasPageRequest { get; }
 
         private MethodDescriptor(
             MethodInfo method,
@@ -42,10 +42,10 @@ namespace DataQI.Commons.Repository.Core
             Type resultType,
             bool hasCancellationToken,
             Lazy<QueryPlan> plan,
-            int pageRequestIndex = -1)
+            bool hasPageRequest = false)
         {
             this.plan = plan;
-            PageRequestIndex = pageRequestIndex;
+            HasPageRequest = hasPageRequest;
             Method = method;
             UniqueName = uniqueName;
             Kind = kind;
@@ -90,9 +90,8 @@ namespace DataQI.Commons.Repository.Core
                     : isPage ? (isAsync ? DispatchKind.AsyncPage : DispatchKind.SyncPage)
                     : (isAsync ? DispatchKind.AsyncSlice : DispatchKind.SyncSlice);
                 var resultType = isAsync ? method.ReturnType.GetGenericArguments()[0] : method.ReturnType;
-                var pageIndex = Array.FindIndex(parameters, p => p.ParameterType == typeof(IPageRequest));
                 return new MethodDescriptor(method, uniqueName, kind, resolved, resultType, hasCancellationToken,
-                    resolved == null ? null : new Lazy<QueryPlan>(() => QueryMethodParser.Parse(method)), pageIndex);
+                    resolved == null ? null : new Lazy<QueryPlan>(() => QueryMethodParser.Parse(method)), true);
             }
 
             if (TryResolveForAsyncMethod(
