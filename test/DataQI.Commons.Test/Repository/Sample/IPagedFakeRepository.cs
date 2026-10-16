@@ -1,11 +1,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+using DataQI.Commons.Repository;
 using DataQI.Commons.Repository.Paging;
 
 namespace DataQI.Commons.Test.Repository.Sample
 {
-    public interface IPagedFakeRepository : IPagedRepository<FakeEntity, int>
+    public interface IPagedFakeRepository : ICrudRepository<FakeEntity, int>, IPagedRepository<FakeEntity, int>
     {
         ISlice<FakeEntity> FindByNameOrderByIdAsc(string name, IPageRequest page);
         ISlice<FakeEntity> FindByNameOrderByIdAsc(string name, IPageRequest page, CancellationToken cancellationToken);

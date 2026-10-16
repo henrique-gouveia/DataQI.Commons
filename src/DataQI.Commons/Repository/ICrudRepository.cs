@@ -15,7 +15,7 @@ namespace DataQI.Commons.Repository
     /// defined by each provider; read the remarks of the implementation you use. Disposing a repository
     /// disposes the data access object it wraps.
     /// </remarks>
-    public interface ICrudRepository<TEntity, in TId> : IDisposable where TEntity : class
+    public interface ICrudRepository<TEntity, in TId> : IRepository<TEntity, TId>, IDisposable where TEntity : class
     {
         /// <summary>Deletes the entity with the given identifier.</summary>
         /// <param name="entity">The identifier of the entity to delete.</param>

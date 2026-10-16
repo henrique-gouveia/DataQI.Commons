@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 using Xunit;
@@ -19,11 +20,20 @@ namespace DataQI.Commons.Test.Repository.Paging
         }
 
         [Fact]
-        public void TestExtendsTheCrudRepositoryWithoutChangingIt()
+        public void TestCrudAndPagingAreIndependentContractsWithTheSameMarker()
         {
-            Assert.True(typeof(ICrudRepository<FakeEntity, int>).IsAssignableFrom(
-                typeof(IPagedRepository<FakeEntity, int>)));
-            Assert.DoesNotContain(typeof(ICrudRepository<FakeEntity, int>).GetMethods(),
+            var crud = typeof(ICrudRepository<FakeEntity, int>);
+            var paged = typeof(IPagedRepository<FakeEntity, int>);
+            var marker = typeof(IRepository<FakeEntity, int>);
+
+            Assert.True(marker.IsAssignableFrom(crud));
+            Assert.True(marker.IsAssignableFrom(paged));
+            Assert.False(crud.IsAssignableFrom(paged));
+            Assert.False(paged.IsAssignableFrom(crud));
+            Assert.True(typeof(IDisposable).IsAssignableFrom(crud));
+            Assert.False(typeof(IDisposable).IsAssignableFrom(paged));
+            Assert.Empty(marker.GetMethods());
+            Assert.DoesNotContain(crud.GetMethods(),
                 m => m.Name.StartsWith("FindSlice") || m.Name.StartsWith("FindPage"));
         }
     }
