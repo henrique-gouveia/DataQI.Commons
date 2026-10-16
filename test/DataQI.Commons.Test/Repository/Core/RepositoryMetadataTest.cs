@@ -6,6 +6,7 @@ using Xunit;
 
 using DataQI.Commons.Repository;
 using DataQI.Commons.Repository.Core;
+using DataQI.Commons.Repository.Paging;
 using DataQI.Commons.Test.Repository.Sample;
 
 namespace DataQI.Commons.Test.Repository.Core
@@ -56,12 +57,45 @@ namespace DataQI.Commons.Test.Repository.Core
         [Fact]
         public void TestRejectInterfaceWithoutEntity()
         {
-            var exception = Assert.Throws<ArgumentException>(() => new RepositoryMetadata(typeof(IInvalidRepository)));
-            var exceptionMessage = exception.GetBaseException().Message;
+            var exception = Assert.Throws<InvalidOperationException>(() => new RepositoryMetadata(typeof(IInvalidRepository)));
 
-            Assert.IsType<ArgumentException>(exception.GetBaseException());
-            Assert.Equal("Could not resolve entity type", exceptionMessage);
+            Assert.Contains(nameof(IInvalidRepository), exception.Message);
+            Assert.Contains("Could not resolve entity/id type", exception.Message);
         }
+
+        [Theory]
+        [InlineData(typeof(ICrudOnlyRepository))]
+        [InlineData(typeof(IPagingOnlyRepository))]
+        [InlineData(typeof(ICombinedRepository))]
+        public void TestResolvesTheSharedMarkerForIndependentContracts(Type repository)
+        {
+            var metadata = new RepositoryMetadata(repository);
+
+            Assert.Equal(typeof(FakeEntity), metadata.EntityType);
+            Assert.Equal(typeof(int), metadata.IdType);
+        }
+
+        [Fact]
+        public void TestRejectsDifferentEntityIdPairs()
+        {
+            var exception = Assert.Throws<InvalidOperationException>(() => new RepositoryMetadata(typeof(IAmbiguousRepository)));
+
+            Assert.Contains(nameof(IAmbiguousRepository), exception.Message);
+            Assert.Contains("more than one entity/id pair", exception.Message);
+        }
+
+        [Fact]
+        public void TestRejectsAnUnrelatedInterfaceWithACrudLikeName()
+        {
+            Assert.Throws<InvalidOperationException>(() => new RepositoryMetadata(typeof(INameOnlyRepository)));
+        }
+
+        public interface ICrudOnlyRepository : ICrudRepository<FakeEntity, int> { }
+        public interface IPagingOnlyRepository : IPagedRepository<FakeEntity, int> { }
+        public interface ICombinedRepository : ICrudRepository<FakeEntity, int>, IPagedRepository<FakeEntity, int> { }
+        public interface IAmbiguousRepository : ICrudRepository<FakeEntity, int>, IPagedRepository<FakeEntity, long> { }
+        public interface ICrudRepositoryLike<TEntity, TId> { }
+        public interface INameOnlyRepository : ICrudRepositoryLike<FakeEntity, int> { }
 
         private void AssertExpectedObject(object expected, object actual)
         {
