@@ -73,7 +73,7 @@ Completion follows the grammar in [Query Methods](#query-methods) and was tested
 | Insert | `Insert(TEntity)` | `InsertAsync(TEntity, CancellationToken)` | No result |
 | Insert or update | `Save(TEntity)` | `SaveAsync(TEntity, CancellationToken)` | No result |
 
-`IPagedRepository<TEntity, TId>` extends `ICrudRepository<TEntity, TId>` with these four paging methods. Paging interfaces live in `DataQI.Commons.Repository.Paging`; the default implementations (`PageRequest`, `Slice<T>` and `Page<T>`) live in `DataQI.Commons.Repository.Paging.Support`.
+`ICrudRepository<TEntity, TId>` and `IPagedRepository<TEntity, TId>` are independent contracts extending the empty `IRepository<TEntity, TId>` marker. CRUD retains `IDisposable`; paging declares only its four query methods. Provider interfaces combine both contracts. A non-generic repository must identify exactly one entity/id pair through this marker. Paging interfaces live in `DataQI.Commons.Repository.Paging`; the default implementations (`PageRequest`, `Slice<T>` and `Page<T>`) live in `DataQI.Commons.Repository.Paging.Support`.
 
 Asynchronous operations return `Task` or `Task<TResult>` around the result shown. Collection queries return an empty sequence when nothing matches. Criteria-based single-entity queries throw `InvalidOperationException` when more than one row matches; exceptions from synchronous proxy calls can be wrapped in `TargetInvocationException`.
 
@@ -116,7 +116,7 @@ Synchronous calls pass through reflection; provider exceptions can be wrapped in
 Import `DataQI.Commons.Repository.Paging.Support` to use `PageRequest.Of(pageIndex, pageSize, orders)` with a zero-based `PageIndex`, a positive `PageSize` less than `int.MaxValue`, and optional `Order.Asc`/`Order.Desc` entries. `Offset` uses `long`; providers reject offsets above `int.MaxValue`. `PageRequest`, `Slice<T>` and `Page<T>` copy their input collections into read-only snapshots, including ordering values.
 
 ```csharp
-public interface IPersonRepository : IPagedRepository<Person, int>
+public interface IPersonRepository : ICrudRepository<Person, int>, IPagedRepository<Person, int>
 {
     ISlice<Person> FindByLastName(string lastName, IPageRequest page);
     Task<IPage<Person>> FindByLastNameAsync(
@@ -285,6 +285,12 @@ Text matching, null semantics, value conversion, supported property types, and p
 **v4.0.0 - current release line**
 
 - Add immutable paging results and requests, `IPagedRepository`, and validated slice/page query-method dispatch.
+- **Breaking Change!** `MethodDescriptor.Create` now accepts one `FindMethods` group instead of separate find-method arguments; update custom dispatch integrations.
+- **Breaking Change!** CRUD and paging independently extend the new `IRepository<TEntity, TId>` marker. Paging no longer inherits CRUD or disposal. Interfaces requiring both must declare both contracts.
+- **Breaking Change!** `IEntityRepository` and `IDapperRepository` combine CRUD and paging; custom provider implementations must supply `FindSlice`, `FindSliceAsync`, `FindPage` and `FindPageAsync`.
+- Share request validation, order merging, total deduction and slice creation through `PagingRules` in `DataQI.Commons.Repository.Paging.Support`.
+- A paged query returning another entity type now fails at proxy creation with the expected and actual entity types.
+- Update the transitive analyzer dependency from `0.1.0-preview.1` to `0.1.0`; this dependency change is separate from the package version supplied by release tags.
 
 - **Breaking Change!** Replace the previous criteria expression hierarchy with the AST and visitor contract described in the migration guide.
 - **Breaking Change!** Expose criteria/order collections and replace ordering getters with read-only properties.
@@ -354,7 +360,7 @@ The query interfaces (`ICriteria`, `ICriterion`, `ICriterionVisitor<T>`, `IOrder
 
 ### Writing a Provider
 
-Implement `ICrudRepository<TEntity, TId>` with the database behavior you need, then derive a factory from `RepositoryFactory`. Its `GetRepositoryInstance(Type, params object[])` creates that implementation; consumers call `GetRepository<TRepository>(...)` or pass a custom implementation factory.
+Implement `ICrudRepository<TEntity, TId>` and, when paging is supported, `IPagedRepository<TEntity, TId>` with the database behavior you need, then derive a factory from `RepositoryFactory`. Its `GetRepositoryInstance(Type, params object[])` creates that implementation; consumers call `GetRepository<TRepository>(...)` or pass a custom implementation factory.
 
 The dispatch path is:
 
