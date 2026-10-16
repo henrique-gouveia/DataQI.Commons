@@ -97,11 +97,13 @@ namespace DataQI.Commons.Repository.Core
                 out var exactDescriptor))
                 return exactDescriptor;
 
-            if (TryGetPagedShape(method.ReturnType, entityType, out var isAsync, out var isPage))
+            var isPaged = TryGetPagedShape(method.ReturnType, entityType, out var isAsync, out var isPage);
+            var resolved = isPaged ? (isPage
+                ? (isAsync ? pagedMethods.FindPageAsync : pagedMethods.FindPage)
+                : (isAsync ? pagedMethods.FindSliceAsync : pagedMethods.FindSlice)) : null;
+            ValidatePagingSignature(method, isPaged, hasCancellationToken, resolved);
+            if (isPaged)
             {
-                var resolved = isPage
-                    ? (isAsync ? pagedMethods.FindPageAsync : pagedMethods.FindPage)
-                    : (isAsync ? pagedMethods.FindSliceAsync : pagedMethods.FindSlice);
                 var kind = resolved == null ? DispatchKind.Unresolvable
                     : isPage ? (isAsync ? DispatchKind.AsyncPage : DispatchKind.SyncPage)
                     : (isAsync ? DispatchKind.AsyncSlice : DispatchKind.SyncSlice);
@@ -128,6 +130,41 @@ namespace DataQI.Commons.Repository.Core
                 hasCancellationToken,
                 findMethod,
                 findOneMethod);
+        }
+
+        private static void ValidatePagingSignature(MethodInfo method, bool isPaged, bool hasCancellationToken, MethodInfo resolved)
+        {
+            var parameters = method.GetParameters();
+            var requestPositions = parameters
+                .Select((p, i) => new { p.ParameterType, Index = i })
+                .Where(x => x.ParameterType == typeof(IPageRequest))
+                .Select(x => x.Index)
+                .ToArray();
+
+            string Fail(string reason)
+                => $"{method.DeclaringType?.Name}.{method.Name}: {reason}";
+
+            if (requestPositions.Length > 1)
+                throw new InvalidOperationException(Fail("a query method accepts at most one IPageRequest parameter"));
+            if (isPaged && requestPositions.Length == 0)
+                throw new InvalidOperationException(Fail("a method returning ISlice<T> or IPage<T> needs an IPageRequest parameter"));
+            if (!isPaged && requestPositions.Length == 1)
+                throw new InvalidOperationException(Fail("an IPageRequest parameter requires an ISlice<T> or IPage<T> return type"));
+            if (requestPositions.Length == 1)
+            {
+                var lastAllowed = parameters.Length - (hasCancellationToken ? 2 : 1);
+                if (requestPositions[0] != lastAllowed)
+                    throw new InvalidOperationException(Fail("the IPageRequest parameter must be the last one, before an optional CancellationToken"));
+            }
+            if (isPaged)
+            {
+                var tokenPositions = parameters.Select((p, i) => new { p.ParameterType, Index = i })
+                    .Where(x => x.ParameterType == typeof(CancellationToken)).Select(x => x.Index).ToArray();
+                if (tokenPositions.Length > 1 || (tokenPositions.Length == 1 && !hasCancellationToken))
+                    throw new InvalidOperationException(Fail("an optional CancellationToken must occur once at the end"));
+            }
+            if (isPaged && resolved == null)
+                throw new InvalidOperationException(Fail("the repository does not implement IPagedRepository"));
         }
 
         private static bool TryGetPagedShape(Type returnType, Type entityType, out bool isAsync, out bool isPage)
