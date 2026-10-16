@@ -8,6 +8,7 @@ using System.Threading;
 using DataQI.Commons.Extensions.Reflection;
 using DataQI.Commons.Query;
 using DataQI.Commons.Repository.Query;
+using DataQI.Commons.Repository.Paging;
 using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Core
@@ -67,10 +68,16 @@ namespace DataQI.Commons.Repository.Core
         private void RegisterMethodDescriptors()
         {
             var exactMatchMethods = ResolveExactMatchMethods();
-            var findMethod = ResolveCriteriaMethod("Find", 1);
-            var findAsyncMethod = ResolveCriteriaMethod("FindAsync", 2);
-            var findOneMethod = ResolveCriteriaMethod("FindOne", 1);
-            var findOneAsyncMethod = ResolveCriteriaMethod("FindOneAsync", 2);
+            var findMethod = ResolveCriteriaMethod("Find");
+            var findAsyncMethod = ResolveCriteriaMethod("FindAsync", typeof(CancellationToken));
+            var findOneMethod = ResolveCriteriaMethod("FindOne");
+            var findOneAsyncMethod = ResolveCriteriaMethod("FindOneAsync", typeof(CancellationToken));
+
+            var pagedMethods = new PagedMethods(
+                ResolveCriteriaMethod("FindSlice", typeof(IPageRequest)),
+                ResolveCriteriaMethod("FindSliceAsync", typeof(IPageRequest), typeof(CancellationToken)),
+                ResolveCriteriaMethod("FindPage", typeof(IPageRequest)),
+                ResolveCriteriaMethod("FindPageAsync", typeof(IPageRequest), typeof(CancellationToken)));
 
             methodDescriptorFactory = method => MethodDescriptor.Create(
                 method,
@@ -79,25 +86,30 @@ namespace DataQI.Commons.Repository.Core
                 findMethod,
                 findAsyncMethod,
                 findOneMethod,
-                findOneAsyncMethod);
+                findOneAsyncMethod,
+                pagedMethods);
 
             foreach (var method in typeof(TRepository).GetAllInterfaceMethods())
                 methodDescriptors[method] = methodDescriptorFactory(method);
         }
 
-        private MethodInfo ResolveCriteriaMethod(string name, int parameterCount)
+        private MethodInfo ResolveCriteriaMethod(string name, params Type[] trailingParameterTypes)
         {
             return defaultRepositoryType
                 .GetMethods()
                 .FirstOrDefault(m =>
-                    m.Name == name &&
-                    m.GetParameters().Length == parameterCount &&
-                    m.GetParameters()[0].ParameterType.IsGenericType &&
-                    m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
-                    m.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
-                    m.GetParameters()[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria) &&
-                    (parameterCount == 1 || m.GetParameters()[1].ParameterType == typeof(CancellationToken))
-                );
+                {
+                    var parameters = m.GetParameters();
+                    return m.Name == name &&
+                        parameters.Length == 1 + trailingParameterTypes.Length &&
+                        parameters[0].ParameterType.IsGenericType &&
+                        parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
+                        parameters[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
+                        parameters[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria) &&
+                        trailingParameterTypes
+                            .Select((type, index) => parameters[index + 1].ParameterType == type)
+                            .All(matches => matches);
+                });
         }
 
         private IDictionary<string, MethodInfo> ResolveExactMatchMethods()
@@ -141,6 +153,26 @@ namespace DataQI.Commons.Repository.Core
                         defaultRepository, new object[] { criteriaBuilder });
                 }
 
+                case DispatchKind.SyncSlice:
+                case DispatchKind.SyncPage:
+                {
+                    var (criteriaArgs, page) = SplitPageRequest(args, descriptor.PageRequestIndex);
+                    var criteriaBuilder = CreateCriteriaBuilder(targetMethod, criteriaArgs);
+                    return descriptor.ResolvedMethod.Invoke(defaultRepository, new object[] { criteriaBuilder, page });
+                }
+
+                case DispatchKind.AsyncSlice:
+                case DispatchKind.AsyncPage:
+                {
+                    var (withoutToken, cancellationToken) = descriptor.HasCancellationToken
+                        ? SplitCancellationToken(args)
+                        : (args, default);
+                    var (criteriaArgs, page) = SplitPageRequest(withoutToken, descriptor.PageRequestIndex);
+                    var criteriaBuilder = CreateCriteriaBuilder(targetMethod, criteriaArgs);
+                    return descriptor.ResolvedMethod.Invoke(
+                        defaultRepository, new object[] { criteriaBuilder, page, cancellationToken });
+                }
+
                 default:
                     throw new TargetInvocationException(
                         $"Unknown method {targetMethod.Name} returning type {targetMethod.ReturnType}", null);
@@ -163,6 +195,9 @@ namespace DataQI.Commons.Repository.Core
 
             return CriteriaBuilder;
         }
+
+        private static (object[] CriteriaArgs, IPageRequest Page) SplitPageRequest(object[] args, int pageRequestIndex)
+            => (args.Take(pageRequestIndex).ToArray(), (IPageRequest)args[pageRequestIndex]);
 
         private static (object[] CriteriaArgs, CancellationToken CancellationToken) SplitCancellationToken(object[] args)
         {

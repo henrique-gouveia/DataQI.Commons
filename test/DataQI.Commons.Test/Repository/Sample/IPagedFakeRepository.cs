@@ -8,6 +8,7 @@ namespace DataQI.Commons.Test.Repository.Sample
     public interface IPagedFakeRepository : IPagedRepository<FakeEntity, int>
     {
         ISlice<FakeEntity> FindByNameOrderByIdAsc(string name, IPageRequest page);
+        ISlice<FakeEntity> FindByNameOrderByIdAsc(string name, IPageRequest page, CancellationToken cancellationToken);
         IPage<FakeEntity> FindByName(string name, IPageRequest page);
         Task<ISlice<FakeEntity>> FindByNameAsync(string name, IPageRequest page);
         Task<IPage<FakeEntity>> FindByNameAsync(string name, IPageRequest page, CancellationToken cancellationToken);
