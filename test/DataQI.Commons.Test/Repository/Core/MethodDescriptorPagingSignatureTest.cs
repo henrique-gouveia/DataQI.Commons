@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
+
 using Xunit;
+
 using DataQI.Commons.Repository.Core;
 using DataQI.Commons.Repository.Paging;
 using DataQI.Commons.Test.Repository.Sample;
@@ -14,14 +14,16 @@ namespace DataQI.Commons.Test.Repository.Core
     public class MethodDescriptorPagingSignatureTest
     {
         private static MethodInfo Repo(string name)
-        => typeof(IPagedRepository<FakeEntity, int>).GetMethods().Single(m => m.Name == name);
+            => typeof(IPagedRepository<FakeEntity, int>).GetMethods().Single(m => m.Name == name);
+
         private static PagedMethods AllPaged() => new PagedMethods(
-        Repo("FindSlice"), Repo("FindSliceAsync"), Repo("FindPage"), Repo("FindPageAsync"));
+            Repo("FindSlice"), Repo("FindSliceAsync"), Repo("FindPage"), Repo("FindPageAsync"));
+
         private static MethodDescriptor Describe(System.Type repository, string name, PagedMethods paged)
         {
             var method = repository.GetMethods().Single(m => m.Name == name);
             return MethodDescriptor.Create(method, typeof(FakeEntity), new Dictionary<string, MethodInfo>(),
-            null, null, null, null, paged);
+                null, null, null, null, paged);
         }
 
         [Theory]
@@ -53,10 +55,9 @@ namespace DataQI.Commons.Test.Repository.Core
         public void TestRejectsPagedMethodWhenProviderDoesNotImplementPagedRepository()
         {
             var exception = Assert.Throws<InvalidOperationException>(() =>
-            Describe(typeof(IPagedFakeRepository), "FindByName", PagedMethods.None));
+                Describe(typeof(IPagedFakeRepository), "FindByName", PagedMethods.None));
 
             Assert.Contains("IPagedRepository", exception.Message);
         }
-
     }
 }
