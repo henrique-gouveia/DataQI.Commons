@@ -16,14 +16,14 @@ namespace DataQI.Commons.Test.Repository.Core
         private static MethodInfo Repo(string name)
             => typeof(IPagedRepository<FakeEntity, int>).GetMethods().Single(m => m.Name == name);
 
-        private static PagedMethods AllPaged() => new PagedMethods(
-            Repo("FindSlice"), Repo("FindSliceAsync"), Repo("FindPage"), Repo("FindPageAsync"));
+        private static RepositoryFindMethods AllPaged() => new RepositoryFindMethods(
+            null, null, null, null, Repo("FindSlice"), Repo("FindSliceAsync"), Repo("FindPage"), Repo("FindPageAsync"));
 
-        private static MethodDescriptor Describe(System.Type repository, string name, PagedMethods paged)
+        private static MethodDescriptor Describe(System.Type repository, string name, RepositoryFindMethods paged)
         {
             var method = repository.GetMethods().Single(m => m.Name == name);
             return MethodDescriptor.Create(method, typeof(FakeEntity), new Dictionary<string, MethodInfo>(),
-                null, null, null, null, paged);
+                paged);
         }
 
         [Theory]
@@ -55,7 +55,7 @@ namespace DataQI.Commons.Test.Repository.Core
         public void TestRejectsPagedMethodWhenProviderDoesNotImplementPagedRepository()
         {
             var exception = Assert.Throws<InvalidOperationException>(() =>
-                Describe(typeof(IPagedFakeRepository), "FindByName", PagedMethods.None));
+                Describe(typeof(IPagedFakeRepository), "FindByName", RepositoryFindMethods.None));
 
             Assert.Contains("IPagedRepository", exception.Message);
         }

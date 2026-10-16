@@ -58,31 +58,13 @@ namespace DataQI.Commons.Repository.Core
         /// <param name="method">The interface method to describe.</param>
         /// <param name="entityType">The entity type of the repository.</param>
         /// <param name="exactMatchMethods">The public methods of the repository implementation, keyed by <see cref="UniqueName"/>.</param>
-        /// <param name="findMethod">The implementation's <c>Find(Func&lt;ICriteria, ICriteria&gt;)</c>, or <c>null</c>.</param>
-        /// <param name="findAsyncMethod">The implementation's <c>FindAsync</c> taking criteria and a token, or <c>null</c>.</param>
-        /// <param name="findOneMethod">The implementation's <c>FindOne(Func&lt;ICriteria, ICriteria&gt;)</c>, or <c>null</c>.</param>
-        /// <param name="findOneAsyncMethod">The implementation's <c>FindOneAsync</c> taking criteria and a token, or <c>null</c>.</param>
+        /// <param name="findMethods">The <c>Find*</c> methods of the repository implementation, any of which may be <c>null</c>.</param>
         /// <returns>The descriptor; an exact signature match wins over query method parsing.</returns>
         public static MethodDescriptor Create(
             MethodInfo method,
             Type entityType,
             IDictionary<string, MethodInfo> exactMatchMethods,
-            MethodInfo findMethod,
-            MethodInfo findAsyncMethod,
-            MethodInfo findOneMethod,
-            MethodInfo findOneAsyncMethod)
-            => Create(method, entityType, exactMatchMethods, findMethod, findAsyncMethod, findOneMethod, findOneAsyncMethod, PagedMethods.None);
-
-        /// <summary>Creates a descriptor with optional paging implementation methods.</summary>
-        public static MethodDescriptor Create(
-            MethodInfo method,
-            Type entityType,
-            IDictionary<string, MethodInfo> exactMatchMethods,
-            MethodInfo findMethod,
-            MethodInfo findAsyncMethod,
-            MethodInfo findOneMethod,
-            MethodInfo findOneAsyncMethod,
-            PagedMethods pagedMethods)
+            RepositoryFindMethods findMethods)
         {
             var uniqueName = method.UniqueName();
             var parameters = method.GetParameters();
@@ -99,8 +81,8 @@ namespace DataQI.Commons.Repository.Core
 
             var isPaged = TryGetPagedShape(method.ReturnType, entityType, out var isAsync, out var isPage);
             var resolved = isPaged ? (isPage
-                ? (isAsync ? pagedMethods.FindPageAsync : pagedMethods.FindPage)
-                : (isAsync ? pagedMethods.FindSliceAsync : pagedMethods.FindSlice)) : null;
+                ? (isAsync ? findMethods.FindPageAsync : findMethods.FindPage)
+                : (isAsync ? findMethods.FindSliceAsync : findMethods.FindSlice)) : null;
             ValidatePagingSignature(method, isPaged, hasCancellationToken, resolved);
             if (isPaged)
             {
@@ -118,8 +100,8 @@ namespace DataQI.Commons.Repository.Core
                 entityType,
                 uniqueName,
                 hasCancellationToken,
-                findAsyncMethod,
-                findOneAsyncMethod,
+                findMethods.FindAsync,
+                findMethods.FindOneAsync,
                 out var asyncDescriptor))
                 return asyncDescriptor;
 
@@ -128,8 +110,8 @@ namespace DataQI.Commons.Repository.Core
                 entityType,
                 uniqueName,
                 hasCancellationToken,
-                findMethod,
-                findOneMethod);
+                findMethods.Find,
+                findMethods.FindOne);
         }
 
         private static void ValidatePagingSignature(MethodInfo method, bool isPaged, bool hasCancellationToken, MethodInfo resolved)

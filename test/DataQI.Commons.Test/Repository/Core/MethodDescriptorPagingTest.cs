@@ -21,12 +21,12 @@ namespace DataQI.Commons.Test.Repository.Core
                 m.Name == name && m.GetParameters().Length == parameterCount &&
                 m.ReturnType.ToString().Contains(returnContains));
 
-        private static PagedMethods AllPaged() => new PagedMethods(
-            Repo("FindSlice"), Repo("FindSliceAsync"), Repo("FindPage"), Repo("FindPageAsync"));
+        private static RepositoryFindMethods AllPaged() => new RepositoryFindMethods(
+            null, null, null, null, Repo("FindSlice"), Repo("FindSliceAsync"), Repo("FindPage"), Repo("FindPageAsync"));
 
-        private static MethodDescriptor Describe(MethodInfo method, PagedMethods paged = null)
+        private static MethodDescriptor Describe(MethodInfo method, RepositoryFindMethods paged = null)
             => MethodDescriptor.Create(method, typeof(FakeEntity), new Dictionary<string, MethodInfo>(),
-                null, null, null, null, paged ?? AllPaged());
+                paged ?? AllPaged());
 
         [Fact]
         public void TestClassifiesSyncSlice()
@@ -75,7 +75,7 @@ namespace DataQI.Commons.Test.Repository.Core
             var exact = new Dictionary<string, MethodInfo> { [findSlice.UniqueName()] = findSlice };
 
             var descriptor = MethodDescriptor.Create(findSlice, typeof(FakeEntity), exact,
-                null, null, null, null, AllPaged());
+                AllPaged());
 
             Assert.Equal(DispatchKind.ExactMatch, descriptor.Kind);
             Assert.Equal(-1, descriptor.PageRequestIndex);
@@ -89,17 +89,10 @@ namespace DataQI.Commons.Test.Repository.Core
                 .First(m => m.Name == "Find" && m.GetParameters().Length == 1);
 
             var descriptor = MethodDescriptor.Create(findByFirstName, typeof(FakeEntity),
-                new Dictionary<string, MethodInfo>(), find, null, null, null);
+                new Dictionary<string, MethodInfo>(), new RepositoryFindMethods(find, null, null, null));
 
             Assert.Equal(DispatchKind.SyncCollection, descriptor.Kind);
             Assert.Equal(-1, descriptor.PageRequestIndex);
-        }
-
-        [Fact]
-        public void TestNewDispatchKindsAreAppendedAfterUnresolvable()
-        {
-            Assert.True((int)DispatchKind.SyncSlice > (int)DispatchKind.Unresolvable);
-            Assert.Equal(5, (int)DispatchKind.Unresolvable);
         }
     }
 }

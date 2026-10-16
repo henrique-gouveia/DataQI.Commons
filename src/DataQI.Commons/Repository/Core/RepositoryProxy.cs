@@ -68,26 +68,17 @@ namespace DataQI.Commons.Repository.Core
         private void RegisterMethodDescriptors()
         {
             var exactMatchMethods = ResolveExactMatchMethods();
-            var findMethod = ResolveCriteriaMethod("Find");
-            var findAsyncMethod = ResolveCriteriaMethod("FindAsync", typeof(CancellationToken));
-            var findOneMethod = ResolveCriteriaMethod("FindOne");
-            var findOneAsyncMethod = ResolveCriteriaMethod("FindOneAsync", typeof(CancellationToken));
-
-            var pagedMethods = new PagedMethods(
+            var findMethods = new RepositoryFindMethods(
+                ResolveCriteriaMethod("Find"),
+                ResolveCriteriaMethod("FindAsync", typeof(CancellationToken)),
+                ResolveCriteriaMethod("FindOne"),
+                ResolveCriteriaMethod("FindOneAsync", typeof(CancellationToken)),
                 ResolveCriteriaMethod("FindSlice", typeof(IPageRequest)),
                 ResolveCriteriaMethod("FindSliceAsync", typeof(IPageRequest), typeof(CancellationToken)),
                 ResolveCriteriaMethod("FindPage", typeof(IPageRequest)),
                 ResolveCriteriaMethod("FindPageAsync", typeof(IPageRequest), typeof(CancellationToken)));
 
-            methodDescriptorFactory = method => MethodDescriptor.Create(
-                method,
-                entityType,
-                exactMatchMethods,
-                findMethod,
-                findAsyncMethod,
-                findOneMethod,
-                findOneAsyncMethod,
-                pagedMethods);
+            methodDescriptorFactory = method => MethodDescriptor.Create(method, entityType, exactMatchMethods, findMethods);
 
             foreach (var method in typeof(TRepository).GetAllInterfaceMethods())
                 methodDescriptors[method] = methodDescriptorFactory(method);

@@ -31,7 +31,7 @@ namespace DataQI.Commons.Test.Repository.Core
             var exactMatchMethods = new Dictionary<string, MethodInfo> { [insertMethod.UniqueName()] = insertMethod };
 
             var descriptor = MethodDescriptor.Create(insertMethod, typeof(FakeEntity), exactMatchMethods,
-                findMethod: null, findAsyncMethod: null, findOneMethod: null, findOneAsyncMethod: null);
+                new RepositoryFindMethods(null, null, null, null));
 
             Assert.Equal(DispatchKind.ExactMatch, descriptor.Kind);
             Assert.Same(insertMethod, descriptor.ResolvedMethod);
@@ -46,7 +46,8 @@ namespace DataQI.Commons.Test.Repository.Core
                 m.Name == "Find" && m.GetParameters().Length == 1);
 
             var descriptor = MethodDescriptor.Create(findByFirstNameMethod, typeof(FakeEntity),
-                new Dictionary<string, MethodInfo>(), findMethod, findAsyncMethod: null, findOneMethod: null, findOneAsyncMethod: null);
+                new Dictionary<string, MethodInfo>(),
+                new RepositoryFindMethods(findMethod, null, null, null));
 
             Assert.Equal(DispatchKind.SyncCollection, descriptor.Kind);
             Assert.Same(findMethod, descriptor.ResolvedMethod);
@@ -61,7 +62,8 @@ namespace DataQI.Commons.Test.Repository.Core
             var findAsyncMethod = RepositoryMethods.Values.First(m => m.Name == "FindAsync");
 
             var descriptor = MethodDescriptor.Create(findByFirstNameAsyncMethod, typeof(FakeEntity),
-                new Dictionary<string, MethodInfo>(), findMethod: null, findAsyncMethod, findOneMethod: null, findOneAsyncMethod: null);
+                new Dictionary<string, MethodInfo>(),
+                new RepositoryFindMethods(null, findAsyncMethod, null, null));
 
             Assert.Equal(DispatchKind.AsyncCollection, descriptor.Kind);
             Assert.Same(findAsyncMethod, descriptor.ResolvedMethod);
@@ -76,7 +78,8 @@ namespace DataQI.Commons.Test.Repository.Core
             var findAsyncMethod = RepositoryMethods.Values.First(m => m.Name == "FindAsync");
 
             var descriptor = MethodDescriptor.Create(findByFirstNameAsyncWithTokenMethod, typeof(FakeEntity),
-                new Dictionary<string, MethodInfo>(), findMethod: null, findAsyncMethod, findOneMethod: null, findOneAsyncMethod: null);
+                new Dictionary<string, MethodInfo>(),
+                new RepositoryFindMethods(null, findAsyncMethod, null, null));
 
             Assert.Equal(DispatchKind.AsyncCollection, descriptor.Kind);
             Assert.True(descriptor.HasCancellationToken);
@@ -91,7 +94,8 @@ namespace DataQI.Commons.Test.Repository.Core
                 m.GetParameters()[0].ParameterType.IsGenericType);
 
             var descriptor = MethodDescriptor.Create(findByEmailMethod, typeof(FakeEntity),
-                new Dictionary<string, MethodInfo>(), findMethod: null, findAsyncMethod: null, findOneMethod, findOneAsyncMethod: null);
+                new Dictionary<string, MethodInfo>(),
+                new RepositoryFindMethods(null, null, findOneMethod, null));
 
             Assert.Equal(DispatchKind.SyncSingle, descriptor.Kind);
             Assert.Same(findOneMethod, descriptor.ResolvedMethod);
@@ -106,7 +110,8 @@ namespace DataQI.Commons.Test.Repository.Core
                 m.Name == "FindOneAsync" && m.GetParameters()[0].ParameterType.IsGenericType);
 
             var descriptor = MethodDescriptor.Create(findByEmailAsyncMethod, typeof(FakeEntity),
-                new Dictionary<string, MethodInfo>(), findMethod: null, findAsyncMethod: null, findOneMethod: null, findOneAsyncMethod);
+                new Dictionary<string, MethodInfo>(),
+                new RepositoryFindMethods(null, null, null, findOneAsyncMethod));
 
             Assert.Equal(DispatchKind.AsyncSingle, descriptor.Kind);
             Assert.Same(findOneAsyncMethod, descriptor.ResolvedMethod);
@@ -118,7 +123,8 @@ namespace DataQI.Commons.Test.Repository.Core
             var notImplementedMethod = Method("NotImplementedMethod:", FakeRepositoryMethods);
 
             var descriptor = MethodDescriptor.Create(notImplementedMethod, typeof(FakeEntity),
-                new Dictionary<string, MethodInfo>(), findMethod: null, findAsyncMethod: null, findOneMethod: null, findOneAsyncMethod: null);
+                new Dictionary<string, MethodInfo>(),
+                new RepositoryFindMethods(null, null, null, null));
 
             Assert.Equal(DispatchKind.Unresolvable, descriptor.Kind);
             Assert.Null(descriptor.ResolvedMethod);
@@ -131,7 +137,8 @@ namespace DataQI.Commons.Test.Repository.Core
                 m.Name == nameof(IFakeRepository.FindByFirstNameAsync) && m.GetParameters().Length == 1);
 
             var descriptor = MethodDescriptor.Create(findByFirstNameAsyncMethod, typeof(FakeEntity),
-                new Dictionary<string, MethodInfo>(), findMethod: null, findAsyncMethod: null, findOneMethod: null, findOneAsyncMethod: null);
+                new Dictionary<string, MethodInfo>(),
+                new RepositoryFindMethods(null, null, null, null));
 
             Assert.Equal(DispatchKind.Unresolvable, descriptor.Kind);
             Assert.Null(descriptor.ResolvedMethod);
@@ -151,7 +158,7 @@ namespace DataQI.Commons.Test.Repository.Core
             var exactMatchMethods = new Dictionary<string, MethodInfo> { [findOneByIdMethod.UniqueName()] = findOneByIdMethod };
 
             var descriptor = MethodDescriptor.Create(findOneByIdMethod, typeof(FakeEntity), exactMatchMethods,
-                findMethod: null, findAsyncMethod: null, findOneMethod: findOneByCriteriaMethod, findOneAsyncMethod: null);
+                new RepositoryFindMethods(null, null, findOneByCriteriaMethod, null));
 
             Assert.Equal(DispatchKind.ExactMatch, descriptor.Kind);
             Assert.Same(findOneByIdMethod, descriptor.ResolvedMethod);
@@ -165,7 +172,8 @@ namespace DataQI.Commons.Test.Repository.Core
             var findAsyncMethod = RepositoryMethods.Values.First(m => m.Name == "FindAsync");
 
             var descriptor = MethodDescriptor.Create(findByFirstNameAsyncMethod, typeof(FakeEntity),
-                new Dictionary<string, MethodInfo>(), findMethod: null, findAsyncMethod, findOneMethod: null, findOneAsyncMethod: null);
+                new Dictionary<string, MethodInfo>(),
+                new RepositoryFindMethods(null, findAsyncMethod, null, null));
 
             Assert.Equal(DispatchKind.AsyncCollection, descriptor.Kind);
             Assert.Equal(typeof(IEnumerable<FakeEntity>), descriptor.ResultType);
@@ -180,7 +188,8 @@ namespace DataQI.Commons.Test.Repository.Core
                 m.Name == "FindOneAsync" && m.GetParameters()[0].ParameterType.IsGenericType);
 
             var descriptor = MethodDescriptor.Create(findByEmailAsyncMethod, typeof(FakeEntity),
-                new Dictionary<string, MethodInfo>(), findMethod: null, findAsyncMethod: null, findOneMethod: null, findOneAsyncMethod);
+                new Dictionary<string, MethodInfo>(),
+                new RepositoryFindMethods(null, null, null, findOneAsyncMethod));
 
             Assert.Equal(DispatchKind.AsyncSingle, descriptor.Kind);
             Assert.Equal(typeof(FakeEntity), descriptor.ResultType);
