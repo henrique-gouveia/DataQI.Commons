@@ -64,8 +64,8 @@ namespace DataQI.Commons.Test.Repository.Core
             var descriptor = Describe(Query("FindByNameAsync", 3, "IPage"));
 
             Assert.Equal(DispatchKind.AsyncPage, descriptor.Kind);
-            Assert.True(descriptor.HasCancellationToken);
             Assert.True(descriptor.HasPageRequest);
+            Assert.True(descriptor.HasCancellationToken);
         }
 
         [Fact]

@@ -28,11 +28,10 @@ namespace DataQI.Commons.Repository.Core
         public MethodInfo ResolvedMethod { get; }
         /// <summary>Gets the result type of the call: the return type, or the type wrapped by <c>Task</c> for parsed asynchronous query methods.</summary>
         public Type ResultType { get; }
-        /// <summary>Gets a value indicating whether the last parameter of the method is a <see cref="System.Threading.CancellationToken"/>.</summary>
-        public bool HasCancellationToken { get; }
-
         /// <summary>Gets a value indicating whether the method has an <see cref="IPageRequest"/> parameter, always followed at most by a <see cref="CancellationToken"/>.</summary>
         public bool HasPageRequest { get; }
+        /// <summary>Gets a value indicating whether the last parameter of the method is a <see cref="System.Threading.CancellationToken"/>.</summary>
+        public bool HasCancellationToken { get; }
 
         private MethodDescriptor(
             MethodInfo method,
@@ -40,17 +39,17 @@ namespace DataQI.Commons.Repository.Core
             DispatchKind kind,
             MethodInfo resolvedMethod,
             Type resultType,
+            bool hasPageRequest,
             bool hasCancellationToken,
-            Lazy<QueryPlan> plan,
-            bool hasPageRequest = false)
+            Lazy<QueryPlan> plan)
         {
             this.plan = plan;
-            HasPageRequest = hasPageRequest;
             Method = method;
             UniqueName = uniqueName;
             Kind = kind;
             ResolvedMethod = resolvedMethod;
             ResultType = resultType;
+            HasPageRequest = hasPageRequest;
             HasCancellationToken = hasCancellationToken;
         }
 
@@ -90,8 +89,8 @@ namespace DataQI.Commons.Repository.Core
                     : isPage ? (isAsync ? DispatchKind.AsyncPage : DispatchKind.SyncPage)
                     : (isAsync ? DispatchKind.AsyncSlice : DispatchKind.SyncSlice);
                 var resultType = isAsync ? method.ReturnType.GetGenericArguments()[0] : method.ReturnType;
-                return new MethodDescriptor(method, uniqueName, kind, resolved, resultType, hasCancellationToken,
-                    resolved == null ? null : new Lazy<QueryPlan>(() => QueryMethodParser.Parse(method)), true);
+                return new MethodDescriptor(method, uniqueName, kind, resolved, resultType, true, hasCancellationToken,
+                    resolved == null ? null : new Lazy<QueryPlan>(() => QueryMethodParser.Parse(method)));
             }
 
             if (TryResolveForAsyncMethod(
@@ -187,6 +186,7 @@ namespace DataQI.Commons.Repository.Core
                 DispatchKind.ExactMatch,
                 exactMatch,
                 method.ReturnType,
+                false,
                 hasCancellationToken,
                 null);
             return true;
@@ -221,6 +221,7 @@ namespace DataQI.Commons.Repository.Core
                 kind,
                 resolvedMethod,
                 asyncResultType,
+                false,
                 hasCancellationToken,
                 kind == DispatchKind.Unresolvable ? null : new Lazy<QueryPlan>(() => QueryMethodParser.Parse(method)));
             return true;
@@ -250,6 +251,7 @@ namespace DataQI.Commons.Repository.Core
                 syncKind,
                 syncResolvedMethod,
                 method.ReturnType,
+                false,
                 hasCancellationToken,
                 syncKind == DispatchKind.Unresolvable ? null : new Lazy<QueryPlan>(() => QueryMethodParser.Parse(method)));
         }

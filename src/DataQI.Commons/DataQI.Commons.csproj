@@ -17,7 +17,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="DataQI.Analyzers" Version="0.1.0" IncludeAssets="analyzers" PrivateAssets="none" />
+    <PackageReference Include="DataQI.Analyzers" Version="0.1.0-preview.2" IncludeAssets="analyzers" PrivateAssets="none" />
     <PackageReference Include="System.Reflection.DispatchProxy" Version="4.8.2" />
   </ItemGroup>
 
