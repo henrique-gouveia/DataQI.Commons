@@ -16,6 +16,14 @@ namespace DataQI.Commons.Repository.Core
         /// <summary>Routes an asynchronous single entity query through parsed criteria to <c>FindOneAsync</c>.</summary>
         AsyncSingle,
         /// <summary>Identifies a call with no matching implementation method whose invocation throws <see cref="System.Reflection.TargetInvocationException"/>.</summary>
-        Unresolvable
+        Unresolvable,
+        /// <summary>Routes a paged query to FindSlice.</summary>
+        SyncSlice,
+        /// <summary>Routes a paged query to FindSliceAsync.</summary>
+        AsyncSlice,
+        /// <summary>Routes a paged query to FindPage.</summary>
+        SyncPage,
+        /// <summary>Routes a paged query to FindPageAsync.</summary>
+        AsyncPage
     }
 }

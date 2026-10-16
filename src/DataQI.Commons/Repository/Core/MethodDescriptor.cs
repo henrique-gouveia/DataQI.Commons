@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 using System.Threading;
 
 using DataQI.Commons.Extensions.Reflection;
 using DataQI.Commons.Repository.Query;
+using DataQI.Commons.Repository.Paging;
 
 namespace DataQI.Commons.Repository.Core
 {
@@ -29,6 +31,9 @@ namespace DataQI.Commons.Repository.Core
         /// <summary>Gets a value indicating whether the last parameter of the method is a <see cref="System.Threading.CancellationToken"/>.</summary>
         public bool HasCancellationToken { get; }
 
+        /// <summary>Gets the page request parameter index, or -1 when absent.</summary>
+        public int PageRequestIndex { get; }
+
         private MethodDescriptor(
             MethodInfo method,
             string uniqueName,
@@ -36,9 +41,11 @@ namespace DataQI.Commons.Repository.Core
             MethodInfo resolvedMethod,
             Type resultType,
             bool hasCancellationToken,
-            Lazy<QueryPlan> plan)
+            Lazy<QueryPlan> plan,
+            int pageRequestIndex = -1)
         {
             this.plan = plan;
+            PageRequestIndex = pageRequestIndex;
             Method = method;
             UniqueName = uniqueName;
             Kind = kind;
@@ -64,6 +71,18 @@ namespace DataQI.Commons.Repository.Core
             MethodInfo findAsyncMethod,
             MethodInfo findOneMethod,
             MethodInfo findOneAsyncMethod)
+            => Create(method, entityType, exactMatchMethods, findMethod, findAsyncMethod, findOneMethod, findOneAsyncMethod, PagedMethods.None);
+
+        /// <summary>Creates a descriptor with optional paging implementation methods.</summary>
+        public static MethodDescriptor Create(
+            MethodInfo method,
+            Type entityType,
+            IDictionary<string, MethodInfo> exactMatchMethods,
+            MethodInfo findMethod,
+            MethodInfo findAsyncMethod,
+            MethodInfo findOneMethod,
+            MethodInfo findOneAsyncMethod,
+            PagedMethods pagedMethods)
         {
             var uniqueName = method.UniqueName();
             var parameters = method.GetParameters();
@@ -77,6 +96,20 @@ namespace DataQI.Commons.Repository.Core
                 exactMatchMethods,
                 out var exactDescriptor))
                 return exactDescriptor;
+
+            if (TryGetPagedShape(method.ReturnType, entityType, out var isAsync, out var isPage))
+            {
+                var resolved = isPage
+                    ? (isAsync ? pagedMethods.FindPageAsync : pagedMethods.FindPage)
+                    : (isAsync ? pagedMethods.FindSliceAsync : pagedMethods.FindSlice);
+                var kind = resolved == null ? DispatchKind.Unresolvable
+                    : isPage ? (isAsync ? DispatchKind.AsyncPage : DispatchKind.SyncPage)
+                    : (isAsync ? DispatchKind.AsyncSlice : DispatchKind.SyncSlice);
+                var resultType = isAsync ? method.ReturnType.GetGenericArguments()[0] : method.ReturnType;
+                var pageIndex = Array.FindIndex(parameters, p => p.ParameterType == typeof(IPageRequest));
+                return new MethodDescriptor(method, uniqueName, kind, resolved, resultType, hasCancellationToken,
+                    resolved == null ? null : new Lazy<QueryPlan>(() => QueryMethodParser.Parse(method)), pageIndex);
+            }
 
             if (TryResolveForAsyncMethod(
                 method,
@@ -95,6 +128,24 @@ namespace DataQI.Commons.Repository.Core
                 hasCancellationToken,
                 findMethod,
                 findOneMethod);
+        }
+
+        private static bool TryGetPagedShape(Type returnType, Type entityType, out bool isAsync, out bool isPage)
+        {
+            var type = returnType;
+            isAsync = type.TryGetAsyncResultType(out var inner);
+            if (isAsync)
+                type = inner;
+            isPage = false;
+            if (!type.IsGenericType || type.GetGenericArguments()[0] != entityType)
+                return false;
+            var definition = type.GetGenericTypeDefinition();
+            if (definition == typeof(ISlice<>))
+                return true;
+            if (definition != typeof(IPage<>))
+                return false;
+            isPage = true;
+            return true;
         }
 
         private static bool TryResolveForExactMethod(
