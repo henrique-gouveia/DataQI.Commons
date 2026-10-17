@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -21,10 +22,9 @@ namespace DataQI.Commons.Test.Repository.Core
                 m.Name == name && m.GetParameters().Length == parameterCount &&
                 m.ReturnType.ToString().Contains(returnContains));
 
-        private static FindMethods AllPaged() => new FindMethods(
-            null, null, null, null, Repo("FindSlice"), Repo("FindSliceAsync"), Repo("FindPage"), Repo("FindPageAsync"));
+        private static Func<string, Type[], MethodInfo> AllPaged() => FindImplementations.Of(("FindSlice", Repo("FindSlice")), ("FindSliceAsync", Repo("FindSliceAsync")), ("FindPage", Repo("FindPage")), ("FindPageAsync", Repo("FindPageAsync")));
 
-        private static MethodDescriptor Describe(MethodInfo method, FindMethods paged = null)
+        private static MethodDescriptor Describe(MethodInfo method, Func<string, Type[], MethodInfo> paged = null)
             => MethodDescriptor.Create(method, typeof(FakeEntity), new Dictionary<string, MethodInfo>(),
                 paged ?? AllPaged());
 
@@ -89,7 +89,7 @@ namespace DataQI.Commons.Test.Repository.Core
                 .First(m => m.Name == "Find" && m.GetParameters().Length == 1);
 
             var descriptor = MethodDescriptor.Create(findByFirstName, typeof(FakeEntity),
-                new Dictionary<string, MethodInfo>(), new FindMethods(find, null, null, null));
+                new Dictionary<string, MethodInfo>(), FindImplementations.Of(("Find", find)));
 
             Assert.Equal(DispatchKind.SyncCollection, descriptor.Kind);
             Assert.False(descriptor.HasPageRequest);

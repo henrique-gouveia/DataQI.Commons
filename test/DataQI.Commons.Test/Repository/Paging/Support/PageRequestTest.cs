@@ -68,12 +68,6 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
             Assert.Equal(OrderDirection.Asc, request.Orders[0].Direction);
         }
 
-        private sealed class MutableOrder : IOrderCriterion
-        {
-            public string PropertyName { get; set; }
-            public OrderDirection Direction { get; set; }
-        }
-
         [Fact]
         public void TestOrdersCannotBeModifiedThroughACast()
         {
@@ -94,6 +88,12 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
             orders[0] = Order.Desc("Other");
 
             Assert.Equal("Name", request.Orders.Single().PropertyName);
+        }
+
+        private sealed class MutableOrder : IOrderCriterion
+        {
+            public string PropertyName { get; set; }
+            public OrderDirection Direction { get; set; }
         }
     }
 }

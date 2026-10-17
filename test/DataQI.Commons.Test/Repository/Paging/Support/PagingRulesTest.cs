@@ -122,17 +122,6 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
             Assert.Throws<ArgumentException>(() => PagingRules.EnsurePage(page));
         }
 
-        private sealed class CustomOrder : IOrderCriterion
-        {
-            public CustomOrder(string name, OrderDirection direction)
-            {
-                PropertyName = name;
-                Direction = direction;
-            }
-            public string PropertyName { get; }
-            public OrderDirection Direction { get; }
-        }
-
         [Theory]
         [InlineData(5, 10, 2, 25L)]
         [InlineData(0, 10, 0, 0L)]
@@ -170,6 +159,17 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
         {
             Assert.Throws<ArgumentException>(() => PagingRules.ToSlice(Array.Empty<int>(), null));
             Assert.Throws<ArgumentException>(() => PagingRules.ToSlice<int>(null, PageRequest.Of(0, 10)));
+        }
+
+        private sealed class CustomOrder : IOrderCriterion
+        {
+            public CustomOrder(string name, OrderDirection direction)
+            {
+                PropertyName = name;
+                Direction = direction;
+            }
+            public string PropertyName { get; }
+            public OrderDirection Direction { get; }
         }
     }
 }

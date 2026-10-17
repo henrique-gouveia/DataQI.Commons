@@ -134,26 +134,6 @@ namespace DataQI.Commons.Test.Repository.Core
             Assert.Equal(["ana"], Assert.Single(RecordingProxy.ReceivedBy(recording)));
         }
 
-        public class RecordingProxy : RepositoryProxy<IPagedFakeRepository>
-        {
-            private readonly List<object[]> received = [];
-
-            public new static IPagedFakeRepository Create(Func<object> defaultRepositoryFactory)
-            {
-                DefaultRepositoryFactory = defaultRepositoryFactory;
-                return DispatchProxy.Create<IPagedFakeRepository, RecordingProxy>();
-            }
-
-            public static IReadOnlyList<object[]> ReceivedBy(IPagedFakeRepository repository)
-                => ((RecordingProxy)(object)repository).received;
-
-            protected override Func<ICriteria, ICriteria> CreateCriteriaBuilder(MethodInfo targetMethod, object[] args)
-            {
-                received.Add(args);
-                return base.CreateCriteriaBuilder(targetMethod, args);
-            }
-        }
-
         [Fact]
         public void TestNullPageRequestReachesTheRepositoryUnchanged()
         {
@@ -185,6 +165,26 @@ namespace DataQI.Commons.Test.Repository.Core
 
             Assert.IsType<InvalidOperationException>(exception.GetBaseException());
             Assert.Contains("IPagedRepository", exception.GetBaseException().Message);
+        }
+
+        public class RecordingProxy : RepositoryProxy<IPagedFakeRepository>
+        {
+            private readonly List<object[]> received = [];
+
+            public new static IPagedFakeRepository Create(Func<object> defaultRepositoryFactory)
+            {
+                DefaultRepositoryFactory = defaultRepositoryFactory;
+                return DispatchProxy.Create<IPagedFakeRepository, RecordingProxy>();
+            }
+
+            public static IReadOnlyList<object[]> ReceivedBy(IPagedFakeRepository repository)
+                => ((RecordingProxy)(object)repository).received;
+
+            protected override Func<ICriteria, ICriteria> CreateCriteriaBuilder(MethodInfo targetMethod, object[] args)
+            {
+                received.Add(args);
+                return base.CreateCriteriaBuilder(targetMethod, args);
+            }
         }
     }
 }
