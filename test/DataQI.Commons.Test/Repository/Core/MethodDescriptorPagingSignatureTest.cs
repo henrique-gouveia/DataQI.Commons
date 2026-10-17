@@ -30,7 +30,7 @@ namespace DataQI.Commons.Test.Repository.Core
         [InlineData(typeof(IPagedWithoutRequestRepository), "FindByName", "IPageRequest")]
         [InlineData(typeof(IRequestWithPlainReturnRepository), "FindByName", "IPageRequest")]
         [InlineData(typeof(IDuplicatedRequestRepository), "FindByName", "one IPageRequest")]
-                [InlineData(typeof(INonTrailingTokenPagedRepository), "FindByNameAsync", "CancellationToken")]
+        [InlineData(typeof(INonTrailingTokenPagedRepository), "FindByNameAsync", "CancellationToken")]
         [InlineData(typeof(IDuplicatedTokenPagedRepository), "FindByNameAsync", "CancellationToken")]
         [InlineData(typeof(IRequestNotLastRepository), "FindByName", "last")]
         public void TestRejectsInvalidSignatures(System.Type repository, string name, string messagePart)

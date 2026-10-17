@@ -78,20 +78,14 @@ namespace DataQI.Commons.Repository.Core
                 out var exactDescriptor))
                 return exactDescriptor;
 
-            var isPaged = TryGetPagedShape(method, entityType, out var isAsync, out var isPage);
-            var resolved = isPaged ? (isPage
-                ? (isAsync ? findMethods.FindPageAsync : findMethods.FindPage)
-                : (isAsync ? findMethods.FindSliceAsync : findMethods.FindSlice)) : null;
-            ValidatePagingSignature(method, isPaged, hasCancellationToken, resolved);
-            if (isPaged)
-            {
-                var kind = resolved == null ? DispatchKind.Unresolvable
-                    : isPage ? (isAsync ? DispatchKind.AsyncPage : DispatchKind.SyncPage)
-                    : (isAsync ? DispatchKind.AsyncSlice : DispatchKind.SyncSlice);
-                var resultType = isAsync ? method.ReturnType.GetGenericArguments()[0] : method.ReturnType;
-                return new MethodDescriptor(method, uniqueName, kind, resolved, resultType, true, hasCancellationToken,
-                    resolved == null ? null : new Lazy<QueryPlan>(() => QueryMethodParser.Parse(method)));
-            }
+            if (TryResolveForPagedMethod(
+                method,
+                entityType,
+                uniqueName,
+                hasCancellationToken,
+                findMethods,
+                out var pagedDescriptor))
+                return pagedDescriptor;
 
             if (TryResolveForAsyncMethod(
                 method,
@@ -110,40 +104,6 @@ namespace DataQI.Commons.Repository.Core
                 hasCancellationToken,
                 findMethods.Find,
                 findMethods.FindOne);
-        }
-
-        private static void ValidatePagingSignature(MethodInfo method, bool isPaged, bool hasCancellationToken, MethodInfo resolved)
-        {
-            var parameters = method.GetParameters();
-            var requestPositions = parameters
-                .Select((p, i) => new { p.ParameterType, Index = i })
-                .Where(x => x.ParameterType == typeof(IPageRequest))
-                .Select(x => x.Index)
-                .ToArray();
-
-            string Message(string reason) => $"{method.DeclaringType?.Name}.{method.Name}: {reason}";
-
-            if (requestPositions.Length > 1)
-                throw new InvalidOperationException(Message("a query method accepts at most one IPageRequest parameter"));
-            if (isPaged && requestPositions.Length == 0)
-                throw new InvalidOperationException(Message("a method returning ISlice<T> or IPage<T> needs an IPageRequest parameter"));
-            if (!isPaged && requestPositions.Length == 1)
-                throw new InvalidOperationException(Message("an IPageRequest parameter requires an ISlice<T> or IPage<T> return type"));
-            if (requestPositions.Length == 1)
-            {
-                var lastAllowed = parameters.Length - (hasCancellationToken ? 2 : 1);
-                if (requestPositions[0] != lastAllowed)
-                    throw new InvalidOperationException(Message("the IPageRequest parameter must be the last one, before an optional CancellationToken"));
-            }
-            if (isPaged)
-            {
-                var tokenPositions = parameters.Select((p, i) => new { p.ParameterType, Index = i })
-                    .Where(x => x.ParameterType == typeof(CancellationToken)).Select(x => x.Index).ToArray();
-                if (tokenPositions.Length > 1 || (tokenPositions.Length == 1 && !hasCancellationToken))
-                    throw new InvalidOperationException(Message("an optional CancellationToken must occur once at the end"));
-            }
-            if (isPaged && resolved == null)
-                throw new InvalidOperationException(Message("the repository does not implement IPagedRepository"));
         }
 
         private static bool TryGetPagedShape(MethodInfo method, Type entityType, out bool isAsync, out bool isPage)
@@ -189,6 +149,83 @@ namespace DataQI.Commons.Repository.Core
                 hasCancellationToken,
                 null);
             return true;
+        }
+
+        private static bool TryResolveForPagedMethod(
+            MethodInfo method,
+            Type entityType,
+            string uniqueName,
+            bool hasCancellationToken,
+            FindMethods findMethods,
+            out MethodDescriptor descriptor)
+        {
+            if (!TryGetPagedShape(method, entityType, out var isAsync, out var isPage))
+            {
+                ValidatePagingSignature(method, false, hasCancellationToken, null);
+                descriptor = null;
+                return false;
+            }
+
+            MethodInfo resolvedMethod;
+            DispatchKind kind;
+            if (isPage)
+            {
+                resolvedMethod = isAsync ? findMethods.FindPageAsync : findMethods.FindPage;
+                kind = isAsync ? DispatchKind.AsyncPage : DispatchKind.SyncPage;
+            }
+            else
+            {
+                resolvedMethod = isAsync ? findMethods.FindSliceAsync : findMethods.FindSlice;
+                kind = isAsync ? DispatchKind.AsyncSlice : DispatchKind.SyncSlice;
+            }
+
+            ValidatePagingSignature(method, true, hasCancellationToken, resolvedMethod);
+            var resultType = isAsync ? method.ReturnType.GetGenericArguments()[0] : method.ReturnType;
+
+            descriptor = new MethodDescriptor(
+                method,
+                uniqueName,
+                kind,
+                resolvedMethod,
+                resultType,
+                true,
+                hasCancellationToken,
+                new Lazy<QueryPlan>(() => QueryMethodParser.Parse(method)));
+            return true;
+        }
+
+        private static void ValidatePagingSignature(MethodInfo method, bool isPaged, bool hasCancellationToken, MethodInfo resolved)
+        {
+            var parameters = method.GetParameters();
+            var requestPositions = parameters
+                .Select((p, i) => new { p.ParameterType, Index = i })
+                .Where(x => x.ParameterType == typeof(IPageRequest))
+                .Select(x => x.Index)
+                .ToArray();
+
+            string Message(string reason) => $"{method.DeclaringType?.Name}.{method.Name}: {reason}";
+
+            if (requestPositions.Length > 1)
+                throw new InvalidOperationException(Message("a query method accepts at most one IPageRequest parameter"));
+            if (isPaged && requestPositions.Length == 0)
+                throw new InvalidOperationException(Message("a method returning ISlice<T> or IPage<T> needs an IPageRequest parameter"));
+            if (!isPaged && requestPositions.Length == 1)
+                throw new InvalidOperationException(Message("an IPageRequest parameter requires an ISlice<T> or IPage<T> return type"));
+            if (requestPositions.Length == 1)
+            {
+                var lastAllowed = parameters.Length - (hasCancellationToken ? 2 : 1);
+                if (requestPositions[0] != lastAllowed)
+                    throw new InvalidOperationException(Message("the IPageRequest parameter must be the last one, before an optional CancellationToken"));
+            }
+            if (isPaged)
+            {
+                var tokenPositions = parameters.Select((p, i) => new { p.ParameterType, Index = i })
+                    .Where(x => x.ParameterType == typeof(CancellationToken)).Select(x => x.Index).ToArray();
+                if (tokenPositions.Length > 1 || (tokenPositions.Length == 1 && !hasCancellationToken))
+                    throw new InvalidOperationException(Message("an optional CancellationToken must occur once at the end"));
+            }
+            if (isPaged && resolved == null)
+                throw new InvalidOperationException(Message("the repository does not implement IPagedRepository"));
         }
 
         private static bool TryResolveForAsyncMethod(
