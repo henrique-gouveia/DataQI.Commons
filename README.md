@@ -68,8 +68,12 @@ Completion follows the grammar in [Query Methods](#query-methods) and was tested
 | Find by criteria | `Find(Func<ICriteria, ICriteria>)` | `FindAsync(Func<ICriteria, ICriteria>, CancellationToken)` | `IEnumerable<TEntity>` |
 | Find by identifier | `FindOne(TId)` | `FindOneAsync(TId, CancellationToken)` | Entity or `null` |
 | Find one by criteria | `FindOne(Func<ICriteria, ICriteria>)` | `FindOneAsync(Func<ICriteria, ICriteria>, CancellationToken)` | Entity or `null`; multiple matches throw |
+| Find a slice (`IPagedRepository`) | `FindSlice(criteriaBuilder, page)` | `FindSliceAsync(criteriaBuilder, page, token)` | `ISlice<TEntity>` |
+| Find a page (`IPagedRepository`) | `FindPage(criteriaBuilder, page)` | `FindPageAsync(criteriaBuilder, page, token)` | `IPage<TEntity>` |
 | Insert | `Insert(TEntity)` | `InsertAsync(TEntity, CancellationToken)` | No result |
 | Insert or update | `Save(TEntity)` | `SaveAsync(TEntity, CancellationToken)` | No result |
+
+`ICrudRepository<TEntity, TId>` and `IPagedRepository<TEntity, TId>` are independent contracts extending the empty `IRepository<TEntity, TId>` marker. CRUD retains `IDisposable`; paging declares only its four query methods. Provider interfaces combine both contracts. A non-generic repository must identify exactly one entity/id pair through this marker. Paging interfaces live in `DataQI.Commons.Repository.Paging`; the default implementations (`PageRequest`, `Slice<T>` and `Page<T>`) live in `DataQI.Commons.Repository.Paging.Support`.
 
 Asynchronous operations return `Task` or `Task<TResult>` around the result shown. Collection queries return an empty sequence when nothing matches. Criteria-based single-entity queries throw `InvalidOperationException` when more than one row matches; exceptions from synchronous proxy calls can be wrapped in `TargetInvocationException`.
 
@@ -96,12 +100,43 @@ The return type decides which provider method receives the parsed criteria:
 |---|---|---|---|
 | `IEnumerable<TEntity>` | `Find(criteriaBuilder)` | Empty sequence | All matches |
 | `Task<IEnumerable<TEntity>>` | `FindAsync(criteriaBuilder, token)` | Empty sequence | All matches |
+| `ISlice<TEntity>` | `FindSlice(criteriaBuilder, page)` | Empty items | One window of matches |
+| `Task<ISlice<TEntity>>` | `FindSliceAsync(criteriaBuilder, page, token)` | Empty items | One window of matches |
+| `IPage<TEntity>` | `FindPage(criteriaBuilder, page)` | Empty items with real total | One window with total |
+| `Task<IPage<TEntity>>` | `FindPageAsync(criteriaBuilder, page, token)` | Empty items with real total | One window with total |
 | `TEntity` | `FindOne(criteriaBuilder)` | `null` | `InvalidOperationException` |
 | `Task<TEntity>` | `FindOneAsync(criteriaBuilder, token)` | `null` | `InvalidOperationException` |
 
 Use those exact shapes for parsed queries. `List<TEntity>`, arrays, `IQueryable<TEntity>`, `ValueTask<T>`, counts, and `bool` projections are not additional supported query contracts. A custom implementation method with an exact matching public signature can support other return types because it bypasses parsing.
 
 Synchronous calls pass through reflection; provider exceptions can be wrapped in `TargetInvocationException`. Asynchronous operation failures are normally observed when awaiting the returned task.
+
+### Paging
+
+Import `DataQI.Commons.Repository.Paging.Support` to use `PageRequest.Of(pageIndex, pageSize, orders)` with a zero-based `PageIndex`, a positive `PageSize` less than `int.MaxValue`, and optional `Order.Asc`/`Order.Desc` entries. `Offset` uses `long`; providers reject offsets above `int.MaxValue`. `PageRequest`, `Slice<T>` and `Page<T>` copy their input collections into read-only snapshots, including ordering values.
+
+```csharp
+public interface IPersonRepository : ICrudRepository<Person, int>, IPagedRepository<Person, int>
+{
+    ISlice<Person> FindByLastName(string lastName, IPageRequest page);
+    Task<IPage<Person>> FindByLastNameAsync(
+        string lastName, IPageRequest page, CancellationToken cancellationToken = default);
+}
+
+var slice = repository.FindSlice(c => c, PageRequest.Of(0, 20));
+```
+
+`ISlice<T>` exposes `Items`, `PageIndex`, `PageSize`, `HasNext` and `HasPrevious`. `IPage<T>` also exposes `long TotalCount` and `long TotalPages`. Prefer a slice when a total is unnecessary: it reads one extra row in one query. A page runs a separate count only when the items cannot reveal the total; an empty page beyond the end retains the real total.
+
+Parsed paging query signatures are validated when the proxy is created:
+
+- Return exactly `ISlice<TEntity>`, `IPage<TEntity>` or their `Task` forms, with the repository's entity type.
+- Include exactly one parameter declared as `IPageRequest`, last before any cancellation token. Passing `null` fails with `ArgumentException`.
+- An optional `CancellationToken` must occur only once and last; asynchronous queries forward it to the provider.
+- Do not use `IPageRequest` with a non-paged query return type, or a paged return without it. These invalid declarations throw `InvalidOperationException` at proxy creation.
+- Exact matching implementation methods retain precedence and bypass parsed-query validation.
+
+Final ordering follows method-name `OrderBy`, criteria `AddOrder`, then `page.Orders`. The first occurrence of each property wins; missing primary-key properties are appended ascending to break ties. An entity with neither a primary key nor an explicit ordering cannot be paged.
 
 ### Keywords, Aliases, and Arguments
 
@@ -249,6 +284,14 @@ Text matching, null semantics, value conversion, supported property types, and p
 
 **v4.0.0 - current release line**
 
+- Add immutable paging results and requests, `IPagedRepository`, and validated slice/page query-method dispatch.
+- **Breaking Change!** `MethodDescriptor.Create` now accepts one `FindMethods` group instead of separate find-method arguments; update custom dispatch integrations.
+- **Breaking Change!** CRUD and paging independently extend the new `IRepository<TEntity, TId>` marker. Paging no longer inherits CRUD or disposal. Interfaces requiring both must declare both contracts.
+- **Breaking Change!** `IEntityRepository` and `IDapperRepository` combine CRUD and paging; custom provider implementations must supply `FindSlice`, `FindSliceAsync`, `FindPage` and `FindPageAsync`.
+- Share request validation, order merging, total deduction and slice creation through `PagingRules` in `DataQI.Commons.Repository.Paging.Support`.
+- A paged query returning another entity type now fails at proxy creation with the expected and actual entity types.
+- Update the transitive analyzer dependency from `0.1.0-preview.1` to `0.1.0`; this dependency change is separate from the package version supplied by release tags.
+
 - **Breaking Change!** Replace the previous criteria expression hierarchy with the AST and visitor contract described in the migration guide.
 - **Breaking Change!** Expose criteria/order collections and replace ordering getters with read-only properties.
 - **Breaking Change!** Require `string` values for `Containing` and `StartingWith` restrictions.
@@ -317,7 +360,7 @@ The query interfaces (`ICriteria`, `ICriterion`, `ICriterionVisitor<T>`, `IOrder
 
 ### Writing a Provider
 
-Implement `ICrudRepository<TEntity, TId>` with the database behavior you need, then derive a factory from `RepositoryFactory`. Its `GetRepositoryInstance(Type, params object[])` creates that implementation; consumers call `GetRepository<TRepository>(...)` or pass a custom implementation factory.
+Implement `ICrudRepository<TEntity, TId>` and, when paging is supported, `IPagedRepository<TEntity, TId>` with the database behavior you need, then derive a factory from `RepositoryFactory`. Its `GetRepositoryInstance(Type, params object[])` creates that implementation; consumers call `GetRepository<TRepository>(...)` or pass a custom implementation factory.
 
 The dispatch path is:
 
@@ -325,9 +368,10 @@ The dispatch path is:
 2. `RepositoryMetadata` identifies the entity and identifier types. A `MethodDescriptor` caches the dispatch decision; query plans are parsed lazily.
 3. An exact public implementation signature takes precedence over name parsing, including custom methods.
 4. Otherwise, the return type selects criteria-based `Find`, `FindAsync`, `FindOne`, or `FindOneAsync`. `QueryPlan.ApplyTo` adds the parsed predicate and ordering to `ICriteria`.
-5. The provider translates `ICriterion.Accept(visitor)` nodes and applies the orders. A method with no available dispatch target is `Unresolvable` and invocation fails.
+5. Paging dispatch selects `FindSlice`, `FindPage` or their async counterparts and removes the page request and token from predicate arguments. Implement `IPagedRepository<TEntity, TId>` to expose these targets.
+6. The provider translates `ICriterion.Accept(visitor)` nodes and applies the orders. A method with no available dispatch target is `Unresolvable` and invocation fails.
 
-The dispatch kinds are `ExactMatch`, `SyncCollection`, `AsyncCollection`, `SyncSingle`, `AsyncSingle`, and `Unresolvable`. Expose the criteria overloads with the contract signatures, including a trailing `CancellationToken` on asynchronous overloads. Keep the supported query return shapes listed in the grammar; the dispatcher does not validate arbitrary return types for you.
+The dispatch kinds are `ExactMatch`, `SyncCollection`, `AsyncCollection`, `SyncSingle`, `AsyncSingle`, `Unresolvable`, `SyncSlice`, `AsyncSlice`, `SyncPage`, and `AsyncPage`. Expose the criteria overloads with the contract signatures, including a trailing `CancellationToken` on asynchronous overloads. Keep the supported query return shapes listed in the grammar; the dispatcher does not validate arbitrary return types for you.
 
 ## License
 

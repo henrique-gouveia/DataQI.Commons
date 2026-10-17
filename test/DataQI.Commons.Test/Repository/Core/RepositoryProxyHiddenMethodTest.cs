@@ -13,6 +13,14 @@ namespace DataQI.Commons.Test.Repository.Core
             string Echo(string value);
         }
 
+        [Fact]
+        public void TestAMethodHiddenByNewIsRegisteredOnce()
+        {
+            var repository = RepositoryProxy<IEchoRepository>.Create(() => new EchoHiding());
+
+            Assert.Equal("x!", repository.Echo("x"));
+        }
+
         public class EchoBase
         {
             public string Echo(string value) => value;
@@ -21,14 +29,6 @@ namespace DataQI.Commons.Test.Repository.Core
         public class EchoHiding : EchoBase
         {
             public new string Echo(string value) => $"{value}!";
-        }
-
-        [Fact]
-        public void TestAMethodHiddenByNewIsRegisteredOnce()
-        {
-            var repository = RepositoryProxy<IEchoRepository>.Create(() => new EchoHiding());
-
-            Assert.Equal("x!", repository.Echo("x"));
         }
     }
 }
