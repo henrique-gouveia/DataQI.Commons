@@ -8,16 +8,8 @@ using DataQI.Commons.Repository.Paging;
 
 namespace DataQI.Commons.Repository.Core
 {
-    internal enum QueryResult
-    {
-        Collection,
-        Single,
-        Slice,
-        Page
-    }
-
     /// <summary>Describes the form of a query method: what it returns and whether it is asynchronous.</summary>
-    internal sealed class QueryShape
+    public sealed class QueryShape
     {
         private QueryShape(QueryResult result, bool isAsync, Type resultType)
         {
@@ -56,6 +48,7 @@ namespace DataQI.Commons.Repository.Core
                         return IsAsync ? DispatchKind.AsyncSlice : DispatchKind.SyncSlice;
                     case QueryResult.Page:
                         return IsAsync ? DispatchKind.AsyncPage : DispatchKind.SyncPage;
+                    case QueryResult.Collection:
                     default:
                         return IsAsync ? DispatchKind.AsyncCollection : DispatchKind.SyncCollection;
                 }
@@ -74,6 +67,7 @@ namespace DataQI.Commons.Repository.Core
                         return "Slice";
                     case QueryResult.Page:
                         return "Page";
+                    case QueryResult.Collection:
                     default:
                         return string.Empty;
                 }
@@ -102,23 +96,34 @@ namespace DataQI.Commons.Repository.Core
         {
             var type = method.ReturnType;
             var isAsync = type.TryGetAsyncResultType(out var inner);
-            if (isAsync)
-                type = inner;
+            if (isAsync) type = inner;
 
-            if (type.IsGenericType)
-            {
-                var definition = type.GetGenericTypeDefinition();
-                if (definition == typeof(ISlice<>) || definition == typeof(IPage<>))
-                {
-                    var itemType = type.GetGenericArguments()[0];
-                    if (itemType != entityType)
-                        throw new InvalidOperationException(
-                            $"{method.DeclaringType?.Name}.{method.Name}: paging result T must be the repository entity {entityType.FullName}, but was {itemType.FullName}");
-                    return new QueryShape(definition == typeof(IPage<>) ? QueryResult.Page : QueryResult.Slice, isAsync, type);
-                }
-            }
+            if (!type.IsGenericType)
+                return new QueryShape(type == entityType ? QueryResult.Single : QueryResult.Collection, isAsync, type);
 
-            return new QueryShape(type == entityType ? QueryResult.Single : QueryResult.Collection, isAsync, type);
+            var definition = type.GetGenericTypeDefinition();
+            if (definition != typeof(ISlice<>) && definition != typeof(IPage<>))
+                return new QueryShape(type == entityType ? QueryResult.Single : QueryResult.Collection, isAsync, type);
+
+            var itemType = type.GetGenericArguments()[0];
+            if (itemType != entityType)
+                throw new InvalidOperationException(
+                    $"{method.DeclaringType?.Name}.{method.Name}: paging result T must be the repository entity {entityType.FullName}, but was {itemType.FullName}");
+
+            return new QueryShape(definition == typeof(IPage<>) ? QueryResult.Page : QueryResult.Slice, isAsync, type);
+        }
+
+        /// <summary>Identifies what a query method returns.</summary>
+        public enum QueryResult
+        {
+            /// <summary>Returns a collection of entities.</summary>
+            Collection,
+            /// <summary>Returns a single entity.</summary>
+            Single,
+            /// <summary>Returns an <see cref="ISlice{T}"/>.</summary>
+            Slice,
+            /// <summary>Returns an <see cref="IPage{T}"/>.</summary>
+            Page
         }
     }
 }

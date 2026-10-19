@@ -33,7 +33,8 @@ namespace DataQI.Commons.Repository.Core
         /// <summary>Gets a value indicating whether the last parameter of the method is a <see cref="System.Threading.CancellationToken"/>.</summary>
         public bool HasCancellationToken { get; }
 
-        internal QueryShape Shape { get; }
+        /// <summary>Gets the shape of the query method, or <c>null</c> when the method is forwarded unchanged or cannot be resolved.</summary>
+        public QueryShape Shape { get; }
 
         private MethodDescriptor(
             MethodInfo method,

@@ -285,7 +285,7 @@ Text matching, null semantics, value conversion, supported property types, and p
 **v4.0.0 - current release line**
 
 - Add immutable paging results and requests, `IPagedRepository`, and validated slice/page query-method dispatch.
-- **Breaking Change!** `MethodDescriptor.Create` now accepts one `FindMethods` group instead of separate find-method arguments; update custom dispatch integrations.
+- **Breaking Change!** `MethodDescriptor.Create` no longer takes the separate `findMethod`, `findAsyncMethod`, `findOneMethod` and `findOneAsyncMethod` arguments. It now takes a `Func<string, Type[], MethodInfo>` that, given the name of the repository method a query method is forwarded to (`Find`, `FindAsync`, `FindOne`, `FindOneAsync`, `FindSlice`, `FindSliceAsync`, `FindPage` or `FindPageAsync`) and the parameter types that follow its `Func<ICriteria, ICriteria>` argument, returns the matching public instance method or `null` when the repository has none. Update custom dispatch integrations that call it directly.
 - **Breaking Change!** CRUD and paging independently extend the new `IRepository<TEntity, TId>` marker. Paging no longer inherits CRUD or disposal. Interfaces requiring both must declare both contracts.
 - **Breaking Change!** `IEntityRepository` and `IDapperRepository` combine CRUD and paging; custom provider implementations must supply `FindSlice`, `FindSliceAsync`, `FindPage` and `FindPageAsync`.
 - Share request validation, order merging, total deduction and slice creation through `PagingRules` in `DataQI.Commons.Repository.Paging.Support`.
