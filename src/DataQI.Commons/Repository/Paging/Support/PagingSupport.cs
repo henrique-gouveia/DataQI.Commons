@@ -8,7 +8,7 @@ using DataQI.Commons.Query.Support;
 namespace DataQI.Commons.Repository.Paging.Support
 {
     /// <summary>Provides ORM-independent validation, ordering and result rules for paging repositories.</summary>
-    public static class PagingRules
+    public static class PagingSupport
     {
         /// <summary>Validates a request, including custom implementations, and rejects offsets above int.MaxValue.</summary>
         /// <param name="page">The request to validate.</param>
@@ -74,6 +74,20 @@ namespace DataQI.Commons.Repository.Paging.Support
             var hasNext = rows.Count > page.PageSize;
             var items = hasNext ? rows.Take(page.PageSize).ToArray() : rows;
             return new Slice<T>(items, page.PageIndex, page.PageSize, hasNext);
+        }
+
+        /// <summary>Builds an immutable page from its items and resolved total.</summary>
+        /// <typeparam name="T">The item type.</typeparam>
+        /// <param name="items">The fetched page items.</param>
+        /// <param name="page">The page request.</param>
+        /// <param name="total">The resolved total number of rows.</param>
+        /// <returns>The requested page and its navigation metadata.</returns>
+        public static IPage<T> ToPage<T>(IReadOnlyList<T> items, IPageRequest page, long total)
+        {
+            EnsurePage(page);
+            if (items == null)
+                throw new ArgumentException("Items must not be null", nameof(items));
+            return new Page<T>(items, page.PageIndex, page.PageSize, total);
         }
     }
 }

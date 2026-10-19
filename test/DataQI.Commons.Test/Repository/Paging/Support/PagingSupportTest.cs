@@ -8,12 +8,12 @@ using DataQI.Commons.Test.Repository.Sample;
 
 namespace DataQI.Commons.Test.Repository.Paging.Support
 {
-    public class PagingRulesTest
+    public class PagingSupportTest
     {
         [Fact]
         public void TestMergeKeepsMethodThenCriteriaThenPageThenKeyOrderAndDropsRepeats()
         {
-            var orders = PagingRules.MergeOrders<FakeEntity>(
+            var orders = PagingSupport.MergeOrders<FakeEntity>(
                 new[] { Order.Asc("Name") },
                 PageRequest.Of(0, 10, Order.Desc("Name"), Order.Desc("Price")),
                 new[] { "Id" });
@@ -26,7 +26,7 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
         [Fact]
         public void TestMergeDoesNotRepeatAKeyAlreadyInTheOrdering()
         {
-            var orders = PagingRules.MergeOrders<FakeEntity>(
+            var orders = PagingSupport.MergeOrders<FakeEntity>(
                 new[] { Order.Desc("Id") }, PageRequest.Of(0, 10), new[] { "Id" });
 
             Assert.Single(orders);
@@ -36,7 +36,7 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
         [Fact]
         public void TestMergeAppendsEveryPartOfACompositeKey()
         {
-            var orders = PagingRules.MergeOrders<FakeEntity>(
+            var orders = PagingSupport.MergeOrders<FakeEntity>(
                 [], PageRequest.Of(0, 10), new[] { "A", "B" });
 
             Assert.Equal(new[] { "A", "B" }, orders.Select(o => o.PropertyName));
@@ -46,7 +46,7 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
         public void TestMergeFailsWithoutKeyAndWithoutExplicitOrder()
         {
             var exception = Assert.Throws<InvalidOperationException>(() =>
-                PagingRules.MergeOrders<FakeEntity>([], PageRequest.Of(0, 10), []));
+                PagingSupport.MergeOrders<FakeEntity>([], PageRequest.Of(0, 10), []));
 
             Assert.Contains(nameof(FakeEntity), exception.Message);
         }
@@ -54,7 +54,7 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
         [Fact]
         public void TestMergeAcceptsAnEntityWithoutKeyWhenAnOrderIsGiven()
         {
-            var orders = PagingRules.MergeOrders<FakeEntity>(
+            var orders = PagingSupport.MergeOrders<FakeEntity>(
                 new[] { Order.Asc("Name") }, PageRequest.Of(0, 10), []);
 
             Assert.Single(orders);
@@ -63,7 +63,7 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
         [Fact]
         public void TestEnsurePageRejectsNull()
         {
-            Assert.Throws<ArgumentException>(() => PagingRules.EnsurePage(null));
+            Assert.Throws<ArgumentException>(() => PagingSupport.EnsurePage(null));
         }
 
         [Fact]
@@ -71,13 +71,13 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
         {
             var page = PageRequest.Of(int.MaxValue, 10);
 
-            Assert.Throws<ArgumentException>(() => PagingRules.EnsurePage(page));
+            Assert.Throws<ArgumentException>(() => PagingSupport.EnsurePage(page));
         }
 
         [Fact]
         public void TestEnsurePageAcceptsAValidCustomImplementation()
         {
-            PagingRules.EnsurePage(new CustomPageRequest(2, 10, 20, []));
+            PagingSupport.EnsurePage(new CustomPageRequest(2, 10, 20, []));
         }
 
         [Theory]
@@ -91,7 +91,7 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
         {
             var page = new CustomPageRequest(index, size, offset, []);
 
-            Assert.Throws<ArgumentException>(() => PagingRules.EnsurePage(page));
+            Assert.Throws<ArgumentException>(() => PagingSupport.EnsurePage(page));
         }
 
         [Fact]
@@ -99,15 +99,15 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
         {
             var page = new CustomPageRequest(0, 10, 0, null);
 
-            Assert.Throws<ArgumentException>(() => PagingRules.EnsurePage(page));
+            Assert.Throws<ArgumentException>(() => PagingSupport.EnsurePage(page));
         }
 
         [Fact]
         public void TestEnsurePageRejectsNullOrderOrEmptyPropertyName()
         {
-            Assert.Throws<ArgumentException>(() => PagingRules.EnsurePage(
+            Assert.Throws<ArgumentException>(() => PagingSupport.EnsurePage(
                 new CustomPageRequest(0, 10, 0, new IOrderCriterion[] { null })));
-            Assert.Throws<ArgumentException>(() => PagingRules.EnsurePage(
+            Assert.Throws<ArgumentException>(() => PagingSupport.EnsurePage(
                 new CustomPageRequest(0, 10, 0, new[] { Order.Asc("") })));
         }
 
@@ -119,7 +119,7 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
         public void TestEnsurePageRejectsInvalidCustomOrders(string name, OrderDirection direction)
         {
             var page = new CustomPageRequest(0, 10, 0, new IOrderCriterion[] { new CustomOrder(name, direction) });
-            Assert.Throws<ArgumentException>(() => PagingRules.EnsurePage(page));
+            Assert.Throws<ArgumentException>(() => PagingSupport.EnsurePage(page));
         }
 
         [Theory]
@@ -127,7 +127,7 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
         [InlineData(0, 10, 0, 0L)]
         public void TestDeducesTheTotalWhenThePageRevealsIt(int items, int size, int index, long expected)
         {
-            Assert.Equal(expected, PagingRules.DeduceTotal(items, PageRequest.Of(index, size)));
+            Assert.Equal(expected, PagingSupport.DeduceTotal(items, PageRequest.Of(index, size)));
         }
 
         [Theory]
@@ -135,7 +135,7 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
         [InlineData(0, 10, 5)]
         public void TestDoesNotDeduceTheTotalOtherwise(int items, int size, int index)
         {
-            Assert.Null(PagingRules.DeduceTotal(items, PageRequest.Of(index, size)));
+            Assert.Null(PagingSupport.DeduceTotal(items, PageRequest.Of(index, size)));
         }
 
         [Theory]
@@ -145,7 +145,7 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
         public void TestSliceTrimsTheExtraRowWithoutChangingTheSource(int count, bool hasNext)
         {
             var source = Enumerable.Range(0, count).ToList();
-            var slice = PagingRules.ToSlice(source, PageRequest.Of(1, 10));
+            var slice = PagingSupport.ToSlice(source, PageRequest.Of(1, 10));
 
             Assert.Equal(Math.Min(count, 10), slice.Items.Count);
             Assert.Equal(hasNext, slice.HasNext);
@@ -157,8 +157,37 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
         [Fact]
         public void TestSliceRejectsNullRequestAndNullRows()
         {
-            Assert.Throws<ArgumentException>(() => PagingRules.ToSlice(Array.Empty<int>(), null));
-            Assert.Throws<ArgumentException>(() => PagingRules.ToSlice<int>(null, PageRequest.Of(0, 10)));
+            Assert.Throws<ArgumentException>(() => PagingSupport.ToSlice(Array.Empty<int>(), null));
+            Assert.Throws<ArgumentException>(() => PagingSupport.ToSlice<int>(null, PageRequest.Of(0, 10)));
+        }
+
+        [Fact]
+        public void TestPagePreservesItemsAndCalculatesMetadata()
+        {
+            var items = new[] { 21, 22, 23, 24, 25 };
+
+            var page = PagingSupport.ToPage(items, PageRequest.Of(2, 10), 25);
+
+            Assert.Equal(items, page.Items);
+            Assert.Equal(2, page.PageIndex);
+            Assert.Equal(10, page.PageSize);
+            Assert.Equal(25, page.TotalCount);
+            Assert.Equal(3, page.TotalPages);
+        }
+
+        [Fact]
+        public void TestPageRejectsNullRequestAndNullItems()
+        {
+            Assert.Throws<ArgumentException>(() => PagingSupport.ToPage(Array.Empty<int>(), null, 0));
+            Assert.Throws<ArgumentException>(() => PagingSupport.ToPage<int>(null, PageRequest.Of(0, 10), 0));
+        }
+
+        [Fact]
+        public void TestPageRejectsAnInconsistentCustomRequest()
+        {
+            var request = new CustomPageRequest(2, 10, 5, Array.Empty<IOrderCriterion>());
+
+            Assert.Throws<ArgumentException>(() => PagingSupport.ToPage(Array.Empty<int>(), request, 0));
         }
 
         private sealed class CustomOrder : IOrderCriterion
