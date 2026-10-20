@@ -5,6 +5,7 @@ using System.Threading;
 using DataQI.Commons.Extensions.Reflection;
 using DataQI.Commons.Query;
 using DataQI.Commons.Repository.Paging;
+using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Core
 {
@@ -106,9 +107,8 @@ namespace DataQI.Commons.Repository.Core
                 return new QueryShape(type == entityType ? QueryResult.Single : QueryResult.Collection, isAsync, type);
 
             var itemType = type.GetGenericArguments()[0];
-            if (itemType != entityType)
-                throw new InvalidOperationException(
-                    $"{method.DeclaringType?.Name}.{method.Name}: paging result T must be the repository entity {entityType.FullName}, but was {itemType.FullName}");
+            Assert.True<InvalidOperationException>(itemType == entityType,
+                $"{method.DeclaringType?.Name}.{method.Name}: paging result T must be the repository entity {entityType.FullName}, but was {itemType.FullName}");
 
             return new QueryShape(definition == typeof(IPage<>) ? QueryResult.Page : QueryResult.Slice, isAsync, type);
         }

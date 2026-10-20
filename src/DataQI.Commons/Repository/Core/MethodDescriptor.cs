@@ -7,6 +7,7 @@ using System.Threading;
 using DataQI.Commons.Extensions.Reflection;
 using DataQI.Commons.Repository.Query;
 using DataQI.Commons.Repository.Paging;
+using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Core
 {
@@ -103,27 +104,27 @@ namespace DataQI.Commons.Repository.Core
 
             string Message(string reason) => $"{method.DeclaringType?.Name}.{method.Name}: {reason}";
 
-            if (requestPositions.Length > 1)
-                throw new InvalidOperationException(Message("a query method accepts at most one IPageRequest parameter"));
-            if (isPaged && requestPositions.Length == 0)
-                throw new InvalidOperationException(Message("a method returning ISlice<T> or IPage<T> needs an IPageRequest parameter"));
-            if (!isPaged && requestPositions.Length == 1)
-                throw new InvalidOperationException(Message("an IPageRequest parameter requires an ISlice<T> or IPage<T> return type"));
+            Assert.True<InvalidOperationException>(requestPositions.Length <= 1,
+                Message("a query method accepts at most one IPageRequest parameter"));
+            Assert.True<InvalidOperationException>(!isPaged || requestPositions.Length != 0,
+                Message("a method returning ISlice<T> or IPage<T> needs an IPageRequest parameter"));
+            Assert.True<InvalidOperationException>(isPaged || requestPositions.Length != 1,
+                Message("an IPageRequest parameter requires an ISlice<T> or IPage<T> return type"));
             if (requestPositions.Length == 1)
             {
                 var lastAllowed = parameters.Length - (hasCancellationToken ? 2 : 1);
-                if (requestPositions[0] != lastAllowed)
-                    throw new InvalidOperationException(Message("the IPageRequest parameter must be the last one, before an optional CancellationToken"));
+                Assert.True<InvalidOperationException>(requestPositions[0] == lastAllowed,
+                    Message("the IPageRequest parameter must be the last one, before an optional CancellationToken"));
             }
             if (isPaged)
             {
                 var tokenPositions = parameters.Select((p, i) => new { p.ParameterType, Index = i })
                     .Where(x => x.ParameterType == typeof(CancellationToken)).Select(x => x.Index).ToArray();
-                if (tokenPositions.Length > 1 || (tokenPositions.Length == 1 && !hasCancellationToken))
-                    throw new InvalidOperationException(Message("an optional CancellationToken must occur once at the end"));
+                Assert.True<InvalidOperationException>(tokenPositions.Length <= 1 && (tokenPositions.Length != 1 || hasCancellationToken),
+                    Message("an optional CancellationToken must occur once at the end"));
             }
-            if (isPaged && resolved == null)
-                throw new InvalidOperationException(Message("the repository does not implement IPagedRepository"));
+            Assert.True<InvalidOperationException>(!isPaged || resolved != null,
+                Message("the repository does not implement IPagedRepository"));
         }
     }
 }

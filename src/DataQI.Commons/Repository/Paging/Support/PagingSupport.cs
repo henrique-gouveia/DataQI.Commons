@@ -4,6 +4,7 @@ using System.Linq;
 
 using DataQI.Commons.Query;
 using DataQI.Commons.Query.Support;
+using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Paging.Support
 {
@@ -15,15 +16,15 @@ namespace DataQI.Commons.Repository.Paging.Support
         /// <exception cref="ArgumentException">The request violates the paging contract.</exception>
         public static void EnsurePage(IPageRequest page)
         {
-            if (page == null)
-                throw new ArgumentException("Page must not be null", nameof(page));
-            if (page.PageIndex < 0 || page.PageSize < 1 || page.PageSize == int.MaxValue)
-                throw new ArgumentException("Page index must not be negative and page size must be between 1 and int.MaxValue - 1", nameof(page));
-            if (page.Offset != (long)page.PageIndex * page.PageSize || page.Offset > int.MaxValue)
-                throw new ArgumentException("Page offset must equal index times size and must not exceed int.MaxValue", nameof(page));
-            if (page.Orders == null || page.Orders.Any(o => o == null || string.IsNullOrWhiteSpace(o.PropertyName) ||
-                (o.Direction != OrderDirection.Asc && o.Direction != OrderDirection.Desc)))
-                throw new ArgumentException("Page orders must contain valid property names and directions", nameof(page));
+            Assert.NotNull(page, "Page must not be null", nameof(page));
+            Assert.True(page.PageIndex >= 0 && page.PageSize >= 1 && page.PageSize != int.MaxValue,
+                "Page index must not be negative and page size must be between 1 and int.MaxValue - 1", nameof(page));
+            Assert.True(page.Offset == (long)page.PageIndex * page.PageSize && page.Offset <= int.MaxValue,
+                "Page offset must equal index times size and must not exceed int.MaxValue", nameof(page));
+            Assert.NotNull(page.Orders, "Page orders must contain valid property names and directions", nameof(page));
+            Assert.False(page.Orders.Any(o => o == null || string.IsNullOrWhiteSpace(o.PropertyName) ||
+                (o.Direction != OrderDirection.Asc && o.Direction != OrderDirection.Desc)),
+                "Page orders must contain valid property names and directions", nameof(page));
         }
 
         /// <summary>Merges method/criteria orders, request orders and ascending missing keys; the first property occurrence wins.</summary>
@@ -45,8 +46,8 @@ namespace DataQI.Commons.Repository.Paging.Support
             foreach (var key in keyProperties)
                 if (seen.Add(key))
                     merged.Add(Order.Asc(key));
-            if (merged.Count == 0)
-                throw new InvalidOperationException($"Cannot page {typeof(TEntity).Name}: it has no primary key and no explicit ordering");
+            Assert.NotEmpty<InvalidOperationException>(merged,
+                () => $"Cannot page {typeof(TEntity).Name}: it has no primary key and no explicit ordering");
             return merged;
         }
 
@@ -69,8 +70,7 @@ namespace DataQI.Commons.Repository.Paging.Support
         public static ISlice<T> ToSlice<T>(IReadOnlyList<T> rows, IPageRequest page)
         {
             EnsurePage(page);
-            if (rows == null)
-                throw new ArgumentException("Rows must not be null", nameof(rows));
+            Assert.NotNull(rows, "Rows must not be null", nameof(rows));
             var hasNext = rows.Count > page.PageSize;
             var items = hasNext ? rows.Take(page.PageSize).ToArray() : rows;
             return new Slice<T>(items, page.PageIndex, page.PageSize, hasNext);
@@ -85,8 +85,7 @@ namespace DataQI.Commons.Repository.Paging.Support
         public static IPage<T> ToPage<T>(IReadOnlyList<T> items, IPageRequest page, long total)
         {
             EnsurePage(page);
-            if (items == null)
-                throw new ArgumentException("Items must not be null", nameof(items));
+            Assert.NotNull(items, "Items must not be null", nameof(items));
             return new Page<T>(items, page.PageIndex, page.PageSize, total);
         }
     }

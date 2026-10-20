@@ -73,10 +73,10 @@ namespace DataQI.Commons.Repository.Core
                 .Distinct()
                 .ToList();
 
-            if (candidates.Count == 0)
-                throw new InvalidOperationException($"Could not resolve entity/id type of {repositoryInterface}");
-            if (candidates.Count > 1)
-                throw new InvalidOperationException($"{repositoryInterface} declares more than one entity/id pair");
+            Assert.NotEmpty<InvalidOperationException>(candidates,
+                $"Could not resolve entity/id type of {repositoryInterface}");
+            Assert.True<InvalidOperationException>(candidates.Count <= 1,
+                $"{repositoryInterface} declares more than one entity/id pair");
 
             EntityType = candidates[0].Entity;
             IdType = candidates[0].Id;
