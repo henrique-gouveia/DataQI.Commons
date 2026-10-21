@@ -288,7 +288,7 @@ Text matching, null semantics, value conversion, supported property types, and p
 - **Breaking Change!** `MethodDescriptor.Create` no longer takes the separate `findMethod`, `findAsyncMethod`, `findOneMethod` and `findOneAsyncMethod` arguments. It now takes a `Func<string, Type[], MethodInfo>` that, given the name of the repository method a query method is forwarded to (`Find`, `FindAsync`, `FindOne`, `FindOneAsync`, `FindSlice`, `FindSliceAsync`, `FindPage` or `FindPageAsync`) and the parameter types that follow its `Func<ICriteria, ICriteria>` argument, returns the matching public instance method or `null` when the repository has none. Update custom dispatch integrations that call it directly.
 - **Breaking Change!** CRUD and paging independently extend the new `IRepository<TEntity, TId>` marker. Paging no longer inherits CRUD or disposal. Interfaces requiring both must declare both contracts.
 - **Breaking Change!** `IEntityRepository` and `IDapperRepository` combine CRUD and paging; custom provider implementations must supply `FindSlice`, `FindSliceAsync`, `FindPage` and `FindPageAsync`.
-- Share request validation, order merging, total deduction and slice creation through `PagingRules` in `DataQI.Commons.Repository.Paging.Support`.
+- Share request validation, order merging, total deduction, and page and slice creation through `PagingSupport` in `DataQI.Commons.Repository.Paging.Support`.
 - A paged query returning another entity type now fails at proxy creation with the expected and actual entity types.
 - Update the transitive analyzer dependency from `0.1.0-preview.1` to `0.1.0`; this dependency change is separate from the package version supplied by release tags.
 
