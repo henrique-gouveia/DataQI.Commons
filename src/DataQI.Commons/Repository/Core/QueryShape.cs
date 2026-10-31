@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 
@@ -12,13 +13,6 @@ namespace DataQI.Commons.Repository.Core
     /// <summary>Describes the form of a query method: what it returns and whether it is asynchronous.</summary>
     public sealed class QueryShape
     {
-        private QueryShape(QueryResult result, bool isAsync, Type resultType)
-        {
-            Result = result;
-            IsAsync = isAsync;
-            ResultType = resultType;
-        }
-
         /// <summary>Gets what the query method returns.</summary>
         public QueryResult Result { get; }
         /// <summary>Gets a value indicating whether the query method is asynchronous.</summary>
@@ -75,20 +69,11 @@ namespace DataQI.Commons.Repository.Core
             }
         }
 
-        /// <summary>Builds the arguments of the repository method call.</summary>
-        public object[] BuildArguments(
-            Func<ICriteria, ICriteria> criteriaBuilder,
-            IPageRequest page,
-            CancellationToken cancellationToken)
+        private QueryShape(QueryResult result, bool isAsync, Type resultType)
         {
-            var arguments = new object[1 + (HasPageRequest ? 1 : 0) + (IsAsync ? 1 : 0)];
-            var index = 0;
-            arguments[index++] = criteriaBuilder;
-            if (HasPageRequest)
-                arguments[index++] = page;
-            if (IsAsync)
-                arguments[index] = cancellationToken;
-            return arguments;
+            Result = result;
+            IsAsync = isAsync;
+            ResultType = resultType;
         }
 
         /// <summary>Classifies a query method of a repository interface.</summary>
@@ -124,6 +109,57 @@ namespace DataQI.Commons.Repository.Core
             Slice,
             /// <summary>Returns an <see cref="IPage{T}"/>.</summary>
             Page
+        }
+
+        /// <summary>Builds the arguments for the resolved implementation method.</summary>
+        /// <param name="criteriaBuilder">The criteria builder made from the query method arguments.</param>
+        /// <param name="page">The page request, when the query is paged.</param>
+        /// <param name="cancellationToken">The cancellation token for an asynchronous query.</param>
+        /// <returns>The arguments to pass to the implementation method.</returns>
+        public object[] BuildImplementationArguments(
+            Func<ICriteria, ICriteria> criteriaBuilder,
+            IPageRequest page,
+            CancellationToken cancellationToken)
+        {
+            var arguments = new object[1 + (HasPageRequest ? 1 : 0) + (IsAsync ? 1 : 0)];
+            var index = 0;
+            arguments[index++] = criteriaBuilder;
+            if (HasPageRequest)
+                arguments[index++] = page;
+            if (IsAsync)
+                arguments[index] = cancellationToken;
+            return arguments;
+        }
+
+        /// <summary>Builds the query argument values from a repository interface call.</summary>
+        /// <param name="args">The arguments passed to the query method.</param>
+        /// <param name="hasCancellationToken">Whether the last argument is a cancellation token.</param>
+        /// <returns>The criteria values, page request and cancellation token.</returns>
+        public QueryMethodArguments BuildQueryMethodArguments(object[] args, bool hasCancellationToken)
+        {
+            var withoutToken = hasCancellationToken ? args.Take(args.Length - 1).ToArray() : args;
+            var cancellationToken = hasCancellationToken ? (CancellationToken)args[args.Length - 1] : default;
+            var criteriaArgs = HasPageRequest ? withoutToken.Take(withoutToken.Length - 1).ToArray() : withoutToken;
+            var page = HasPageRequest ? (IPageRequest)withoutToken[withoutToken.Length - 1] : null;
+            return new QueryMethodArguments(criteriaArgs, page, cancellationToken);
+        }
+
+        /// <summary>Contains the arguments extracted from a query method call.</summary>
+        public readonly struct QueryMethodArguments
+        {
+            internal QueryMethodArguments(object[] criteriaArgs, IPageRequest page, CancellationToken cancellationToken)
+            {
+                CriteriaArgs = criteriaArgs;
+                Page = page;
+                CancellationToken = cancellationToken;
+            }
+
+            /// <summary>Gets the arguments used to build query criteria.</summary>
+            public object[] CriteriaArgs { get; }
+            /// <summary>Gets the page request, or <c>null</c> for a non-paged query.</summary>
+            public IPageRequest Page { get; }
+            /// <summary>Gets the cancellation token for the query method.</summary>
+            public CancellationToken CancellationToken { get; }
         }
     }
 }

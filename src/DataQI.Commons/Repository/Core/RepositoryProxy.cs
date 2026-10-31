@@ -3,11 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 
 using DataQI.Commons.Extensions.Reflection;
 using DataQI.Commons.Query;
-using DataQI.Commons.Repository.Paging;
 using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Core
@@ -118,21 +116,17 @@ namespace DataQI.Commons.Repository.Core
             if (descriptor.Kind == DispatchKind.ExactMatch)
                 return descriptor.ResolvedMethod.Invoke(defaultRepository, args);
 
-            if (descriptor.Shape == null)
+            if (descriptor.Kind == DispatchKind.Unresolvable)
                 throw new TargetInvocationException(
                     $"Unknown method {targetMethod.Name} returning type {targetMethod.ReturnType}", null);
 
-            var (withoutToken, cancellationToken) = descriptor.HasCancellationToken
-                ? SplitCancellationToken(args)
-                : (args, default);
-            var (criteriaArgs, page) = descriptor.HasPageRequest
-                ? SplitPageRequest(withoutToken)
-                : (withoutToken, null);
-            var criteriaBuilder = CreateCriteriaBuilder(targetMethod, criteriaArgs);
+            var queryArgs = descriptor.Shape.BuildQueryMethodArguments(args, descriptor.HasCancellationToken);
+            var criteriaBuilder = CreateCriteriaBuilder(targetMethod, queryArgs.CriteriaArgs);
 
             return descriptor.ResolvedMethod.Invoke(
                 defaultRepository,
-                descriptor.Shape.BuildArguments(criteriaBuilder, page, cancellationToken));
+                descriptor.Shape.BuildImplementationArguments(
+                    criteriaBuilder, queryArgs.Page, queryArgs.CancellationToken));
         }
 
         /// <summary>Creates the criteria builder that applies a query method's plan to its arguments.</summary>
@@ -150,16 +144,6 @@ namespace DataQI.Commons.Repository.Core
             }
 
             return CriteriaBuilder;
-        }
-
-        private static (object[] CriteriaArgs, IPageRequest Page) SplitPageRequest(object[] args)
-            => (args.Take(args.Length - 1).ToArray(), (IPageRequest)args[args.Length - 1]);
-
-        private static (object[] CriteriaArgs, CancellationToken CancellationToken) SplitCancellationToken(object[] args)
-        {
-            var cancellationToken = (CancellationToken)args[args.Length - 1];
-            var criteriaArgs = args.Take(args.Length - 1).ToArray();
-            return (criteriaArgs, cancellationToken);
         }
     }
 }
