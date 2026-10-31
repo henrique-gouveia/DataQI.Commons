@@ -1,8 +1,9 @@
 using System;
+using System.Collections;
 
 namespace DataQI.Commons.Util
 {
-    /// <summary>Provides argument guards that throw <see cref="ArgumentException"/> with a caller supplied message.</summary>
+    /// <summary>Provides guards that throw <see cref="ArgumentException"/> by default or the requested exception type in generic overloads.</summary>
     public static class Assert
     {
         /// <summary>Ensures that an object is exactly of type <typeparamref name="T"/>.</summary>
@@ -36,6 +37,86 @@ namespace DataQI.Commons.Util
                 throw new ArgumentException(message);
         }
 
+        /// <summary>Ensures that a condition holds for a named argument.</summary>
+        /// <param name="expression">The condition that must be <c>true</c>.</param>
+        /// <param name="message">The exception message.</param>
+        /// <param name="paramName">The name of the invalid argument.</param>
+        /// <exception cref="ArgumentException"><paramref name="expression"/> is <c>false</c>.</exception>
+        public static void True(bool expression, string message, string paramName)
+        {
+            if (!expression)
+                throw new ArgumentException(message, paramName);
+        }
+
+        /// <summary>Ensures that a condition holds, throwing the requested exception type otherwise.</summary>
+        /// <typeparam name="TException">The exception type to throw; must expose a constructor that accepts a message.</typeparam>
+        /// <param name="expression">The condition that must be <c>true</c>.</param>
+        /// <param name="message">The exception message.</param>
+        /// <exception cref="Exception"><paramref name="expression"/> is <c>false</c>; the exception is of type <typeparamref name="TException"/>.</exception>
+        public static void True<TException>(bool expression, string message)
+            where TException : Exception
+        {
+            if (!expression)
+                throw Create<TException>(message);
+        }
+
+        /// <summary>Ensures that a condition holds without building the message on success, throwing the requested exception type otherwise.</summary>
+        /// <typeparam name="TException">The exception type to throw; must expose a constructor that accepts a message.</typeparam>
+        /// <param name="expression">The condition that must be <c>true</c>.</param>
+        /// <param name="message">Creates the exception message only when the condition fails.</param>
+        /// <exception cref="Exception"><paramref name="expression"/> is <c>false</c>; the exception is of type <typeparamref name="TException"/>.</exception>
+        public static void True<TException>(bool expression, Func<string> message)
+            where TException : Exception
+        {
+            if (!expression)
+                throw Create<TException>(message());
+        }
+
+        /// <summary>Ensures that a condition does not hold.</summary>
+        /// <param name="expression">The condition that must be <c>false</c>.</param>
+        /// <param name="message">The exception message.</param>
+        /// <exception cref="ArgumentException"><paramref name="expression"/> is <c>true</c>.</exception>
+        public static void False(bool expression, string message)
+        {
+            if (expression)
+                throw new ArgumentException(message);
+        }
+
+        /// <summary>Ensures that a condition does not hold for a named argument.</summary>
+        /// <param name="expression">The condition that must be <c>false</c>.</param>
+        /// <param name="message">The exception message.</param>
+        /// <param name="paramName">The name of the invalid argument.</param>
+        /// <exception cref="ArgumentException"><paramref name="expression"/> is <c>true</c>.</exception>
+        public static void False(bool expression, string message, string paramName)
+        {
+            if (expression)
+                throw new ArgumentException(message, paramName);
+        }
+
+        /// <summary>Ensures that a condition does not hold, throwing the requested exception type otherwise.</summary>
+        /// <typeparam name="TException">The exception type to throw; must expose a constructor that accepts a message.</typeparam>
+        /// <param name="expression">The condition that must be <c>false</c>.</param>
+        /// <param name="message">The exception message.</param>
+        /// <exception cref="Exception"><paramref name="expression"/> is <c>true</c>; the exception is of type <typeparamref name="TException"/>.</exception>
+        public static void False<TException>(bool expression, string message)
+            where TException : Exception
+        {
+            if (expression)
+                throw Create<TException>(message);
+        }
+
+        /// <summary>Ensures that a condition does not hold without building the message on success, throwing the requested exception type otherwise.</summary>
+        /// <typeparam name="TException">The exception type to throw; must expose a constructor that accepts a message.</typeparam>
+        /// <param name="expression">The condition that must be <c>false</c>.</param>
+        /// <param name="message">Creates the exception message only when the condition fails.</param>
+        /// <exception cref="Exception"><paramref name="expression"/> is <c>true</c>; the exception is of type <typeparamref name="TException"/>.</exception>
+        public static void False<TException>(bool expression, Func<string> message)
+            where TException : Exception
+        {
+            if (expression)
+                throw Create<TException>(message());
+        }
+
         /// <summary>Ensures that an object is not <c>null</c>.</summary>
         /// <param name="obj">The object to check.</param>
         /// <param name="message">The exception message.</param>
@@ -44,6 +125,29 @@ namespace DataQI.Commons.Util
         {
             if (obj == null)
                 throw new ArgumentException(message);
+        }
+
+        /// <summary>Ensures that a named argument is not <c>null</c>.</summary>
+        /// <param name="obj">The object to check.</param>
+        /// <param name="message">The exception message.</param>
+        /// <param name="paramName">The name of the invalid argument.</param>
+        /// <exception cref="ArgumentException"><paramref name="obj"/> is <c>null</c>.</exception>
+        public static void NotNull(object obj, string message, string paramName)
+        {
+            if (obj == null)
+                throw new ArgumentException(message, paramName);
+        }
+
+        /// <summary>Ensures that an object is not <c>null</c> without building the message on success, throwing the requested exception type otherwise.</summary>
+        /// <typeparam name="TException">The exception type to throw; must expose a constructor that accepts a message.</typeparam>
+        /// <param name="obj">The object to check.</param>
+        /// <param name="message">Creates the exception message only when the check fails.</param>
+        /// <exception cref="Exception"><paramref name="obj"/> is <c>null</c>; the exception is of type <typeparamref name="TException"/>.</exception>
+        public static void NotNull<TException>(object obj, Func<string> message)
+            where TException : Exception
+        {
+            if (obj == null)
+                throw Create<TException>(message());
         }
 
         /// <summary>Ensures that a string is neither <c>null</c> nor empty.</summary>
@@ -55,5 +159,33 @@ namespace DataQI.Commons.Util
             if (string.IsNullOrEmpty(text))
                 throw new ArgumentException(message);
         }
+
+        /// <summary>Ensures that a collection has items, throwing the requested exception type otherwise.</summary>
+        /// <typeparam name="TException">The exception type to throw; must expose a constructor that accepts a message.</typeparam>
+        /// <param name="collection">The collection to check.</param>
+        /// <param name="message">The exception message.</param>
+        /// <exception cref="Exception"><paramref name="collection"/> is empty; the exception is of type <typeparamref name="TException"/>.</exception>
+        public static void NotEmpty<TException>(ICollection collection, string message)
+            where TException : Exception
+        {
+            if (collection.Count == 0)
+                throw Create<TException>(message);
+        }
+
+        /// <summary>Ensures that a collection has items without building the message on success, throwing the requested exception type otherwise.</summary>
+        /// <typeparam name="TException">The exception type to throw; must expose a constructor that accepts a message.</typeparam>
+        /// <param name="collection">The collection to check.</param>
+        /// <param name="message">Creates the exception message only when the check fails.</param>
+        /// <exception cref="Exception"><paramref name="collection"/> is empty; the exception is of type <typeparamref name="TException"/>.</exception>
+        public static void NotEmpty<TException>(ICollection collection, Func<string> message)
+            where TException : Exception
+        {
+            if (collection.Count == 0)
+                throw Create<TException>(message());
+        }
+
+        private static TException Create<TException>(params object[] args)
+            where TException : Exception
+            => (TException)Activator.CreateInstance(typeof(TException), args);
     }
 }

@@ -3,11 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 
 using DataQI.Commons.Extensions.Reflection;
 using DataQI.Commons.Query;
-using DataQI.Commons.Repository.Query;
 using DataQI.Commons.Util;
 
 namespace DataQI.Commons.Repository.Core
@@ -67,37 +65,34 @@ namespace DataQI.Commons.Repository.Core
         private void RegisterMethodDescriptors()
         {
             var exactMatchMethods = ResolveExactMatchMethods();
-            var findMethod = ResolveCriteriaMethod("Find", 1);
-            var findAsyncMethod = ResolveCriteriaMethod("FindAsync", 2);
-            var findOneMethod = ResolveCriteriaMethod("FindOne", 1);
-            var findOneAsyncMethod = ResolveCriteriaMethod("FindOneAsync", 2);
+            var implementations = new ConcurrentDictionary<string, MethodInfo>();
+            MethodInfo FindImplementation(string name, Type[] parameterTypes)
+                => implementations.GetOrAdd(name, _ => ResolveCriteriaMethod(name, parameterTypes));
 
-            methodDescriptorFactory = method => MethodDescriptor.Create(
-                method,
-                entityType,
-                exactMatchMethods,
-                findMethod,
-                findAsyncMethod,
-                findOneMethod,
-                findOneAsyncMethod);
+            methodDescriptorFactory = method => MethodDescriptor.Create(method, entityType, exactMatchMethods, FindImplementation);
 
             foreach (var method in typeof(TRepository).GetAllInterfaceMethods())
                 methodDescriptors[method] = methodDescriptorFactory(method);
         }
 
-        private MethodInfo ResolveCriteriaMethod(string name, int parameterCount)
+        private MethodInfo ResolveCriteriaMethod(string name, params Type[] trailingParameterTypes)
         {
             return defaultRepositoryType
-                .GetMethods()
+                .GetMethods(BindingFlags.Public | BindingFlags.Instance)
                 .FirstOrDefault(m =>
-                    m.Name == name &&
-                    m.GetParameters().Length == parameterCount &&
-                    m.GetParameters()[0].ParameterType.IsGenericType &&
-                    m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
-                    m.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
-                    m.GetParameters()[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria) &&
-                    (parameterCount == 1 || m.GetParameters()[1].ParameterType == typeof(CancellationToken))
-                );
+                {
+                    var parameters = m.GetParameters();
+                    return m.Name == name &&
+                        !m.ContainsGenericParameters &&
+                        parameters.Length == 1 + trailingParameterTypes.Length &&
+                        parameters[0].ParameterType.IsGenericType &&
+                        parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>) &&
+                        parameters[0].ParameterType.GetGenericArguments()[0] == typeof(ICriteria) &&
+                        parameters[0].ParameterType.GetGenericArguments()[1] == typeof(ICriteria) &&
+                        trailingParameterTypes
+                            .Select((type, index) => parameters[index + 1].ParameterType == type)
+                            .All(matches => matches);
+                });
         }
 
         private IDictionary<string, MethodInfo> ResolveExactMatchMethods()
@@ -118,33 +113,20 @@ namespace DataQI.Commons.Repository.Core
         {
             var descriptor = methodDescriptors.GetOrAdd(targetMethod, methodDescriptorFactory);
 
-            switch (descriptor.Kind)
-            {
-                case DispatchKind.ExactMatch:
-                    return descriptor.ResolvedMethod.Invoke(defaultRepository, args);
+            if (descriptor.Kind == DispatchKind.ExactMatch)
+                return descriptor.ResolvedMethod.Invoke(defaultRepository, args);
 
-                case DispatchKind.AsyncCollection:
-                case DispatchKind.AsyncSingle:
-                {
-                    var (criteriaArgs, cancellationToken) = descriptor.HasCancellationToken
-                        ? SplitCancellationToken(args)
-                        : (args, default);
-                    var criteriaBuilder = CreateCriteriaBuilder(targetMethod, criteriaArgs);
-                    return descriptor.ResolvedMethod.Invoke(defaultRepository, new object[] { criteriaBuilder, cancellationToken });
-                }
+            if (descriptor.Kind == DispatchKind.Unresolvable)
+                throw new TargetInvocationException(
+                    $"Unknown method {targetMethod.Name} returning type {targetMethod.ReturnType}", null);
 
-                case DispatchKind.SyncCollection:
-                case DispatchKind.SyncSingle:
-                {
-                    var criteriaBuilder = CreateCriteriaBuilder(targetMethod, args);
-                    return descriptor.ResolvedMethod.Invoke(
-                        defaultRepository, new object[] { criteriaBuilder });
-                }
+            var queryArgs = descriptor.Shape.BuildQueryMethodArguments(args, descriptor.HasCancellationToken);
+            var criteriaBuilder = CreateCriteriaBuilder(targetMethod, queryArgs.CriteriaArgs);
 
-                default:
-                    throw new TargetInvocationException(
-                        $"Unknown method {targetMethod.Name} returning type {targetMethod.ReturnType}", null);
-            }
+            return descriptor.ResolvedMethod.Invoke(
+                defaultRepository,
+                descriptor.Shape.BuildImplementationArguments(
+                    criteriaBuilder, queryArgs.Page, queryArgs.CancellationToken));
         }
 
         /// <summary>Creates the criteria builder that applies a query method's plan to its arguments.</summary>
@@ -162,13 +144,6 @@ namespace DataQI.Commons.Repository.Core
             }
 
             return CriteriaBuilder;
-        }
-
-        private static (object[] CriteriaArgs, CancellationToken CancellationToken) SplitCancellationToken(object[] args)
-        {
-            var cancellationToken = (CancellationToken)args[args.Length - 1];
-            var criteriaArgs = args.Take(args.Length - 1).ToArray();
-            return (criteriaArgs, cancellationToken);
         }
     }
 }
