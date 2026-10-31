@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace DataQI.Commons.Util
 {
-    /// <summary>Provides argument guards that throw <see cref="ArgumentException"/> with a caller supplied message.</summary>
+    /// <summary>Provides guards that throw <see cref="ArgumentException"/> by default or the requested exception type in generic overloads.</summary>
     public static class Assert
     {
         /// <summary>Ensures that an object is exactly of type <typeparamref name="T"/>.</summary>
