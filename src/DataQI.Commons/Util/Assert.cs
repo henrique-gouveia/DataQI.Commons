@@ -93,6 +93,30 @@ namespace DataQI.Commons.Util
                 throw new ArgumentException(message, paramName);
         }
 
+        /// <summary>Ensures that a condition does not hold, throwing the requested exception type otherwise.</summary>
+        /// <typeparam name="TException">The exception type to throw; must expose a constructor that accepts a message.</typeparam>
+        /// <param name="expression">The condition that must be <c>false</c>.</param>
+        /// <param name="message">The exception message.</param>
+        /// <exception cref="Exception"><paramref name="expression"/> is <c>true</c>; the exception is of type <typeparamref name="TException"/>.</exception>
+        public static void False<TException>(bool expression, string message)
+            where TException : Exception
+        {
+            if (expression)
+                throw Create<TException>(message);
+        }
+
+        /// <summary>Ensures that a condition does not hold without building the message on success, throwing the requested exception type otherwise.</summary>
+        /// <typeparam name="TException">The exception type to throw; must expose a constructor that accepts a message.</typeparam>
+        /// <param name="expression">The condition that must be <c>false</c>.</param>
+        /// <param name="message">Creates the exception message only when the condition fails.</param>
+        /// <exception cref="Exception"><paramref name="expression"/> is <c>true</c>; the exception is of type <typeparamref name="TException"/>.</exception>
+        public static void False<TException>(bool expression, Func<string> message)
+            where TException : Exception
+        {
+            if (expression)
+                throw Create<TException>(message());
+        }
+
         /// <summary>Ensures that an object is not <c>null</c>.</summary>
         /// <param name="obj">The object to check.</param>
         /// <param name="message">The exception message.</param>

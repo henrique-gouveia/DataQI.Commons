@@ -135,6 +135,37 @@ namespace DataQI.Commons.Test.Util
         }
 
         [Fact]
+        public void TestAssertFalseThrowsTheRequestedException()
+        {
+            AssertUtil.False<InvalidOperationException>(false, "Invalid state");
+
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+                AssertUtil.False<InvalidOperationException>(true, "Invalid state"));
+
+            Assert.Equal("Invalid state", exception.Message);
+        }
+
+        [Fact]
+        public void TestAssertFalseWithRequestedExceptionEvaluatesMessageOnlyOnFailure()
+        {
+            var evaluations = 0;
+            Func<string> message = () =>
+            {
+                evaluations++;
+                return "Invalid state";
+            };
+
+            AssertUtil.False<InvalidOperationException>(false, message);
+            Assert.Equal(0, evaluations);
+
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+                AssertUtil.False<InvalidOperationException>(true, message));
+
+            Assert.Equal("Invalid state", exception.Message);
+            Assert.Equal(1, evaluations);
+        }
+
+        [Fact]
         public void TestAssertNotNullWithRequestedExceptionEvaluatesMessageOnlyOnFailure()
         {
             var evaluations = 0;

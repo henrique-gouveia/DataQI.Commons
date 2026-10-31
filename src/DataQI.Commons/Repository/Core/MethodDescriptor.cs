@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Linq;
 using System.Threading;
 
 using DataQI.Commons.Extensions.Reflection;
@@ -96,35 +95,53 @@ namespace DataQI.Commons.Repository.Core
         private static void ValidatePagingSignature(MethodInfo method, bool isPaged, bool hasCancellationToken, MethodInfo resolved)
         {
             var parameters = method.GetParameters();
-            var requestPositions = parameters
-                .Select((p, i) => new { p.ParameterType, Index = i })
-                .Where(x => x.ParameterType == typeof(IPageRequest))
-                .Select(x => x.Index)
-                .ToArray();
+            var requestCount = 0;
+            var requestPosition = -1;
+            var tokenCount = 0;
+            for (var index = 0; index < parameters.Length; index++)
+            {
+                if (parameters[index].ParameterType == typeof(IPageRequest))
+                {
+                    requestCount++;
+                    requestPosition = index;
+                }
+                else if (parameters[index].ParameterType == typeof(CancellationToken))
+                    tokenCount++;
+            }
 
+            ValidatePageRequestPosition(method, isPaged, hasCancellationToken, parameters.Length, requestCount, requestPosition);
+            ValidateCancellationTokenPosition(method, isPaged, hasCancellationToken, tokenCount);
+            ValidatePagingImplementation(method, isPaged, resolved);
+        }
+
+        private static void ValidatePageRequestPosition(MethodInfo method, bool isPaged, bool hasCancellationToken,
+            int parameterCount, int requestCount, int requestPosition)
+        {
             string Message(string reason) => $"{method.DeclaringType?.Name}.{method.Name}: {reason}";
 
-            Assert.True<InvalidOperationException>(requestPositions.Length <= 1,
+            Assert.False<InvalidOperationException>(requestCount > 1,
                 Message("a query method accepts at most one IPageRequest parameter"));
-            Assert.True<InvalidOperationException>(!isPaged || requestPositions.Length != 0,
+            Assert.False<InvalidOperationException>(isPaged && requestCount == 0,
                 Message("a method returning ISlice<T> or IPage<T> needs an IPageRequest parameter"));
-            Assert.True<InvalidOperationException>(isPaged || requestPositions.Length != 1,
+            Assert.False<InvalidOperationException>(!isPaged && requestCount == 1,
                 Message("an IPageRequest parameter requires an ISlice<T> or IPage<T> return type"));
-            if (requestPositions.Length == 1)
-            {
-                var lastAllowed = parameters.Length - (hasCancellationToken ? 2 : 1);
-                Assert.True<InvalidOperationException>(requestPositions[0] == lastAllowed,
+            if (requestCount == 1)
+                Assert.False<InvalidOperationException>(requestPosition != parameterCount - (hasCancellationToken ? 2 : 1),
                     Message("the IPageRequest parameter must be the last one, before an optional CancellationToken"));
-            }
+        }
+
+        private static void ValidateCancellationTokenPosition(MethodInfo method, bool isPaged,
+            bool hasCancellationToken, int tokenCount)
+        {
             if (isPaged)
-            {
-                var tokenPositions = parameters.Select((p, i) => new { p.ParameterType, Index = i })
-                    .Where(x => x.ParameterType == typeof(CancellationToken)).Select(x => x.Index).ToArray();
-                Assert.True<InvalidOperationException>(tokenPositions.Length <= 1 && (tokenPositions.Length != 1 || hasCancellationToken),
-                    Message("an optional CancellationToken must occur once at the end"));
-            }
-            Assert.True<InvalidOperationException>(!isPaged || resolved != null,
-                Message("the repository does not implement IPagedRepository"));
+                Assert.False<InvalidOperationException>(tokenCount > 1 || (tokenCount == 1 && !hasCancellationToken),
+                    $"{method.DeclaringType?.Name}.{method.Name}: an optional CancellationToken must occur once at the end");
+        }
+
+        private static void ValidatePagingImplementation(MethodInfo method, bool isPaged, MethodInfo resolved)
+        {
+            Assert.False<InvalidOperationException>(isPaged && resolved == null,
+                $"{method.DeclaringType?.Name}.{method.Name}: the repository does not implement IPagedRepository");
         }
     }
 }
