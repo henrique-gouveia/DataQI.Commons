@@ -62,6 +62,17 @@ namespace DataQI.Commons.Repository.Paging.Support
                 ? page.Offset + itemCount : (long?)null;
         }
 
+        /// <summary>Returns the number of rows to fetch, including one extra row for a slice.</summary>
+        /// <param name="page">The request to validate.</param>
+        /// <param name="forSlice">Whether to fetch an extra row to detect the next slice.</param>
+        /// <returns>The number of rows to fetch.</returns>
+        /// <exception cref="ArgumentException">The request violates the paging contract.</exception>
+        public static int FetchSize(IPageRequest page, bool forSlice)
+        {
+            EnsurePage(page);
+            return page.PageSize + (forSlice ? 1 : 0);
+        }
+
         /// <summary>Builds an immutable slice, omitting an extra row used to detect the next page without modifying the source.</summary>
         /// <typeparam name="T">The item type.</typeparam>
         /// <param name="rows">The fetched rows, including any extra row.</param>
@@ -69,9 +80,9 @@ namespace DataQI.Commons.Repository.Paging.Support
         /// <returns>The requested slice and its navigation metadata.</returns>
         public static ISlice<T> ToSlice<T>(IReadOnlyList<T> rows, IPageRequest page)
         {
-            EnsurePage(page);
+            var fetchSize = FetchSize(page, forSlice: true);
             Assert.NotNull(rows, "Rows must not be null", nameof(rows));
-            var hasNext = rows.Count > page.PageSize;
+            var hasNext = rows.Count >= fetchSize;
             var items = hasNext ? rows.Take(page.PageSize).ToArray() : rows;
             return new Slice<T>(items, page.PageIndex, page.PageSize, hasNext);
         }

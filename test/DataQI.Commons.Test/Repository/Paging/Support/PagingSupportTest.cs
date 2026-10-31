@@ -11,6 +11,16 @@ namespace DataQI.Commons.Test.Repository.Paging.Support
     public class PagingSupportTest
     {
         [Fact]
+        public void TestFetchSizeAddsOneRowOnlyForSlice()
+        {
+            var page = PageRequest.Of(0, int.MaxValue - 1);
+
+            Assert.Equal(int.MaxValue, PagingSupport.FetchSize(page, forSlice: true));
+            Assert.Equal(int.MaxValue - 1, PagingSupport.FetchSize(page, forSlice: false));
+            Assert.Throws<ArgumentException>(() => PagingSupport.FetchSize(null, forSlice: true));
+        }
+
+        [Fact]
         public void TestMergeKeepsMethodThenCriteriaThenPageThenKeyOrderAndDropsRepeats()
         {
             var orders = PagingSupport.MergeOrders<FakeEntity>(
