@@ -280,21 +280,14 @@ Property names are strings; `nameof(Person.LastName)` avoids spelling mistakes. 
 
 Text matching, null semantics, value conversion, supported property types, and persistence differ between providers. Consult the provider README before treating the same criterion as identical SQL or LINQ behavior.
 
-## News
+## Release Notes
 
-**v4.0.0 - current release line**
+**v4.0.0 - upcoming release**
 
-- Add immutable paging results and requests, `IPagedRepository`, and validated slice/page query-method dispatch.
-- **Breaking Change!** `MethodDescriptor.Create` no longer takes the separate `findMethod`, `findAsyncMethod`, `findOneMethod` and `findOneAsyncMethod` arguments. It now takes a `Func<string, Type[], MethodInfo>` that, given the name of the repository method a query method is forwarded to (`Find`, `FindAsync`, `FindOne`, `FindOneAsync`, `FindSlice`, `FindSliceAsync`, `FindPage` or `FindPageAsync`) and the parameter types that follow its `Func<ICriteria, ICriteria>` argument, returns the matching public instance method or `null` when the repository has none. Update custom dispatch integrations that call it directly.
-- **Breaking Change!** CRUD and paging independently extend the new `IRepository<TEntity, TId>` marker. Paging no longer inherits CRUD or disposal. Interfaces requiring both must declare both contracts.
-- **Breaking Change!** `IEntityRepository` and `IDapperRepository` combine CRUD and paging; custom provider implementations must supply `FindSlice`, `FindSliceAsync`, `FindPage` and `FindPageAsync`.
-- Share request validation, order merging, total deduction, and page and slice creation through `PagingSupport` in `DataQI.Commons.Repository.Paging.Support`.
-- A paged query returning another entity type now fails at proxy creation with the expected and actual entity types.
-- Update the transitive analyzer dependency from `0.1.0-preview.1` to `0.1.0`; this dependency change is separate from the package version supplied by release tags.
-
-- **Breaking Change!** Replace the previous criteria expression hierarchy with the AST and visitor contract described in the migration guide.
-- **Breaking Change!** Expose criteria/order collections and replace ordering getters with read-only properties.
-- **Breaking Change!** Require `string` values for `Containing` and `StartingWith` restrictions.
+- Add paging through `IPagedRepository<TEntity, TId>` with immutable requests and slice/page results. Query methods support synchronous and asynchronous paging, validate their signatures, use stable ordering, and count matching rows only when the total cannot be deduced.
+- **Breaking Change!** `ICrudRepository<TEntity, TId>` and `IPagedRepository<TEntity, TId>` independently extend the new `IRepository<TEntity, TId>` marker. Provider interfaces combine both contracts; custom provider implementations must add `FindSlice`, `FindSliceAsync`, `FindPage` and `FindPageAsync`.
+- **Breaking Change!** `MethodDescriptor.Create` now accepts a `Func<string, Type[], MethodInfo>` to find implementation methods instead of four separate `MethodInfo` arguments. Update custom dispatch integrations that call it directly.
+- **Breaking Change!** Replace the criteria expression hierarchy with an AST and visitor contract, expose read-only criteria and order collections and properties, and require `string` values for `Containing` and `StartingWith`. See the migration table below for the affected APIs.
 - Fix parsing of property names containing ordinary `Or`/`And` substrings, such as `OrderDate` and `AndroidVersion`, without treating every substring as a junction.
 - Accept `Equals` as an equality alias alongside `Equal`.
 - Document public APIs with XML comments for IDE help.
@@ -371,7 +364,7 @@ The dispatch path is:
 5. Paging dispatch selects `FindSlice`, `FindPage` or their async counterparts and removes the page request and token from predicate arguments. Implement `IPagedRepository<TEntity, TId>` to expose these targets.
 6. The provider translates `ICriterion.Accept(visitor)` nodes and applies the orders. A method with no available dispatch target is `Unresolvable` and invocation fails.
 
-The dispatch kinds are `ExactMatch`, `SyncCollection`, `AsyncCollection`, `SyncSingle`, `AsyncSingle`, `Unresolvable`, `SyncSlice`, `AsyncSlice`, `SyncPage`, and `AsyncPage`. Expose the criteria overloads with the contract signatures, including a trailing `CancellationToken` on asynchronous overloads. Keep the supported query return shapes listed in the grammar; the dispatcher does not validate arbitrary return types for you.
+The dispatch kinds are `ExactMatch`, `SyncCollection`, `AsyncCollection`, `SyncSingle`, `AsyncSingle`, `SyncSlice`, `AsyncSlice`, `SyncPage`, `AsyncPage`, and `Unresolvable`. Expose the criteria overloads with the contract signatures, including a trailing `CancellationToken` on asynchronous overloads. Keep the supported query return shapes listed in the grammar; the dispatcher does not validate arbitrary return types for you.
 
 ## License
 
