@@ -1,7 +1,5 @@
 using System;
 using System.Linq;
-
-using DataQI.Commons.Query;
 using DataQI.Commons.Query.Ast;
 using DataQI.Commons.Query.Support;
 using DataQI.Commons.Repository.Query;

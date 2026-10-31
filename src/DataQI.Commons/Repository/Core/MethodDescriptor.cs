@@ -13,11 +13,6 @@ namespace DataQI.Commons.Repository.Core
     /// <summary>Describes how a method of a repository interface is dispatched.</summary>
     public sealed class MethodDescriptor
     {
-        private readonly Lazy<QueryPlan> plan;
-
-        /// <summary>Gets the query plan parsed on first access, or <c>null</c> when the method is forwarded unchanged or cannot be resolved.</summary>
-        public QueryPlan Plan => plan?.Value;
-
         /// <summary>Gets the interface method being dispatched.</summary>
         public MethodInfo Method { get; }
         /// <summary>Gets a key made of the method name, return type and parameter types.</summary>
@@ -35,6 +30,10 @@ namespace DataQI.Commons.Repository.Core
 
         /// <summary>Gets the shape of the query method, or <c>null</c> when the method is forwarded unchanged or cannot be resolved.</summary>
         public QueryShape Shape { get; }
+
+        private readonly Lazy<QueryPlan> plan;
+        /// <summary>Gets the query plan parsed on first access, or <c>null</c> when the method is forwarded unchanged or cannot be resolved.</summary>
+        public QueryPlan Plan => plan?.Value;
 
         private MethodDescriptor(
             MethodInfo method,

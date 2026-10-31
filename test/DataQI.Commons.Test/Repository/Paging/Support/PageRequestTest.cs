@@ -5,7 +5,6 @@ using Xunit;
 
 using DataQI.Commons.Query;
 using DataQI.Commons.Query.Support;
-using DataQI.Commons.Repository.Paging;
 using DataQI.Commons.Repository.Paging.Support;
 
 namespace DataQI.Commons.Test.Repository.Paging.Support
